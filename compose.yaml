@@ -1,0 +1,25 @@
+﻿services:
+  nginx:
+    build:
+      context: ./src/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+  
