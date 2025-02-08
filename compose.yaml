@@ -1,5 +1,7 @@
 ﻿services:
   nginx:
+    image: tpham1467/nginx:latest
+    container_name: nginx
     build:
       context: ./src/nginx
       dockerfile: Dockerfile
@@ -12,9 +14,11 @@
       - api
 
   api:
+    image: tpham1467/api
+    container_name: api
     build:
-      context: .
-      dockerfile: src/Api/Dockerfile
+      context: ./src/Api
+      dockerfile: Dockerfile
     networks:
       - app-network
 
