@@ -40,6 +40,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "compose.yaml"
           target: "temp"
+          strip_components: 0
             
       - name: SSH to Production & Deploy
         uses: appleboy/ssh-action@v0.1.10
