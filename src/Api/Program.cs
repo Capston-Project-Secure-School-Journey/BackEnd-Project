@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var serverVersion = new MySqlServerVersion(new Version(8, 4, 0));
+var serverVersion = new MySqlServerVersion(new Version(9, 2, 0));
 var cors = "AllowSpecificOrigin";
-
+Console.WriteLine($"connectionString: {connectionString}");
 builder.Services.AddDbContext<Context>(
     options => options.UseMySql(connectionString, serverVersion)
         // The following three options help with debugging, but should
