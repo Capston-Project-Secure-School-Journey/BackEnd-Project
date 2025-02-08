@@ -33,6 +33,7 @@ jobs:
 
     steps:
       - name: Copy docker-compose.yml to Production
+        uses: actions/checkout@v2
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
