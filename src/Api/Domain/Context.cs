@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Api.Domain
         public DbSet<Parrent> Parrents { get; set; }
         public DbSet<Driver> Drivers { get; set; }
         public DbSet<SchoolPerson> SchoolPersons { get; set; }
-
+        public DbSet<School> Schools { get; set; }
         public Context(DbContextOptions options) :
             base(options)
         {

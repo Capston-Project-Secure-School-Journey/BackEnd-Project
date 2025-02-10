@@ -60,8 +60,8 @@ builder
     .AddJsonOptions(options =>
     {
         // Use snake_case for both requests and responses
-        options.JsonSerializerOptions.PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance;
-        options.JsonSerializerOptions.DictionaryKeyPolicy = SnakeCaseNamingPolicy.Instance;
+        options.JsonSerializerOptions.PropertyNamingPolicy = CamelCaseNamingPolicy.Instance;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = CamelCaseNamingPolicy.Instance;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         // options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
