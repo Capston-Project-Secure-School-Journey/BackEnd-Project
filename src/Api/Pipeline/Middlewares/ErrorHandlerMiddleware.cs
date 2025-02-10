@@ -75,7 +75,7 @@ namespace Api.Pipeline.Middlewares
             errorDetail.StatusCode = response.StatusCode;
             var serializeOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance,
+                PropertyNamingPolicy = CamelCaseNamingPolicy.Instance,
                 WriteIndented = true
             };
             await response.WriteAsync(JsonSerializer.Serialize(errorDetail, serializeOptions));

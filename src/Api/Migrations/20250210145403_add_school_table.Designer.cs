@@ -4,6 +4,7 @@ using Api.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250210145403_add_school_table")]
+    partial class add_school_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -209,25 +212,7 @@ namespace Api.Migrations
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
 
-                    b.HasIndex("SchoolId");
-
                     b.HasDiscriminator().HasValue("school_person");
-                });
-
-            modelBuilder.Entity("Api.Domain.Models.SchoolPerson", b =>
-                {
-                    b.HasOne("Api.Domain.Models.School", "School")
-                        .WithMany("SchoolPersons")
-                        .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("School");
-                });
-
-            modelBuilder.Entity("Api.Domain.Models.School", b =>
-                {
-                    b.Navigation("SchoolPersons");
                 });
 #pragma warning restore 612, 618
         }

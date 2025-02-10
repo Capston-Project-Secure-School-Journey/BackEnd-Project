@@ -65,7 +65,7 @@ namespace Api.Services.TokenService
             return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
         }
 
-        public (int?, string?) ValidateToken(string token, TokenType type = TokenType.Login)
+        public (Guid?, string?) ValidateToken(string token, TokenType type = TokenType.Login)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -88,7 +88,7 @@ namespace Api.Services.TokenService
                 tokenValidationParameters
                 , out SecurityToken validatedToken);
             var jwtToken = (JwtSecurityToken)validatedToken;
-            var userId = int.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
             var userType = (jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value)?.ToString();
             var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 

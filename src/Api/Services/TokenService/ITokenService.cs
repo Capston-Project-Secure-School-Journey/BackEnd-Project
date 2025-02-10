@@ -7,6 +7,6 @@ namespace Api.Services.TokenService
     {
         string GenerateAccessToken(IEnumerable<Claim> claims);
         string GenerateAccessToken(User data, int expireHours = 24);
-        (int?, string?) ValidateToken(string token, TokenType type = TokenType.Login);
+        (Guid?, string?) ValidateToken(string token, TokenType type = TokenType.Login);
     }
 }
