@@ -14,6 +14,7 @@ namespace Api.Domain
                 {
                     Id = Guid.NewGuid(), 
                     UserType = UserType.Admin,
+                    UserTypeName = "Admin",
                     UserName = "admin",
                     AccountStatus = AccountStatus.Verified,
                     Email = Constants.ADMIN_EMAIL, 

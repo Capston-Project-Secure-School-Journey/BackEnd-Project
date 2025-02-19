@@ -18,6 +18,5 @@ public class User : BaseModel
     public string? Address { get; set; }
     public string? DetailAddress { get; set; }
     public string? AvatarUrl { get; set; }
-    public Guid? AvatarFileInfo { get; set; }
     public AccountStatus AccountStatus { get; set; }
 }

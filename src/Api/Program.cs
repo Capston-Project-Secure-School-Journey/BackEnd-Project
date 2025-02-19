@@ -1,8 +1,9 @@
+using System.Text.Json;
 using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api.IOC;
-using Api.JsonNamingPolicy;
 using Api.Pipeline.Middlewares;
+using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ var serverVersion = new MySqlServerVersion(new Version(9, 2, 0));
 var cors = "AllowSpecificOrigin";
 Console.WriteLine($"connectionString: {connectionString}");
 builder.Services.AddDbContext<Context>(
-    options => options.UseMySql(connectionString, serverVersion)
+    options => options.UseMySql(connectionString, serverVersion,  b => b.UseMicrosoftJson())
         // The following three options help with debugging, but should
         // be changed or removed for production.
         .LogTo(Console.WriteLine, LogLevel.Information)
@@ -60,12 +61,14 @@ builder
     .AddJsonOptions(options =>
     {
         // Use snake_case for both requests and responses
-        options.JsonSerializerOptions.PropertyNamingPolicy = CamelCaseNamingPolicy.Instance;
-        options.JsonSerializerOptions.DictionaryKeyPolicy = CamelCaseNamingPolicy.Instance;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         // options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+builder.Services.Configure<ApiBehaviorOptions>(options
+    => options.SuppressModelStateInvalidFilter = true);
 
 builder.Services.AddCors(options =>
 {
@@ -77,7 +80,7 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
-
+builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 
 var app = builder.Build();
 

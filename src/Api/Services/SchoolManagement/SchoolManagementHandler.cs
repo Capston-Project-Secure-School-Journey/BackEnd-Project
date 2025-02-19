@@ -5,8 +5,11 @@ using Api.DTOs.SchoolManagement;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
 using AutoMapper;
-using System.Collections.Generic;
-using System.Linq;
+using Api.DTOs.Responses;
+using Api.DTOs.UploadFileService;
+using Api.Extensions;
+using Api.Services.UploadFileService;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.IOC.Services.SchoolManagement;
 
@@ -15,14 +18,17 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     private readonly ISchoolManagement _schoolManagement;
     private readonly IMapper _mapper;
     private readonly Context _context;
+    private readonly IFileUploadService _uploadFileService;
 
     public SchoolManagementHandler(ISchoolManagement schoolManagement,
+        IFileUploadService uploadFileService,
         IMapper mapper,
         Context context)
     {
         _schoolManagement = schoolManagement;
         _mapper = mapper;
         _context = context;
+        _uploadFileService = uploadFileService;
     }
 
     public async Task<SchoolResponse> CreateSchool(CreateSchoolRequest data)
@@ -57,10 +63,42 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         await _schoolManagement.DeleteSchool(schoolIds);
     }
 
-    public async Task<IEnumerable<SchoolResponse>> GetListOfSchool()
+    public async Task<Pagination<SchoolResponse>> GetSchools(GetSchoolRequest request)
     {
-        return (await _schoolManagement.GetListOfSchool())
+        var query = await _schoolManagement.GetSchoolsQueryAble();
+        var total = await query.CountAsync();
+        
+        var data = await query
             .Select(x => _mapper.Map<SchoolResponse>(x))
-            .ToList();
+            .Pagination(request.Page, request.Limit)
+            .ToListAsync();
+        var tasks = new List<Task>();
+        foreach (var school in data)
+        {
+            school.Images = await GetPreSignedDownload(school.Images);
+        }
+        
+        var response = new Pagination<SchoolResponse>(data, request.Limit, request.Page, total);
+        return response;
+    }
+
+    public async Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid schoolId)
+    {
+        var request = new PreSignedUrlRequest()
+        {
+            ContentType = "image/jpg",
+            FileSize = 10 * 1024 * 1024,
+            Prefix = "/school/" + schoolId
+        };
+        var data = await _uploadFileService.GeneratePreSignedUploadUrlAsync(request);
+        return data;
+    }
+
+    private async Task<List<string>> GetPreSignedDownload(List<string> keys)
+    {
+        var tasks = keys.
+            Select(k => _uploadFileService.GeneratePreSignedDownloadUrlAsync(k));
+        
+        return (await Task.WhenAll(tasks)).ToList();
     }
 }

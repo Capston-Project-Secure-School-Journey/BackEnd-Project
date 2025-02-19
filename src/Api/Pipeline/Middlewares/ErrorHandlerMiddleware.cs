@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Api.Common.Utilities;
 using Api.Common.Utilities.Exceptions;
-using Api.JsonNamingPolicy;
 
 namespace Api.Pipeline.Middlewares
 {
@@ -62,7 +57,7 @@ namespace Api.Pipeline.Middlewares
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     break;
                 case ValidationException e:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
                     errorDetail.Message = "Object validation error.";
                     break;
                 default:
@@ -75,7 +70,7 @@ namespace Api.Pipeline.Middlewares
             errorDetail.StatusCode = response.StatusCode;
             var serializeOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = CamelCaseNamingPolicy.Instance,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
             };
             await response.WriteAsync(JsonSerializer.Serialize(errorDetail, serializeOptions));
