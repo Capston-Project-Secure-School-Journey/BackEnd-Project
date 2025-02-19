@@ -12,6 +12,9 @@ public class SchoolManagementProfile : Profile
     {
         CreateMap<CreateSchoolRequest, CreateSchoolDto>();
         CreateMap<UpdateSchoolRequest, UpdateSchoolDto>();
-        CreateMap<School, SchoolResponse>();
+        CreateMap<School, SchoolResponse>()
+            .ForMember(dest => dest.Images, 
+                opt 
+                    => opt.MapFrom(src => src.Images.Select(im => im.Key).ToList()));
     }
 }

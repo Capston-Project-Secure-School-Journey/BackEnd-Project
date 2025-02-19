@@ -1,6 +1,7 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
+using Api.DTOs.Responses;
 using Api.IOC.Services.SchoolManagement;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
@@ -57,10 +58,17 @@ public class SchoolManagement : ControllerBase
     }
     
     
-    [HttpGet("")]
+    [HttpGet()]
     [Authorize(UserType.Admin)]
-    public async Task<ActionResult<IEnumerable<SchoolResponse>>> GetListOfSchool()
+    public async Task<Pagination<SchoolResponse>> GetListOfSchool([FromQuery]GetSchoolRequest request)
     {
-        return Ok(await _schoolManagementHandler.GetListOfSchool());
+        return await _schoolManagementHandler.GetSchools(request);
     }
+
+    // [HttpGet()]
+    // [Authorize(UserType.Admin)]
+    // public async Task<ActionResult<string>> GetPreSignedUploadImage()
+    // {
+    //     
+    // }
 }

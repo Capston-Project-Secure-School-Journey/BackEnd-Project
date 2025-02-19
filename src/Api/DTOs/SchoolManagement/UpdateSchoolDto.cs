@@ -6,6 +6,7 @@ public class UpdateSchoolDto
 {
     public Guid Id { get; set; }
     public SchoolType SchoolType { get; set; }
+    public string SchoolName { get; set; }
     public string? SchoolDescription { get; set; }
     public string Address { get; set; } = string.Empty;
     public TimeSpan MorningStartTime { get; set; }

@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,12 +17,10 @@ namespace Api.Common.Utilities
     public class ValidationResultModel
     {
         public string Message { get; }
-        public int StatusCode { get; }
         public List<ValidationError> Errors { get; }
         public ValidationResultModel(ModelStateDictionary modelState)
         {
             Message = Constants.VALIDATION_FAILED;
-            StatusCode = 400;
             Errors = modelState.Keys
                 .SelectMany(key => modelState[key]!.Errors.Select(x => new ValidationError(key, x.ErrorMessage.ToString())))
                 .ToList();

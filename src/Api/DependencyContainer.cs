@@ -3,6 +3,8 @@ using Api.IOC.Mappings;
 using Api.IOC.Services.SchoolManagement;
 using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
+using Api.Common.Utilities;
+using Api.Services.UploadFileService;
 
 namespace Api.IOC
 {
@@ -16,6 +18,9 @@ namespace Api.IOC
             services.AddScoped<ISchoolManagement, SchoolManagement>();
             services.AddScoped<ISchoolManagementHandler, SchoolManagementHandler>();
             services.AddSingleton<IAuthorizationChecker, AuthorizationChecker>();
+            services.AddSingleton<IFileUploadService, S3FileUploadService>();
+            
+            services.AddScoped<ValidateModelAttribute>();
         }
     }
 }

@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
@@ -9,6 +10,7 @@ namespace Api.IOC.Services.SchoolManagement;
 public class SchoolManagement : ISchoolManagement
 {
     private readonly Context _context;
+    private ISchoolManagement _schoolManagementImplementation;
 
     public SchoolManagement(Context dbContext)
     {
@@ -28,6 +30,7 @@ public class SchoolManagement : ISchoolManagement
     {
         var school = new School();
         school.SchoolType = data.SchoolType;
+        school.SchoolName = data.SchoolName;
         school.SchoolDescription = data.SchoolDescription;
         school.Address = data.Address;
         school.MorningStartTime = data.MorningStartTime;
@@ -48,6 +51,7 @@ public class SchoolManagement : ISchoolManagement
         var school = await GetById(data.Id);
 
         school.SchoolType = data.SchoolType;
+        school.SchoolName = data.SchoolName;
         school.SchoolDescription = data.SchoolDescription;
         school.Address = data.Address;
         school.MorningStartTime = data.MorningStartTime;
@@ -96,8 +100,45 @@ public class SchoolManagement : ISchoolManagement
         }
     }
 
-    public async  Task<IEnumerable<School>> GetListOfSchool()
+    public async  Task<IEnumerable<School>> GetSchools()
     {
         return await _context.Schools.ToListAsync();
+    }
+    
+    public async  Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null)
+    {
+        var query = _context.Schools
+                                                .AsQueryable()
+                                                .AsNoTracking();
+        if (schoolType != null)
+        {
+            query = query.Where(s => s.SchoolType == schoolType);
+        }
+
+        if (!string.IsNullOrEmpty(schoolName))
+        {
+            query = query.Where(s => s.SchoolName.Contains(schoolName));
+        }
+        
+        return await query.ToListAsync();
+    }
+
+    public async Task<IQueryable<School>> GetSchoolsQueryAble(SchoolType? schoolType = null, string? schoolName = null)
+    {
+        var query = _context.Schools
+            .AsQueryable()
+            .AsNoTracking();
+        
+        if (schoolType != null)
+        {
+            query = query.Where(s => s.SchoolType == schoolType);
+        }
+
+        if (!string.IsNullOrEmpty(schoolName))
+        {
+            query = query.Where(s => s.SchoolName.Contains(schoolName));
+        }
+
+        return query;
     }
 }

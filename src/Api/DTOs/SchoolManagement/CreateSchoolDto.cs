@@ -5,6 +5,7 @@ namespace Api.DTOs.SchoolManagement;
 public class CreateSchoolDto
 {
     public SchoolType SchoolType { get; set; }
+    public string SchoolName { get; set; }
     public string? SchoolDescription { get; set; }
     public string Address { get; set; } = string.Empty;
     public TimeSpan MorningStartTime { get; set; }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-public static class ControllerExtention
+public static class ControllerExtension
 {
     public static Guid GetUserId(this ControllerBase controller)
     {
