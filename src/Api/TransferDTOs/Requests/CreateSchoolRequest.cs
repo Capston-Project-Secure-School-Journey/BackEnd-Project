@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Api.Attributes;
 using Api.Common.Enums;
 
 namespace Api.Transfers.Requests;
@@ -29,4 +30,8 @@ public class CreateSchoolRequest
     [Required]
     [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
     public string PhoneNumber { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Tên đăng nhập của admin trường không được trống")]
+    public string SchoolAdminUserName { get; set; } = string.Empty;
+    [PasswordStrength]
+    public string SchoolAdminPassword { get; set; } = string.Empty;
 }

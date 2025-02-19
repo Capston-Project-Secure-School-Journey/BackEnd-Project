@@ -10,6 +10,7 @@ public interface ISchoolManagement
     Task<School> UpdateSchool(UpdateSchoolDto data);
     Task DeleteSchool(Guid schoolId);
     Task DeleteSchool(List<Guid> schoolIds);
+    Task<School> GetSchool(Guid schoolId);
     Task<IEnumerable<School>> GetSchools();
     Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null);
     Task<IQueryable<School>> GetSchoolsQueryAble(SchoolType? schoolType = null, string? schoolName = null);

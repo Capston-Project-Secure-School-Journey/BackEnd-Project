@@ -7,7 +7,9 @@ using Api.Transfers.Responses;
 using AutoMapper;
 using Api.DTOs.Responses;
 using Api.DTOs.UploadFileService;
+using Api.DTOs.UserManagement;
 using Api.Extensions;
+using Api.IOC.Services.UserManagementService;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,9 +21,11 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     private readonly IMapper _mapper;
     private readonly Context _context;
     private readonly IFileUploadService _uploadFileService;
+    private readonly IUserManagement _userManagement;
 
     public SchoolManagementHandler(ISchoolManagement schoolManagement,
         IFileUploadService uploadFileService,
+        IUserManagement userManagement,
         IMapper mapper,
         Context context)
     {
@@ -29,15 +33,37 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         _mapper = mapper;
         _context = context;
         _uploadFileService = uploadFileService;
+        _userManagement = userManagement;
     }
 
-    public async Task<SchoolResponse> CreateSchool(CreateSchoolRequest data)
+    public async Task<SchoolDetailResponse> CreateSchool(CreateSchoolRequest data)
     {
-        var school = await _schoolManagement.CreateSchool(_mapper.Map<CreateSchoolDto>(data));
-        return _mapper.Map<SchoolResponse>(school);
+        var trans = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var school = await _schoolManagement.CreateSchool(_mapper.Map<CreateSchoolDto>(data));
+            await _userManagement.CreateSchoolAdmin(new CreateSchoolAdminDto()
+            {
+                UserName = data.SchoolAdminUserName,
+                Password = data.SchoolAdminPassword,
+                SchoolId = school.Id
+            });
+            
+            var response = _mapper.Map<SchoolDetailResponse>(school);
+            response.SchoolAdminUserName = data.SchoolAdminUserName;
+
+            await trans.CommitAsync();
+            return response;
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
     }
 
-    public async Task<SchoolResponse> UpdateSchool(Guid schoolId, UpdateSchoolRequest data, Guid userRequested,
+    public async Task<SchoolDetailResponse> UpdateSchool(Guid schoolId, UpdateSchoolRequest data, Guid userRequested,
         UserType userType)
     {
         if (userType == UserType.SchoolAdmin)
@@ -50,9 +76,16 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         var dto = _mapper.Map<UpdateSchoolDto>(data);
         dto.Id = schoolId;
         var school = await _schoolManagement.UpdateSchool(dto);
-        return _mapper.Map<SchoolResponse>(school);
+        var response = _mapper.Map<SchoolDetailResponse>(school);
+        await AttachSchoolAdminInfo(response);
+        return response;
     }
 
+    public async Task ChangeSchoolAdminPassword(Guid schoolId, string newPassword)
+    {
+        await _userManagement.ChangeSchoolAdminPassword(schoolId, newPassword);
+    }
+    
     public async Task DeleteSchool(Guid schoolId)
     {
         await _schoolManagement.DeleteSchool(schoolId);
@@ -67,18 +100,23 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     {
         var query = await _schoolManagement.GetSchoolsQueryAble();
         var total = await query.CountAsync();
-        
+
         var data = await query
             .Select(x => _mapper.Map<SchoolResponse>(x))
             .Pagination(request.Page, request.Limit)
             .ToListAsync();
-        var tasks = new List<Task>();
-        foreach (var school in data)
-        {
-            school.Images = await GetPreSignedDownload(school.Images);
-        }
-        
+
         var response = new Pagination<SchoolResponse>(data, request.Limit, request.Page, total);
+        return response;
+    }
+
+
+    public async Task<SchoolDetailResponse> GetSchool(Guid schoolId)
+    {
+        var school = await _schoolManagement.GetSchool(schoolId);
+        var response = _mapper.Map<SchoolDetailResponse>(school);
+        response.Images = await GetPreSignedDownload(response.Images);
+        await AttachSchoolAdminInfo(response);
         return response;
     }
 
@@ -96,9 +134,16 @@ public class SchoolManagementHandler : ISchoolManagementHandler
 
     private async Task<List<string>> GetPreSignedDownload(List<string> keys)
     {
-        var tasks = keys.
-            Select(k => _uploadFileService.GeneratePreSignedDownloadUrlAsync(k));
-        
+        var tasks = keys.Select(k => _uploadFileService.GeneratePreSignedDownloadUrlAsync(k));
+
         return (await Task.WhenAll(tasks)).ToList();
+    }
+
+    private async Task AttachSchoolAdminInfo(SchoolDetailResponse school)
+    {
+        school.SchoolAdminUserName = (await _context.SchoolPersons
+                .FirstOrDefaultAsync(x => x.SchoolId == school.Id
+                                          && x.UserType == UserType.SchoolAdmin)
+            )?.UserName;
     }
 }

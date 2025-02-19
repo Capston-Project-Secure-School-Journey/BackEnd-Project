@@ -141,4 +141,10 @@ public class SchoolManagement : ISchoolManagement
 
         return query;
     }
+
+    public async Task<School> GetSchool(Guid id)
+    {
+        var school = await GetById(id);
+        return school;
+    }
 }
