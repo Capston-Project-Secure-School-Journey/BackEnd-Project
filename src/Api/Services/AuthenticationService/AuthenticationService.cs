@@ -32,7 +32,7 @@ namespace Api.Services.AuthenticationService
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
                     _logger.LogInformation("User login fail with account {@Account}", request);
-                    throw new UnAuthorizedException(ConstantErrorMessage.INVALID_EMAIL_PASSWORD("en"));
+                    throw new UnAuthorizedException(ConstantErrorMessage.INVALID_EMAIL_PASSWORD("vn"));
                 }
                 _logger.LogInformation("User with ID = {Id} login successfully", user.Id);
                 return new AuthenticateResponse(user, GenerateLoginToken(user));
