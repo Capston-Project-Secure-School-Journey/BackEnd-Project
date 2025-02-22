@@ -18,7 +18,7 @@ public class UserManagement: IUserManagement
 
     public async Task<SchoolPerson> CreateSchoolAdmin(CreateSchoolAdminDto request)
     {
-        if (_context.SchoolPersons.Any(x => x.SchoolId == request.SchoolId && x.UserType == UserType.Admin))
+        if (_context.SchoolPersons.Any(x => x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
             throw new BadRequestException("Đã tồn tại tài khoản của người quản trị trường học");
         
         var user = new SchoolPerson
