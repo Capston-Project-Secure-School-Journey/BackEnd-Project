@@ -11,6 +11,10 @@ namespace Api.Domain
         public DbSet<Driver> Drivers { get; set; }
         public DbSet<SchoolPerson> SchoolPersons { get; set; }
         public DbSet<School> Schools { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<Class> Classes { get; set; }
+        public DbSet<Student> Students { get; set; }
+        
         public Context(DbContextOptions options) :
             base(options)
         {
