@@ -1,8 +1,8 @@
 using Api.Common.Enums;
 
-namespace Api.Domain.Models;
+namespace Api.TransferDTOs.Responses;
 
-public class Teacher: BaseModel
+public class TeacherResponse
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
@@ -12,8 +12,4 @@ public class Teacher: BaseModel
     public Gender Gender { get; set; }
     public string PhoneNumber { get; set; }
     public string Email { get; set; }
-    public Guid? AvatarKey { get; set; }
-    
-    public virtual School School { get; set; }
-    public virtual HashSet<Class> ManagedClasses { get; set; }
 }
