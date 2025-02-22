@@ -404,6 +404,7 @@ namespace Api.Domain
                     .WithMany()
                     .HasForeignKey(t => t.SchoolId)
                     .OnDelete(DeleteBehavior.NoAction);
+
             });
             
             builder.Entity<User>().HasQueryFilter(x => x.IsDeleted == false);

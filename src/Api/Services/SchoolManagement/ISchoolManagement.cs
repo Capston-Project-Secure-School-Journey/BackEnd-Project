@@ -2,7 +2,7 @@ using Api.Common.Enums;
 using Api.Domain.Models;
 using Api.DTOs.SchoolManagement;
 
-namespace Api.IOC.Services.SchoolManagement;
+namespace Api.Services.SchoolManagement;
 
 public interface ISchoolManagement
 {

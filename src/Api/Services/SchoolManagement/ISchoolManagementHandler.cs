@@ -5,7 +5,7 @@ using Api.DTOs.UploadFileService;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
 
-namespace Api.IOC.Services.SchoolManagement;
+namespace Api.Services.SchoolManagement;
 
 public interface ISchoolManagementHandler
 {

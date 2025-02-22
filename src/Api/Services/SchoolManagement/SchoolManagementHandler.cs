@@ -13,7 +13,7 @@ using Api.IOC.Services.UserManagementService;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.IOC.Services.SchoolManagement;
+namespace Api.Services.SchoolManagement;
 
 public class SchoolManagementHandler : ISchoolManagementHandler
 {

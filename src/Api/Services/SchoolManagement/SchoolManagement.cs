@@ -5,7 +5,7 @@ using Api.Domain.Models;
 using Api.DTOs.SchoolManagement;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.IOC.Services.SchoolManagement;
+namespace Api.Services.SchoolManagement;
 
 public class SchoolManagement : ISchoolManagement
 {
