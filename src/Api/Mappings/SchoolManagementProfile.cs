@@ -1,10 +1,12 @@
 using Api.Domain.Models;
 using Api.DTOs.SchoolManagement;
+using Api.DTOs.TeacherManagement;
+using Api.TransferDTOs.Responses;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
 using AutoMapper;
 
-namespace Api.IOC.Mappings;
+namespace Api.Mappings;
 
 public class SchoolManagementProfile : Profile
 {
@@ -17,5 +19,9 @@ public class SchoolManagementProfile : Profile
             .ForMember(dest => dest.Images, 
                 opt 
                     => opt.MapFrom(src => src.Images.Select(im => im.Key).ToList()));
+        
+        CreateMap<CreateTeacherRequest, CreateTeacherDto>();
+        CreateMap<UpdateTeacherRequest, UpdateTeacherDto>();
+        CreateMap<Teacher, TeacherResponse>();
     }
 }

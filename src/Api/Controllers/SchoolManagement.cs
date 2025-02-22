@@ -2,7 +2,7 @@ using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.DTOs.Responses;
-using Api.IOC.Services.SchoolManagement;
+using Api.Services.SchoolManagement;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
 using AutoMapper;
