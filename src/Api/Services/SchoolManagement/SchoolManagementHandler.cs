@@ -89,11 +89,13 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     public async Task DeleteSchool(Guid schoolId)
     {
         await _schoolManagement.DeleteSchool(schoolId);
+        await _userManagement.DeleteSchoolAdmin(schoolId);
     }
 
     public async Task DeleteSchool(List<Guid> schoolIds)
     {
         await _schoolManagement.DeleteSchool(schoolIds);
+        await _userManagement.DeleteSchoolAdmin(schoolIds);
     }
 
     public async Task<Pagination<SchoolResponse>> GetSchools(GetSchoolRequest request)
