@@ -7,7 +7,7 @@ public interface IUserManagement
 {
     Task<SchoolPerson> CreateSchoolAdmin(CreateSchoolAdminDto request);
     Task ChangeSchoolAdminPassword(Guid schoolId, string newPassword);
-    Task<bool> DeleteSchoolAdmin(Guid userId);
-    Task<bool> DeleteSchoolAdmin(List<Guid> userId);
+    Task DeleteSchoolAdmin(Guid schoolId);
+    Task DeleteSchoolAdmin(List<Guid> schoolIds);
     Task<IEnumerable<SchoolPerson>> GetListOfSchoolAdmins();
 }

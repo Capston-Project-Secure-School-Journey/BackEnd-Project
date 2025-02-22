@@ -57,14 +57,39 @@ public class UserManagement: IUserManagement
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteSchoolAdmin(Guid userId)
+    public async Task DeleteSchoolAdmin(Guid schoolId)
     {
-        throw new NotImplementedException();
+        var schoolAdmin = await _context.SchoolPersons
+            .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
+
+        if (schoolAdmin == null)
+            throw new NotFoundException("Không tồn tại tài khoản");
+
+
+        schoolAdmin.AccountStatus = AccountStatus.Deactive;
+        
+        _context.Entry(schoolAdmin).State = EntityState.Deleted;
+        
+        await _context.SaveChangesAsync();
     }
 
-    public Task<bool> DeleteSchoolAdmin(List<Guid> userId)
+    public async Task DeleteSchoolAdmin(List<Guid> schoolIds)
     {
-        throw new NotImplementedException();
+        var trans = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var i in schoolIds)
+            {
+                await DeleteSchoolAdmin(i);
+            }
+
+            await trans.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
     }
 
     public Task<IEnumerable<SchoolPerson>> GetListOfSchoolAdmins()
