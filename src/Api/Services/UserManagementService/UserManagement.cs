@@ -20,6 +20,9 @@ public class UserManagement: IUserManagement
     {
         if (_context.SchoolPersons.Any(x => x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
             throw new BadRequestException("Đã tồn tại tài khoản của người quản trị trường học");
+
+        if (_context.Users.Any(x => x.UserName == request.UserName))
+            throw new BadRequestException("Tên đăng nhập đã tồn tại");
         
         var user = new SchoolPerson
         {
