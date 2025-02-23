@@ -5,6 +5,7 @@ using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
 using Api.Common.Utilities;
 using Api.IOC.Services.UserManagementService;
+using Api.Services.ClassManagementService;
 using Api.Services.TeacherManagementService;
 using Api.Services.UploadFileService;
 
@@ -24,6 +25,8 @@ namespace Api.IOC
             services.AddSingleton<IFileUploadService, S3FileUploadService>();
             services.AddScoped<ITeacherManagementService, TeacherManagementService>();
             services.AddScoped<ITeacherManagementHandler, TeacherManagementHandler>();
+            services.AddScoped<IClassManagementService, ClassManagementService>();
+            services.AddScoped<IClassManagementHandler, ClassManagementHandler>();
             
             services.AddScoped<ValidateModelAttribute>();
         }

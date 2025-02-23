@@ -45,7 +45,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
 
     public async Task<TeacherResponse> GetTeacherById(Guid schoolId, Guid id)
     {
-        await _teacherManagementService.IsOnwerTeacher(schoolId, id);
+        await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
         var teacher =  await _teacherManagementService.GetTeacherById(id);
         
         return _mapper.Map<TeacherResponse>(teacher);
@@ -63,7 +63,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
 
     public async Task<TeacherResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request)
     {
-        await _teacherManagementService.IsOnwerTeacher(schoolId, request.Id);
+        await _teacherManagementService.IsOwnerOfTeacher(schoolId, request.Id);
         
         var dto = _mapper.Map<UpdateTeacherDto>(request);
         var teacher = await _teacherManagementService.UpdateTeacher(dto);
@@ -74,7 +74,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
 
     public async Task DeleteTeacher(Guid schoolId, Guid id)
     {
-        await _teacherManagementService.IsOnwerTeacher(schoolId, id);
+        await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
         await _teacherManagementService.DeleteTeacher(id);
     }
 
@@ -82,7 +82,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
     {
         foreach (var id in ids)
         {
-            await _teacherManagementService.IsOnwerTeacher(schoolId, id);
+            await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
         }
         await _teacherManagementService.DeleteTeacher(ids);
     }

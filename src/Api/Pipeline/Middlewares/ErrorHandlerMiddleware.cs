@@ -58,7 +58,7 @@ namespace Api.Pipeline.Middlewares
                     break;
                 case ValidationException e:
                     response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
-                    errorDetail.Message = "Object validation error.";
+                    errorDetail.Message = e.Message;
                     break;
                 default:
                     // unhandled error
