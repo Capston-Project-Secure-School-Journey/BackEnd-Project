@@ -194,15 +194,15 @@ public class ClassManagementService : IClassManagementService
         var cl = await GetClassById(id);
         _context.Entry(cl).State = EntityState.Deleted;
 
-        await _context.Entry(cl)
-            .Collection<Student>(c => c.Students)
-            .LoadAsync();
-
-        // Delete students
-        foreach (var clStudent in cl.Students)
-        {
-            _context.Entry(clStudent).State = EntityState.Deleted;
-        }
+        // await _context.Entry(cl)
+        //     .Collection<Student>(c => c.Students)
+        //     .LoadAsync();
+        //
+        // // Delete students
+        // foreach (var clStudent in cl.Students)
+        // {
+        //     _context.Entry(clStudent).State = EntityState.Deleted;
+        // }
 
         await _context.SaveChangesAsync();
     }
