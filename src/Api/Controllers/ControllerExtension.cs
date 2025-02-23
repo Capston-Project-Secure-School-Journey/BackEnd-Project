@@ -1,4 +1,6 @@
 using Api.Common.Enums;
+using Api.Domain;
+using Api.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -20,5 +22,10 @@ public static class ControllerExtension
         return (UserType)
             Convert.ToInt16(controller.Request.Headers["Authorization-UserType"].First());
 
+    }
+
+    public static Guid GetSchoolId(this ControllerBase controller, Context context, Guid userId)
+    {
+        return context.SchoolPersons.FirstOrDefault(person => person.Id == userId)!.SchoolId;
     }
 }
