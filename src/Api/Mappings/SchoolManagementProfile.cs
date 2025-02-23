@@ -1,4 +1,5 @@
 using Api.Domain.Models;
+using Api.DTOs.ClassManagement;
 using Api.DTOs.SchoolManagement;
 using Api.DTOs.TeacherManagement;
 using Api.TransferDTOs.Responses;
@@ -23,5 +24,17 @@ public class SchoolManagementProfile : Profile
         CreateMap<CreateTeacherRequest, CreateTeacherDto>();
         CreateMap<UpdateTeacherRequest, UpdateTeacherDto>();
         CreateMap<Teacher, TeacherResponse>();
+        
+        CreateMap<CreateClassRequest, CreateClassDto>();
+        CreateMap<UpdateClassRequest, UpdateClassDto>();
+        CreateMap<Class, ClassResponse>().
+            ForMember(x => x.ManagedTeachers, 
+                opt => 
+                    opt.MapFrom(x => x.ManagedTeachers.Select(mt => 
+                        new ManagedTeacherResponse()
+                        {
+                            Id = mt.ManagedTeacherId, 
+                            Name = string.Empty
+                        })));
     }
 }

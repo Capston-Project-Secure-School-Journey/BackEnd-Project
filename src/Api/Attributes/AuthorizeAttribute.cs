@@ -17,7 +17,7 @@ namespace Api.Attributes
             }
             catch (Exception)
             {
-                throw new UnAuthorizedException("Unauthorized. Token Invalid or Expire");
+                throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
             }
 
         }
@@ -42,7 +42,7 @@ namespace Api.Attributes
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new UnAuthorizedException("Unauthorized. Token Invalid or Expire");
+                throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
             }
 
             var userInfo = _tokenService.ValidateToken(token);
@@ -54,12 +54,12 @@ namespace Api.Attributes
                 
                 if (userTypeFilter != null && !userTypeFilter.Contains((UserType)Convert.ToInt16(userInfo.Item2)))
                 {
-                    throw new ForbiddenException("Permission denied!");
+                    throw new ForbiddenException("Bạn không có quyền truy cập tài nguyên");
                 }
             }
             else
             {
-                throw new UnAuthorizedException("Unauthorized. Token Invalid or Expire");
+                throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
             }
         }
         

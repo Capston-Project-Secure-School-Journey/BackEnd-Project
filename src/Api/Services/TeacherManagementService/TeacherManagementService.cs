@@ -114,7 +114,13 @@ public class TeacherManagementService : ITeacherManagementService
         }
     }
 
-    public async Task IsOnwerTeacher(Guid schoolId, Guid teacherId)
+    public async Task CheckExistTeacher(Guid schoolId, Guid teacherId)
+    {
+        if (!(await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId)))
+            throw new NotFoundException("Không tìm thấy giáo viên");
+    }
+
+    public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)
     {
         if (! await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
         {
