@@ -13,11 +13,11 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("schools")]
-public class SchoolManagement : ControllerBase
+public class SchoolManagementController : ControllerBase
 {
     private readonly ISchoolManagementHandler _schoolManagementHandler;
 
-    public SchoolManagement(ISchoolManagementHandler schoolManagementHandler)
+    public SchoolManagementController(ISchoolManagementHandler schoolManagementHandler)
     {
         _schoolManagementHandler = schoolManagementHandler;
     }

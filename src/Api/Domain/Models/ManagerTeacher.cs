@@ -1,6 +1,6 @@
 namespace Api.Domain.Models;
 
-public class ManagerTeacher
+public class ManagedTeacher
 {
-    public Guid ManagerTeacherId { get; set; }
+    public Guid ManagedTeacherId { get; set; }
 }

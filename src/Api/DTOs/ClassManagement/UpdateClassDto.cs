@@ -1,16 +1,13 @@
 using Api.Common.Enums;
+using Api.Domain.Models;
 
-namespace Api.Domain.Models;
+namespace Api.DTOs.ClassManagement;
 
-public class Class: BaseModel
+public class UpdateClassDto
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
     public Grade Grade { get; set; }
     public List<ManagedTeacher> ManagedTeachers { get; set; }
     public string ClassName { get; set; } = string.Empty;
-    public int NumberOfStudent { get; set; }
-    
-    public virtual School School { get; set; }
-    public virtual HashSet<Student> Students { get; set; }
 }

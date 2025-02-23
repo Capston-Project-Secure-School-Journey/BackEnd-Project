@@ -260,8 +260,8 @@ namespace Api.Domain
                     .HasColumnName("number_of_student")
                     .IsRequired();
                 
-                entity.Property(u => u.ManagerTeacher)
-                    .HasColumnName("manager_teacher")
+                entity.Property(u => u.ManagedTeachers)
+                    .HasColumnName("managed_teachers")
                     .IsRequired(false)
                     .HasColumnType("json");
                 
@@ -344,7 +344,7 @@ namespace Api.Domain
                         .OnDelete(DeleteBehavior.NoAction);
 
                     entity.HasOne(s => s.Class)
-                        .WithMany()
+                        .WithMany(cl => cl.Students)
                         .HasForeignKey(s => s.ClassId)
                         .OnDelete(DeleteBehavior.NoAction);
                 }

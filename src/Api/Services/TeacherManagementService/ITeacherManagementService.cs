@@ -12,7 +12,7 @@ public interface ITeacherManagementService
     Task<Teacher> AddTeacher(CreateTeacherDto request);
     Task<Teacher> UpdateTeacher(UpdateTeacherDto request);
     Task DeleteTeacher(Guid id);
-    Task DeleteTeacher(List<Guid> ids);
-    
-    Task IsOnwerTeacher(Guid schoolId, Guid teacherId);
+    Task DeleteTeacher(List<Guid> ids); 
+    Task CheckExistTeacher(Guid schoolId, Guid teacherId);
+    Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId);
 }
