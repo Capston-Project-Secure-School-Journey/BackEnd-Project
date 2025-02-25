@@ -100,16 +100,16 @@ public class ClassManagementController : ControllerBase
         switch (schoolType)
         {
             case SchoolType.Preschool:
-                data = data.Where(g => Convert.ToInt16(g.Value) >= 0 && Convert.ToInt16(g.Value) <= 2).ToList();
+                data = data.Where(g => g.Id is >= 0 and <= 2).ToList();
                 break;
             case SchoolType.PrimarySchool:
-                data = data.Where(g => Convert.ToInt16(g.Value) >= 3  && Convert.ToInt16(g.Value) <= 7).ToList();
+                data = data.Where(g => g.Id is >= 3 and <= 7).ToList();
                 break;
             case SchoolType.MiddleSchool:
-                data = data.Where(g => Convert.ToInt16(g.Value) >= 8 && Convert.ToInt16(g.Value) <= 11).ToList();
+                data = data.Where(g => g.Id is >= 8 and <= 11).ToList();
                 break;
             case SchoolType.HighSchool:
-                data = data.Where(g => Convert.ToInt16(g.Value) >= 12 && Convert.ToInt16(g.Value) <= 14).ToList();
+                data = data.Where(g => g.Id is >= 12 and <= 14).ToList();
                 break;
         }
 
