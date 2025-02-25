@@ -12,8 +12,8 @@ public static class EnumExtension
             .Cast<T>()
             .Select(status => new ComboBoxItem
             {
-                DisplayText = status.ToString(),
-                Value = status
+                Name = GetEnumDisplayName<T>(status),
+                Id = Convert.ToInt16(status)
             })
             .ToList();
     }
