@@ -2,6 +2,6 @@ namespace Api.DTOs;
 
 public class ComboBoxItem
 {
-    public string DisplayText { get; set; }
-    public object Value { get; set; }
+    public string Name { get; set; }
+    public int Id { get; set; }
 }
