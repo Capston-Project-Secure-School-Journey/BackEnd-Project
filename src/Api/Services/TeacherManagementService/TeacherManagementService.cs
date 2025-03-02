@@ -22,7 +22,8 @@ public class TeacherManagementService : ITeacherManagementService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Teacher>> GetTeachersByFilter(Guid schoolId, string? name, string? email, string? phoneNumber)
+    public async Task<IEnumerable<Teacher>> GetTeachersByFilter(Guid schoolId, string? name, string? email,
+        string? phoneNumber)
     {
         var query = await GetTeachersByFilterQueryAble(schoolId, name, email, phoneNumber);
 
@@ -34,15 +35,15 @@ public class TeacherManagementService : ITeacherManagementService
     {
         var query = _context.Teachers.AsQueryable()
             .AsNoTracking();
-        
+
         query = query.Where(x => x.SchoolId == schoolId);
-        
+
         if (!string.IsNullOrEmpty(name))
-            query = query.Where(t => (t.FirstName + " " + t.LastName).Contains(name));
+            query = query.Where(t => EF.Functions.Like(t.FullName, name + "%"));
         if (!string.IsNullOrEmpty(email))
-            query = query.Where(t => t.Email.Contains(email));
+            query = query.Where(t => EF.Functions.Like(t.Email, email + "%"));
         if (!string.IsNullOrEmpty(phoneNumber))
-            query = query.Where(t => t.PhoneNumber.Contains(phoneNumber));
+            query = query.Where(t => EF.Functions.Like(t.PhoneNumber, phoneNumber + "%"));
 
         return query;
     }
@@ -122,7 +123,7 @@ public class TeacherManagementService : ITeacherManagementService
 
     public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)
     {
-        if (! await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
+        if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
         {
             throw new ForbiddenException("Bạn không có quyền truy cập");
         }

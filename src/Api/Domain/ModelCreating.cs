@@ -296,7 +296,18 @@ namespace Api.Domain
                         .HasColumnName("last_name")
                         .IsRequired()
                         .HasColumnType("nvarchar(200)");
-
+                    
+                    entity
+                        .Property(p => p.FullName)
+                        .HasColumnName("full_name")
+                        .IsRequired()
+                        .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
+                    
+                    entity.Property(s => s.DateOfBirth)
+                        .HasColumnName("date_of_birth")
+                        .IsRequired()
+                        .HasColumnType("datetime");
+                    
                     entity.Property(s => s.ClassId)
                         .HasColumnName("class_id")
                         .IsRequired();
@@ -375,7 +386,13 @@ namespace Api.Domain
                     .HasColumnName("last_name")
                     .IsRequired()
                     .HasColumnType("nvarchar(200)");
-
+                
+                entity
+                    .Property(p => p.FullName)
+                    .HasColumnName("full_name")
+                    .IsRequired()
+                    .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
+                
                 entity.Property(t => t.DateOfBirth)
                     .HasColumnName("date_of_birth")
                     .IsRequired()
@@ -405,6 +422,65 @@ namespace Api.Domain
                     .HasForeignKey(t => t.SchoolId)
                     .OnDelete(DeleteBehavior.NoAction);
 
+            });
+            
+            //file management
+            builder.Entity<FileManagement>(entity =>
+            {
+                entity.ToTable("file_managements");
+
+                entity.HasKey(t => t.Id);
+                
+                entity.Property(c => c.Id)
+                    .HasColumnName("id")
+                    .IsRequired();
+                
+                entity.Property(t => t.FileName)
+                    .HasColumnName("file_name")
+                    .HasColumnType("nvarchar(200)")
+                    .IsRequired();
+
+                entity.Property(t => t.S3Key)
+                    .HasColumnName("s3_key")
+                    .IsRequired()
+                    .HasColumnType("varchar(2000)");
+
+                entity.Property(t => t.FileType)
+                    .HasColumnName("file_type")
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+
+                entity.Property(t => t.FileSize)
+                    .HasColumnName("file_size")
+                    .IsRequired()
+                    .HasColumnType("float");
+
+                entity.Property(t => t.UploadDate)
+                    .HasColumnName("upload_date")
+                    .IsRequired()
+                    .HasColumnType("timestamp");
+
+                entity.Property(t => t.UploadBy)
+                    .HasColumnName("uploaded_by")
+                    .IsRequired(false)
+                    .HasColumnType("char(36)");
+
+                entity.Property(t => t.RelatedObjectId)
+                    .HasColumnName("related_object_id")
+                    .IsRequired(false)
+                    .HasColumnType("char(36)");
+
+                entity.Property(t => t.RelatedObjectType)
+                    .HasColumnName("related_object_type")
+                    .IsRequired(false)
+                    .HasColumnType("tinyint");
+                
+                entity.Property(t => t.IsUploaded)
+                    .HasColumnName("is_uploaded")
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasColumnType("bit");
+                
             });
             
             builder.Entity<User>().HasQueryFilter(x => x.IsDeleted == false);

@@ -48,7 +48,7 @@ public class ClassManagementService : IClassManagementService
 
         if (!string.IsNullOrWhiteSpace(className))
         {
-            query = query.Where(cl => cl.ClassName.ToLower().Contains(className.ToLower()));
+            query = query.Where(cl => EF.Functions.Like(cl.ClassName, className + "%"));
         }
 
         if (grade.HasValue)
