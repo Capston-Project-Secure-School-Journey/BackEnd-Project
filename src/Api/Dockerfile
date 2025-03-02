@@ -19,6 +19,7 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+RUN apt-get update && apt-get install -y libfontconfig1 libfreetype6
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Api.dll"]
