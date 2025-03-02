@@ -117,7 +117,7 @@ public class SchoolManagement : ISchoolManagement
 
         if (!string.IsNullOrEmpty(schoolName))
         {
-            query = query.Where(s => s.SchoolName.Contains(schoolName));
+            query = query.Where(s => EF.Functions.Like(s.SchoolName, schoolName + "%"));
         }
         
         return await query.ToListAsync();

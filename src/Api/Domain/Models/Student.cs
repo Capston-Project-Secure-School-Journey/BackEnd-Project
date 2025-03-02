@@ -2,12 +2,14 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class Student: BaseModel
+public class Student : BaseModel
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public DateTime DateOfBirth { get; set; }
     public Guid ClassId { get; set; }
     public Gender Gender { get; set; }
     public Guid? AvatarKey { get; set; }
@@ -17,7 +19,7 @@ public class Student: BaseModel
     public decimal PickUpLng { get; set; }
     public int? LocationGroup { get; set; }
     public List<ManagedBy> ManagedBy { get; set; }
-    
+
     public virtual School School { get; set; }
     public virtual Class Class { get; set; }
 }
