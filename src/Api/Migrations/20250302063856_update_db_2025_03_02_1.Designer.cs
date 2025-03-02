@@ -4,6 +4,7 @@ using Api.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250302063856_update_db_2025_03_02_1")]
+    partial class update_db_2025_03_02_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,13 +230,6 @@ namespace Api.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("first_name");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("longtext")
-                        .HasColumnName("full_name")
-                        .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
-
                     b.Property<sbyte>("Gender")
                         .HasColumnType("tinyint")
                         .HasColumnName("gender");
@@ -314,13 +310,6 @@ namespace Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("first_name");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("longtext")
-                        .HasColumnName("full_name")
-                        .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
 
                     b.Property<sbyte>("Gender")
                         .HasColumnType("tinyint")

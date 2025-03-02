@@ -1,8 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.DTOs.Responses;
-using Api.DTOs.SchoolManagement;
 using Api.DTOs.TeacherManagement;
 using Api.Extensions;
 using Api.TransferDTOs.Responses;
