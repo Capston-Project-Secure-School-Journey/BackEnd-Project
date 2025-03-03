@@ -92,7 +92,7 @@ public class StudentManagementService : IStudentManagementService
             _context.Students.Add(st);
             _context.Entry(st).State = EntityState.Added;
             await _context.SaveChangesAsync();
-            var hash = HashGenerator.ComputeSHA256("StudentId_" + st.Id.ToString());
+            var hash = HashGenerator.ComputeSha256("StudentId_" + st.Id.ToString());
             var stream = _qrCodeGenerator.GenerateQrCodeStream(hash);
             var uploadRe = await _uploadFileService.UploadStreamAsync(stream,
                 st.Id.ToString() + ".png", "image/png", "student_qr_images");
