@@ -5,9 +5,11 @@ namespace Api.Transfers.Requests;
 
 public class CreateTeacherRequest
 {
-    [Required(ErrorMessage = "Họ không được để trống.")]
-    public string FirstName { get; set; }
     [Required(ErrorMessage = "Tên không được để trống.")]
+    [MaxLength(200, ErrorMessage = "Tên không được quá 200 ký tự.")]
+    public string FirstName { get; set; }
+    [Required(ErrorMessage = "Họ không được để trống.")]
+    [MaxLength(200, ErrorMessage = "Họ không được quá 200 ký tự.")]
     public string LastName { get; set; }
     [Required(ErrorMessage = "Ngày sinh không được để trống.")]
     [DataType(DataType.Date, ErrorMessage = "Ngày sinh không đúng.")]
@@ -17,8 +19,10 @@ public class CreateTeacherRequest
     public Gender Gender { get; set; }
     [Required(ErrorMessage = "Số điện thoại không được để trống.")]
     [DataType(DataType.PhoneNumber, ErrorMessage = "Số điện thoại không đúng.")]
+    [MaxLength(11, ErrorMessage = "Số điện thoại không được quá 11 ký tự.")]
     public string PhoneNumber { get; set; }
     [Required(ErrorMessage = "Địa Chỉ email không được để trống.")]
+    [MaxLength(200, ErrorMessage = "Email không được quá 200 ký tự.")]
     [DataType(DataType.EmailAddress, ErrorMessage = "Địa chỉ email không đúng.")]
     public string Email { get; set; }
 }

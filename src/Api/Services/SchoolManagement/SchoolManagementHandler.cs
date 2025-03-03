@@ -9,7 +9,7 @@ using Api.DTOs.Responses;
 using Api.DTOs.UploadFileService;
 using Api.DTOs.UserManagement;
 using Api.Extensions;
-using Api.IOC.Services.UserManagementService;
+using Api.Services.UserManagementService;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 

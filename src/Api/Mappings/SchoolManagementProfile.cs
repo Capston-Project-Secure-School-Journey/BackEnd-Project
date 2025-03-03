@@ -3,6 +3,7 @@ using Api.DTOs.ClassManagement;
 using Api.DTOs.SchoolManagement;
 using Api.DTOs.StudentManagement;
 using Api.DTOs.TeacherManagement;
+using Api.DTOs.UserManagement;
 using Api.TransferDTOs.Responses;
 using Api.Transfers.Requests;
 using Api.Transfers.Responses;
@@ -46,5 +47,7 @@ public class SchoolManagementProfile : Profile
             ForMember(x => x.SchoolName,
             opt =>
                 opt.MapFrom(x => x.School.SchoolName));
+        
+        CreateMap<CreateAccountRequest, CreateUserDto>();
     }
 }

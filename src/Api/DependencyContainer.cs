@@ -5,7 +5,7 @@ using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
 using Api.Common.Utilities;
 using Api.Extensions;
-using Api.IOC.Services.UserManagementService;
+using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
 using Api.Services.StudentManagementService;
 using Api.Services.TeacherManagementService;
