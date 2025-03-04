@@ -1,8 +1,8 @@
 using Api.Common.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Api.Services.AuthenticationService;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 
 namespace Api.Controllers
 {
@@ -10,7 +10,7 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class AuthenController: ControllerBase
     {
-        private IAuthenticationService _authenticationService;
+        private readonly IAuthenticationService _authenticationService;
         public AuthenController(IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;

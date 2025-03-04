@@ -1,11 +1,6 @@
-using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using SkiaSharp;
 using ZXing;
-using ZXing.Common;
 using ZXing.QrCode;
 using ZXing.QrCode.Internal;
 

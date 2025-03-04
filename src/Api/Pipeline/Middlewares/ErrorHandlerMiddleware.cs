@@ -37,31 +37,32 @@ namespace Api.Pipeline.Middlewares
 
             var errorDetail = new ErrorDetails()
             {
-                StatusCode = (int)System.Net.HttpStatusCode.InternalServerError,
+                StatusCode = (int)HttpStatusCode.InternalServerError,
                 Message = exception.Message
             };
             switch (exception)
             {
                 case NotFoundException e:
-                    // Custom not found
                     response.StatusCode = (int)HttpStatusCode.NotFound;
+                    errorDetail.Message = e.Message;
                     break;
                 case UnAuthorizedException e:
-                    // Custom not found
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    errorDetail.Message = e.Message;
                     break;
                 case ForbiddenException e:
                     response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    errorDetail.Message = e.Message;
                     break;
                 case BadRequestException e:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    errorDetail.Message = e.Message;
                     break;
                 case ValidationException e:
                     response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
                     errorDetail.Message = e.Message;
                     break;
                 default:
-                    // unhandled error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     errorDetail.Message = exception.Message;
                     break;

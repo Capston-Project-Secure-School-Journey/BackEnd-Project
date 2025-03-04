@@ -1,6 +1,6 @@
 using Api.Common.Enums;
 
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 
 public class GetSchoolRequest: QueryTemplate
 {

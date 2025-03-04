@@ -2,11 +2,9 @@ using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Domain;
-using Api.DTOs.Responses;
 using Api.Services.StudentManagementService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

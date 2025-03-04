@@ -1,6 +1,5 @@
-using System.Text.Json.Serialization;
 
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 public class QueryTemplate
 {
     public int Limit { get; set; } = 15;

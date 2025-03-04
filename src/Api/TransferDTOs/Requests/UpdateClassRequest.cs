@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Api.Common.Enums;
 using Api.Domain.Models;
 
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 
 public class UpdateClassRequest
 {
@@ -12,7 +12,7 @@ public class UpdateClassRequest
     [EnumDataType(typeof(Grade), ErrorMessage = "Loại lớp học không hợp lệ.")]
     public Grade Grade { get; set; }
 
-    public List<ManagedTeacher> ManagedTeachers { get; set; }
+    public List<ManagedTeacher> ManagedTeachers { get; set; } = [];
 
     [Required(ErrorMessage = "Tên lớp không được để trống.")]
     public string ClassName { get; set; } = string.Empty;

@@ -30,7 +30,7 @@ public class TeacherManagementService : ITeacherManagementService
         return await query.ToListAsync();
     }
 
-    public async Task<IQueryable<Teacher>> GetTeachersByFilterQueryAble(Guid schoolId, string? name, string? email,
+    public Task<IQueryable<Teacher>> GetTeachersByFilterQueryAble(Guid schoolId, string? name, string? email,
         string? phoneNumber)
     {
         var query = _context.Teachers.AsQueryable()
@@ -45,7 +45,7 @@ public class TeacherManagementService : ITeacherManagementService
         if (!string.IsNullOrEmpty(phoneNumber))
             query = query.Where(t => EF.Functions.Like(t.PhoneNumber, phoneNumber + "%"));
 
-        return query;
+        return Task.FromResult(query);
     }
 
     public async Task<Teacher> GetTeacherById(Guid id)
@@ -109,7 +109,7 @@ public class TeacherManagementService : ITeacherManagementService
                 await DeleteTeacher(id);
             await trans.CommitAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             await trans.RollbackAsync();
         }

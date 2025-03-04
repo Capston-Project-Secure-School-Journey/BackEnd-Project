@@ -19,8 +19,7 @@ namespace Api.Services.TokenService
     {
         private readonly TokenSettings _tokenSettings;
 
-        public TokenService(IOptions<TokenSettings> tokenSettings,
-            IServiceProvider provider)
+        public TokenService(IOptions<TokenSettings> tokenSettings)
         {
             _tokenSettings = tokenSettings.Value;
         }
@@ -28,7 +27,7 @@ namespace Api.Services.TokenService
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
-            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.signinCredentials);
+            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
 
             var tokeOptions = new JwtSecurityToken(
                 issuer: _tokenSettings.Issuer,
@@ -45,7 +44,7 @@ namespace Api.Services.TokenService
         public string GenerateAccessToken(User data, int expireHours = 48)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
-            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.signinCredentials);
+            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
             var claims = new List<Claim>();
             claims.AddRange(new[] {
                 new Claim("Id", data.Id.ToString()) ,
@@ -89,14 +88,14 @@ namespace Api.Services.TokenService
                 , out SecurityToken validatedToken);
             var jwtToken = (JwtSecurityToken)validatedToken;
             var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            var userType = (jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value)?.ToString();
+            var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
             var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 
             if (typeInToken == null)
             {
                 throw new Exception("Token is not valid");
             }
-            if ((TokenType)Enum.Parse(typeof(TokenType), typeInToken.ToString()) != type)
+            if (typeInToken != null && (TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
             {
                 throw new Exception("Token is not valid");
             }

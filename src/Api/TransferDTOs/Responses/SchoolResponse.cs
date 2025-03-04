@@ -1,6 +1,6 @@
 using Api.Common.Enums;
 
-namespace Api.Transfers.Responses;
+namespace Api.TransferDTOs.Responses;
 
 public class SchoolResponse
 {

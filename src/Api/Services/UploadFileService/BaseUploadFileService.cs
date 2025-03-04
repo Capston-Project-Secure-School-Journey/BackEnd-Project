@@ -1,4 +1,3 @@
-using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
@@ -11,7 +10,7 @@ public class BaseUploadFileService(Context context)
 {
     private readonly Context _context = context;
 
-    public async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
+    protected async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
     {
         var file = new FileManagement()
         {
@@ -33,7 +32,7 @@ public class BaseUploadFileService(Context context)
         return file;
     }
 
-    public async Task DeleteFileManagement(Guid id)
+    protected async Task DeleteFileManagement(Guid id)
     {
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
 
@@ -44,6 +43,12 @@ public class BaseUploadFileService(Context context)
             await _context.SaveChangesAsync();
         }
     }
+    
+    protected async Task<string> GetS3Key(Guid id)
+    {
+        var file = await CheckIfFileExist(id);
+        return file.S3Key;
+    }
 
     public async Task MarkFileAsUploadedAsync(Guid id)
     {
@@ -52,7 +57,7 @@ public class BaseUploadFileService(Context context)
         _context.Entry(file).State = EntityState.Modified;
         await _context.SaveChangesAsync();
     }
-
+    
     private async Task<FileManagement> CheckIfFileExist(Guid id)
     {
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);

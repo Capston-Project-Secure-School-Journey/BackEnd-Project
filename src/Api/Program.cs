@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Api.Domain;
 using Api.Domain.ModelSettings;
-using Api.IOC;
+using Api;
 using Api.Pipeline.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using NSwag;

@@ -1,9 +1,7 @@
 using Api.Common.Enums;
-using Api.Domain.Models;
-using Api.DTOs.Responses;
 using Api.DTOs.UploadFileService;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 
 namespace Api.Services.SchoolManagement;
 

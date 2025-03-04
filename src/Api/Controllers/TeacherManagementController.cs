@@ -1,10 +1,9 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.DTOs.Responses;
 using Api.Services.TeacherManagementService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
