@@ -1,4 +1,4 @@
-using Api.Transfers.Requests;
+using Api.TransferDTOs.Requests;
 
 namespace Api.Services.UserManagementService;
 

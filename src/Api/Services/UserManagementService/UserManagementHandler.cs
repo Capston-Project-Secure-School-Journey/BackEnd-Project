@@ -1,5 +1,5 @@
 using Api.DTOs.UserManagement;
-using Api.Transfers.Requests;
+using Api.TransferDTOs.Requests;
 using AutoMapper;
 
 namespace Api.Services.UserManagementService;

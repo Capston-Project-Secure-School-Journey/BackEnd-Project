@@ -1,10 +1,6 @@
-using Api.Attributes;
-using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Services.UserManagementService;
-using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
-using Microsoft.AspNetCore.Authentication;
+using Api.TransferDTOs.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -19,7 +15,7 @@ public class UserManagementController: ControllerBase
         _userManagementHandler = userManagementHandler;
     }
     
-    [HttpPost]
+    [HttpPost("register")]
     [ValidateModel]
     public async Task<ActionResult> CreateUser([FromBody] CreateAccountRequest request)
     {

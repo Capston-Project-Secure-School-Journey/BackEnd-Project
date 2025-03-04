@@ -12,4 +12,5 @@ public interface IFileUploadService
     Task<bool> DeleteFileAsync(string key, Guid? id);
     Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request, int expirationMinutes = 60);
     Task<string> GeneratePreSignedDownloadUrlAsync(string key, int expirationMinutes = 60);
+    Task<string> GeneratePreSignedDownloadUrlAsync(Guid fileManagementKey, int expirationMinutes = 60);
 }

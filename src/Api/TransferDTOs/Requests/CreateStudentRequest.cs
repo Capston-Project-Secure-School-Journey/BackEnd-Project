@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Api.Common.Enums;
 
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 
 public class CreateStudentRequest
 {
@@ -13,7 +13,7 @@ public class CreateStudentRequest
     public string LastName { get; set; } = string.Empty;
     [DataType(DataType.Date, ErrorMessage = "Ngày sinh không đúng.")]
     [Required(ErrorMessage = "Ngày sinh không được để trống.")]
-    public DateTime DateOfBirth { get; set; }
+    public DateOnly DateOfBirth { get; set; }
     [Required(ErrorMessage = "Lớp học không được để trống.")]
     public Guid ClassId { get; set; }
     [Required(ErrorMessage = "Giới tính không được để trống.")]

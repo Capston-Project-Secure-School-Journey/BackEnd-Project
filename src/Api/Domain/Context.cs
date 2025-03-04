@@ -1,13 +1,12 @@
-using Api.Common.Enums;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Domain
 {
-    public class Context : Microsoft.EntityFrameworkCore.DbContext
+    public class Context : DbContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<Parrent> Parrents { get; set; }
+        public DbSet<Parent> Parents { get; set; }
         public DbSet<Driver> Drivers { get; set; }
         public DbSet<SchoolPerson> SchoolPersons { get; set; }
         public DbSet<School> Schools { get; set; }
@@ -36,7 +35,7 @@ namespace Api.Domain
         {
             AddTimestamps();
             UpdateSoftDeleteStatuses();
-            return base.SaveChangesAsync();
+            return base.SaveChangesAsync(cancellationToken);
         }
         private void AddTimestamps()
         {

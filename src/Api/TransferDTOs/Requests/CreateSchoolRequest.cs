@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Api.Attributes;
 using Api.Common.Enums;
 
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 
 public class CreateSchoolRequest
 {

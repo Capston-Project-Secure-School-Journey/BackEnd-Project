@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
@@ -5,7 +6,6 @@ using Api.DTOs.StudentManagement;
 using Api.Extensions;
 using Api.Services.ClassManagementService;
 using Api.Services.UploadFileService;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.StudentManagementService;
@@ -14,19 +14,16 @@ public class StudentManagementService : IStudentManagementService
 {
     private readonly Context _context;
     private readonly IClassManagementService _classManagementService;
-    private readonly IMapper _mapper;
     private readonly IFileUploadService _uploadFileService;
     private readonly IQrCodeGenerator _qrCodeGenerator;
 
     public StudentManagementService(Context context,
         IClassManagementService classManagementService,
-        IMapper mapper,
         IFileUploadService uploadFileService,
         IQrCodeGenerator qrCodeGenerator)
     {
         _context = context;
         _classManagementService = classManagementService;
-        _mapper = mapper;
         _uploadFileService = uploadFileService;
         _qrCodeGenerator = qrCodeGenerator;
     }
@@ -45,7 +42,7 @@ public class StudentManagementService : IStudentManagementService
         return await query.ToListAsync();
     }
 
-    public async Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId, string? name, Guid? classId)
+    public Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId, string? name, Guid? classId)
     {
         var query = _context.Students.AsQueryable()
             .AsNoTracking()
@@ -56,7 +53,7 @@ public class StudentManagementService : IStudentManagementService
         if (classId.HasValue)
             query = query.Where(st => st.ClassId == classId);
 
-        return query;
+        return Task.FromResult(query);
     }
 
     public async Task<Student> GetStudentById(Guid id)
@@ -92,7 +89,7 @@ public class StudentManagementService : IStudentManagementService
             _context.Students.Add(st);
             _context.Entry(st).State = EntityState.Added;
             await _context.SaveChangesAsync();
-            var hash = HashGenerator.ComputeSha256("StudentId_" + st.Id.ToString());
+            var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(st.Id));
             var stream = _qrCodeGenerator.GenerateQrCodeStream(hash);
             var uploadRe = await _uploadFileService.UploadStreamAsync(stream,
                 st.Id.ToString() + ".png", "image/png", "student_qr_images");
@@ -103,7 +100,7 @@ public class StudentManagementService : IStudentManagementService
 
             return st;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             await trans.RollbackAsync();
             throw;
@@ -145,7 +142,7 @@ public class StudentManagementService : IStudentManagementService
                 await DeleteStudent(id);
             await trans.CommitAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             await trans.RollbackAsync();
         }

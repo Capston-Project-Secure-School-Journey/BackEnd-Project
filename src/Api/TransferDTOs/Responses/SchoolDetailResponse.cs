@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-namespace Api.Transfers.Responses;
+
+namespace Api.TransferDTOs.Responses;
 
 public class SchoolDetailResponse
 {
@@ -14,7 +15,7 @@ public class SchoolDetailResponse
     public TimeSpan AfternoonStartTime { get; set; }
     public string? Email { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
-    
+
     public string? SchoolAdminUserName { get; set; }
-    public List<string> Images { get; set; }
+    public List<string> Images { get; set; } = [];
 }

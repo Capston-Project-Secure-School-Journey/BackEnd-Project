@@ -17,7 +17,7 @@ namespace Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -218,8 +218,8 @@ namespace Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime")
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date")
                         .HasColumnName("date_of_birth");
 
                     b.Property<string>("FirstName")
@@ -230,7 +230,7 @@ namespace Api.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(400)")
                         .HasColumnName("full_name")
                         .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
 
@@ -301,7 +301,7 @@ namespace Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date")
                         .HasColumnName("date_of_birth");
 
@@ -318,7 +318,7 @@ namespace Api.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(400)")
                         .HasColumnName("full_name")
                         .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
 
@@ -375,7 +375,7 @@ namespace Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("DateOfBirth")
+                    b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date")
                         .HasColumnName("date_of_birth");
 
@@ -428,20 +428,16 @@ namespace Api.Migrations
                         .HasColumnType("varchar(200)")
                         .HasColumnName("user_type_name");
 
-                    b.Property<string>("user_type")
+                    b.Property<string>("discriminator")
                         .IsRequired()
                         .HasMaxLength(13)
                         .HasColumnType("varchar(13)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("users", null, t =>
-                        {
-                            t.Property("user_type")
-                                .HasColumnName("user_type1");
-                        });
+                    b.ToTable("users", (string)null);
 
-                    b.HasDiscriminator<string>("user_type").HasValue("user");
+                    b.HasDiscriminator<string>("discriminator").HasValue("user");
 
                     b.UseTphMappingStrategy();
                 });
@@ -470,30 +466,18 @@ namespace Api.Migrations
                         .HasColumnType("json")
                         .HasColumnName("verified_by");
 
-                    b.ToTable("users", t =>
-                        {
-                            t.Property("user_type")
-                                .HasColumnName("user_type1");
-                        });
-
                     b.HasDiscriminator().HasValue("driver");
                 });
 
-            modelBuilder.Entity("Api.Domain.Models.Parrent", b =>
+            modelBuilder.Entity("Api.Domain.Models.Parent", b =>
                 {
                     b.HasBaseType("Api.Domain.Models.User");
 
-                    b.Property<sbyte>("RelationshipWithStudent")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("relationship_with_student");
+                    b.Property<string>("RelationshipWithStudents")
+                        .HasColumnType("json")
+                        .HasColumnName("relationship_with_students");
 
-                    b.ToTable("users", t =>
-                        {
-                            t.Property("user_type")
-                                .HasColumnName("user_type1");
-                        });
-
-                    b.HasDiscriminator().HasValue("parrent");
+                    b.HasDiscriminator().HasValue("parent");
                 });
 
             modelBuilder.Entity("Api.Domain.Models.SchoolPerson", b =>
@@ -505,12 +489,6 @@ namespace Api.Migrations
                         .HasColumnName("school_id");
 
                     b.HasIndex("SchoolId");
-
-                    b.ToTable("users", t =>
-                        {
-                            t.Property("user_type")
-                                .HasColumnName("user_type1");
-                        });
 
                     b.HasDiscriminator().HasValue("school_person");
                 });

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
@@ -11,7 +10,6 @@ namespace Api.Services.UserManagementService;
 public class UserManagement : IUserManagement
 {
     private readonly Context _context;
-    private IUserManagement _userManagementImplementation;
 
     public UserManagement(Context context)
     {
@@ -59,7 +57,7 @@ public class UserManagement : IUserManagement
     public async Task<User> CreateUser(CreateUserDto request)
     {
         if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
-            throw new BadRequestException("Đã tồn tại tài khoản của người quản trị trường học");
+            throw new BadRequestException("Đã tồn tại tài khoản.");
 
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
         {
@@ -82,19 +80,43 @@ public class UserManagement : IUserManagement
         if (request.UserType != UserType.Driver && request.UserType != UserType.Parent)
             throw new BadRequestException("Không thể đăng kí tài khoản.");
 
-        var user = new User()
+
+        User user;
+        if (request.UserType == UserType.Driver)
         {
-            UserName = request.UserName,
-            Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            UserType = request.UserType,
-            AccountStatus = AccountStatus.New,
-            PhoneNumber = request.PhoneNumber,
-            Email = request.Email,
-            Gender = request.Gender
-        };
+            var driver = new Driver()
+            {
+                UserName = request.UserName,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                UserType = request.UserType,
+                AccountStatus = AccountStatus.New,
+                PhoneNumber = request.PhoneNumber,
+                Email = request.Email,
+                Gender = request.Gender
+            };
+            _context.Drivers.Add(driver);
+            _context.Entry(driver).State = EntityState.Added;
+            user = driver;
+        }
+        else
+        {
+            var parent = new Parent()
+            {
+                UserName = request.UserName,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                UserType = request.UserType,
+                AccountStatus = AccountStatus.New,
+                PhoneNumber = request.PhoneNumber,
+                Email = request.Email,
+                Gender = request.Gender
+            };
+
+            _context.Parents.Add(parent);
+            _context.Entry(parent).State = EntityState.Added;
+            user = parent;
+        }
+
         
-        _context.Users.Add(user);
-        _context.Entry(user).State = EntityState.Added;
         await _context.SaveChangesAsync();
         return user;
     }
@@ -133,7 +155,7 @@ public class UserManagement : IUserManagement
 
             await trans.CommitAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             await trans.RollbackAsync();
             throw;

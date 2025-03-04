@@ -6,7 +6,6 @@ using Api.Domain.Models;
 using Api.DTOs.ClassManagement;
 using Api.Services.SchoolManagement;
 using Api.Services.TeacherManagementService;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ClassManagementService;
@@ -40,7 +39,7 @@ public class ClassManagementService : IClassManagementService
         return await query.ToListAsync();
     }
 
-    public async Task<IQueryable<Class>> GetClassesQueryAbleByFilter(Guid schoolId, string? className, Grade? grade)
+    public Task<IQueryable<Class>> GetClassesQueryAbleByFilter(Guid schoolId, string? className, Grade? grade)
     {
         var query = _context.Classes.AsQueryable()
             .AsNoTracking()
@@ -56,7 +55,7 @@ public class ClassManagementService : IClassManagementService
             query = query.Where(cl => cl.Grade == grade);
         }
 
-        return query;
+        return Task.FromResult(query);
     }
 
     public async Task<Class> GetClassById(Guid id)
@@ -141,7 +140,7 @@ public class ClassManagementService : IClassManagementService
                 throw;
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             throw new DatabaseException("Không thể xóa dữ liệu");
         }

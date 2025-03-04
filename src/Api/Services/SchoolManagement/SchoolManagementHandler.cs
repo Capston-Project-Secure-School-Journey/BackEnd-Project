@@ -2,15 +2,14 @@ using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.DTOs.SchoolManagement;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
 using AutoMapper;
-using Api.DTOs.Responses;
 using Api.DTOs.UploadFileService;
 using Api.DTOs.UserManagement;
 using Api.Extensions;
 using Api.Services.UserManagementService;
 using Api.Services.UploadFileService;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.SchoolManagement;

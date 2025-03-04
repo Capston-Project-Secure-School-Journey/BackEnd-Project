@@ -4,12 +4,12 @@ namespace Api.TransferDTOs.Responses;
 
 public class TeacherResponse
 {
-    public Guid Id { get; set; }
-    public Guid SchoolId { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public DateTime DateOfBirth { get; set; }
-    public Gender Gender { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Email { get; set; }
+    public Guid Id { get; init; }
+    public Guid SchoolId { get; init; }
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public DateOnly DateOfBirth { get; init; }
+    public Gender Gender { get; init; }
+    public string PhoneNumber { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
 }

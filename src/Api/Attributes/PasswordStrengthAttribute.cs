@@ -19,7 +19,7 @@ public class PasswordStrengthAttribute : ValidationAttribute
 
         var password = value.ToString();
 
-        if (password.Length < MinimumLength)
+        if (password!.Length < MinimumLength)
         {
             return new ValidationResult($"Mật khẩu phải có ít nhất {MinimumLength} ký tự.");
         }

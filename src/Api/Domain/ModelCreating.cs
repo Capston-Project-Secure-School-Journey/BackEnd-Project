@@ -1,4 +1,3 @@
-using Api.Common.Enums;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,9 +12,9 @@ namespace Api.Domain
             {
                 entity.ToTable("users");
                 
-                entity.HasDiscriminator<string>("user_type")
+                entity.HasDiscriminator<string>("discriminator")
                     .HasValue<Driver>("driver")
-                    .HasValue<Parrent>("parrent")
+                    .HasValue<Parent>("parent")
                     .HasValue<User>("user")
                     .HasValue<SchoolPerson>("school_person");
                 
@@ -140,12 +139,12 @@ namespace Api.Domain
                 
             });
             
-            builder.Entity<Parrent>(entity =>
+            builder.Entity<Parent>(entity =>
             {
-                entity.Property(u => u.RelationshipWithStudent)
-                    .HasColumnName("relationship_with_student")
-                    .IsRequired()
-                    .HasColumnType("tinyint");
+                entity.Property(u => u.RelationshipWithStudents)
+                    .HasColumnName("relationship_with_students")
+                    .IsRequired(false)
+                    .HasColumnType("json");
             });
             
             // school
@@ -156,18 +155,18 @@ namespace Api.Domain
                     entity.HasKey(e => e.Id);
                     
                     entity
-                        .Property<Guid>(j => j.Id)
+                        .Property(j => j.Id)
                         .HasColumnName("id")
                         .IsRequired();
                     
                     entity
-                        .Property<SchoolType>(j => j.SchoolType)
+                        .Property(j => j.SchoolType)
                         .HasColumnName("school_type")
                         .HasColumnType("tinyint")
                         .IsRequired();
                     
                     entity
-                        .Property<string>(j => j.SchoolName)
+                        .Property(j => j.SchoolName)
                         .HasColumnName("school_name")
                         .HasColumnType("nvarchar(100)")
                         .IsRequired();
@@ -185,37 +184,37 @@ namespace Api.Domain
                         .IsRequired();
                     
                     entity
-                        .Property<TimeSpan>(j => j.MorningStartTime)
+                        .Property(j => j.MorningStartTime)
                         .HasColumnName("morning_start_time")
                         .HasColumnType("time")
                         .IsRequired();
                     
                     entity
-                        .Property<TimeSpan>(j => j.MorningEndTime)
+                        .Property(j => j.MorningEndTime)
                         .HasColumnName("morning_end_time")
                         .HasColumnType("time")
                         .IsRequired();
                     
                     entity
-                        .Property<TimeSpan>(j => j.AfternoonStartTime)
+                        .Property(j => j.AfternoonStartTime)
                         .HasColumnName("afternoon_start_time")
                         .HasColumnType("time")
                         .IsRequired();
                     entity
                             
-                        .Property<TimeSpan>(j => j.AfternoonEndTime)
+                        .Property(j => j.AfternoonEndTime)
                         .HasColumnName("afternoon_end_time")
                         .HasColumnType("time")
                         .IsRequired();
                     
                     entity
-                        .Property<string>(j => j.PhoneNumber)
+                        .Property(j => j.PhoneNumber)
                         .HasColumnName("phone_number")
                         .HasColumnType("varchar(11)")
                         .IsRequired();
                     
                     entity
-                        .Property<string?>(j => j.Email)
+                        .Property(j => j.Email)
                         .HasColumnName("email")
                         .HasColumnType("varchar(100)")
                         .IsRequired(false);
@@ -301,12 +300,13 @@ namespace Api.Domain
                         .Property(p => p.FullName)
                         .HasColumnName("full_name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(400)")
                         .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
                     
                     entity.Property(s => s.DateOfBirth)
                         .HasColumnName("date_of_birth")
                         .IsRequired()
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
                     
                     entity.Property(s => s.ClassId)
                         .HasColumnName("class_id")
@@ -391,6 +391,7 @@ namespace Api.Domain
                     .Property(p => p.FullName)
                     .HasColumnName("full_name")
                     .IsRequired()
+                    .HasColumnType("nvarchar(400)")
                     .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
                 
                 entity.Property(t => t.DateOfBirth)
@@ -488,7 +489,7 @@ namespace Api.Domain
             builder.Entity<Student>().HasQueryFilter(x => x.IsDeleted == false);
             builder.Entity<Teacher>().HasQueryFilter(x => x.IsDeleted == false);
             builder.Entity<Class>().HasQueryFilter(x => x.IsDeleted == false);
-            
+            builder.Entity<FileManagement>().HasQueryFilter(x => x.IsDeleted == false);
             return builder;
         }
     }
