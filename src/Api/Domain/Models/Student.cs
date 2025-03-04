@@ -9,7 +9,7 @@ public class Student : BaseModel
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public DateTime DateOfBirth { get; set; }
+    public DateOnly DateOfBirth { get; set; }
     public Guid ClassId { get; set; }
     public Gender Gender { get; set; }
     public Guid? AvatarKey { get; set; }
@@ -18,10 +18,10 @@ public class Student : BaseModel
     public decimal PickUpLat { get; set; }
     public decimal PickUpLng { get; set; }
     public int? LocationGroup { get; set; }
-    public List<ManagedBy> ManagedBy { get; set; }
+    public List<ManagedBy> ManagedBy { get; set; } = null!;
 
-    public virtual School School { get; set; }
-    public virtual Class Class { get; set; }
+    public virtual School School { get; set; } = null!;
+    public virtual Class Class { get; set; } = null!;
 }
 
 public class ManagedBy

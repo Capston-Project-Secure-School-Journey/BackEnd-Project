@@ -59,7 +59,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                     RelatedObjectId = null,
                     RelatedObjectType = null
                 };
-                var fileM = await base.AddFileManagement(dto, false);
+                var fileM = await AddFileManagement(dto, false);
                 fmKey = fileM.Id;
             }
             catch (Exception)
@@ -75,7 +75,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 S3Url = await GeneratePreSignedDownloadUrlAsync(fileName, 30)
             };
         }
-        catch (AmazonS3Exception ex)
+        catch (AmazonS3Exception)
         {
             throw new Exception($"Error uploading file");
         }
@@ -119,7 +119,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                     RelatedObjectId = Guid.Empty,
                     RelatedObjectType = null
                 };
-                var fileM = await base.AddFileManagement(dto, false);
+                var fileM = await AddFileManagement(dto, false);
                 fmKey = fileM.Id;
             }
             catch (Exception)
@@ -137,7 +137,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
             return response;
         }
-        catch (AmazonS3Exception ex)
+        catch (AmazonS3Exception)
         {
             throw new Exception($"Error uploading stream");
         }
@@ -155,10 +155,10 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
             await _s3Client.DeleteObjectAsync(deleteRequest);
             if (id != null)
-                await base.DeleteFileManagement(id.Value);
+                await DeleteFileManagement(id.Value);
             return true;
         }
-        catch (AmazonS3Exception ex)
+        catch (AmazonS3Exception)
         {
             throw new Exception($"Error deleting file");
         }
@@ -169,7 +169,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         try
         {
-            Guid fmKey = Guid.Empty;
+            Guid fmKey;
             var key = $"{request.Prefix}/{Guid.NewGuid()}{Path.GetExtension(request.FileName)}";
 
             var preSignedUrlRequest = new GetPreSignedUrlRequest
@@ -199,7 +199,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                     RelatedObjectId = null,
                     RelatedObjectType = null
                 };
-                var fileM = await base.AddFileManagement(dto, true);
+                var fileM = await AddFileManagement(dto, true);
                 fmKey = fileM.Id;
             }
             catch (Exception)
@@ -214,7 +214,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 ExpiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes)
             };
         }
-        catch (AmazonS3Exception ex)
+        catch (AmazonS3Exception)
         {
             throw new Exception($"Error generating pre-signed upload URL");
         }
@@ -234,7 +234,27 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
             return await _s3Client.GetPreSignedURLAsync(request);
         }
-        catch (AmazonS3Exception ex)
+        catch (AmazonS3Exception)
+        {
+            throw new Exception($"Error generating pre-signed download URL");
+        }
+    }
+    
+    public async Task<string> GeneratePreSignedDownloadUrlAsync(Guid fileManagementKey, int expirationMinutes = 60)
+    {
+        try
+        {
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = _bucketName,
+                Key = await GetS3Key(fileManagementKey),
+                Verb = HttpVerb.GET,
+                Expires = DateTime.UtcNow.AddMinutes(expirationMinutes)
+            };
+
+            return await _s3Client.GetPreSignedURLAsync(request);
+        }
+        catch (AmazonS3Exception)
         {
             throw new Exception($"Error generating pre-signed download URL");
         }

@@ -1,11 +1,10 @@
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Domain.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Domain
 {
-    public class DbInitializer
+    public static class DbInitializer
     {
         public static void SeedData(Context dbContext)
         {
@@ -17,7 +16,7 @@ namespace Api.Domain
                     UserTypeName = "Admin",
                     UserName = "admin",
                     AccountStatus = AccountStatus.Verified,
-                    Email = Constants.ADMIN_EMAIL, 
+                    Email = Constants.AdminEmail, 
                     Password = BCrypt.Net.BCrypt.HashPassword("123456"),
                     CreatedAt = new DateTime(2022, 01, 01),
                     UpdatedAt = new DateTime(2022, 01, 01),

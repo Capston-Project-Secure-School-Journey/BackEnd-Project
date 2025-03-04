@@ -1,12 +1,11 @@
 using Api.Domain;
 using Api.Domain.Models;
-using Api.DTOs.Responses;
 using Api.DTOs.StudentManagement;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 using AutoMapper;
 using Api.Extensions;
 using Api.Services.UploadFileService;
+using Api.TransferDTOs.Requests;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.StudentManagementService;

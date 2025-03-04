@@ -1,6 +1,5 @@
-using Api.DTOs.Responses;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 
 namespace Api.Services.TeacherManagementService;
 

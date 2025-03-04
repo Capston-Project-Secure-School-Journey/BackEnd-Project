@@ -3,13 +3,12 @@ using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Domain;
 using Api.DTOs;
-using Api.DTOs.Responses;
 using Api.Extensions;
 using Api.Services.ClassManagementService;
-using Api.Services.TeacherManagementService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -94,7 +93,7 @@ public class ClassManagementController : ControllerBase
     {
         var userId = this.GetUserId();
         var schoolId = this.GetSchoolId(_context, userId);
-        var schoolType = _context.Schools.FirstOrDefault(school => school.Id == schoolId)!.SchoolType;
+        var schoolType = (await _context.Schools.FirstOrDefaultAsync(school => school.Id == schoolId))!.SchoolType;
 
         var data = EnumExtension.GetComboBoxItems<Grade>();
         switch (schoolType)

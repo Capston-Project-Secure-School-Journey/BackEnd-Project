@@ -9,7 +9,7 @@ public class StudentResponse
     public string SchoolName { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public DateTime DateOfBirth { get; set; }
+    public DateOnly  DateOfBirth { get; set; }
     public Guid ClassId { get; set; }
     public string ClassName { get; set; } = string.Empty;
     public Gender Gender { get; set; }

@@ -12,13 +12,13 @@ public static class EnumExtension
             .Cast<T>()
             .Select(status => new ComboBoxItem
             {
-                Name = GetEnumDisplayName<T>(status),
+                Name = GetEnumDisplayName(status),
                 Id = Convert.ToInt16(status)
             })
             .ToList();
     }
     
-    private static string GetEnumDisplayName<T>(T value) where T : Enum
+    public static string GetEnumDisplayName<T>(T value) where T : Enum
     {
         return value.GetType()
             .GetField(value.ToString())

@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Api.Common.Utilities;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
 using Api.Services.TokenService;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 
 namespace Api.Services.AuthenticationService
 {

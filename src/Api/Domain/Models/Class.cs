@@ -7,10 +7,10 @@ public class Class: BaseModel
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
     public Grade Grade { get; set; }
-    public List<ManagedTeacher> ManagedTeachers { get; set; }
+    public List<ManagedTeacher> ManagedTeachers { get; set; } = null!;
     public string ClassName { get; set; } = string.Empty;
     public int NumberOfStudent { get; set; }
     
-    public virtual School School { get; set; }
-    public virtual HashSet<Student> Students { get; set; }
+    public virtual School School { get; set; } = null!;
+    public virtual HashSet<Student> Students { get; set; } = null!;
 }

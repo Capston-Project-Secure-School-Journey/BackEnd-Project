@@ -10,7 +10,6 @@ namespace Api.Services.SchoolManagement;
 public class SchoolManagement : ISchoolManagement
 {
     private readonly Context _context;
-    private ISchoolManagement _schoolManagementImplementation;
 
     public SchoolManagement(Context dbContext)
     {
@@ -75,27 +74,20 @@ public class SchoolManagement : ISchoolManagement
 
     public async Task DeleteSchool(List<Guid> schoolIds)
     {
+        await _context.Database.BeginTransactionAsync();
         try
         {
-            await _context.Database.BeginTransactionAsync();
-            try
+            foreach (var schoolId in schoolIds)
             {
-                foreach (var schoolId in schoolIds)
-                {
-                    var school = await GetById(schoolId);
-                    _context.Entry(school).State = EntityState.Deleted;
-                }
-                await _context.SaveChangesAsync();
-                await _context.Database.CommitTransactionAsync();
+                var school = await GetById(schoolId);
+                _context.Entry(school).State = EntityState.Deleted;
             }
-            catch (Exception)
-            {
-                await _context.Database.RollbackTransactionAsync();
-                throw;
-            }
+            await _context.SaveChangesAsync();
+            await _context.Database.CommitTransactionAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
+            await _context.Database.RollbackTransactionAsync();
             throw;
         }
     }
@@ -123,7 +115,7 @@ public class SchoolManagement : ISchoolManagement
         return await query.ToListAsync();
     }
 
-    public async Task<IQueryable<School>> GetSchoolsQueryAble(SchoolType? schoolType = null, string? schoolName = null)
+    public Task<IQueryable<School>> GetSchoolsQueryAble(SchoolType? schoolType = null, string? schoolName = null)
     {
         var query = _context.Schools
             .AsQueryable()
@@ -139,7 +131,7 @@ public class SchoolManagement : ISchoolManagement
             query = query.Where(s => s.SchoolName.Contains(schoolName));
         }
 
-        return query;
+        return Task.FromResult(query);
     }
 
     public async Task<School> GetSchool(Guid id)

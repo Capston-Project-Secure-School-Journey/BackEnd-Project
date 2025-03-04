@@ -1,5 +1,5 @@
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 
 namespace Api.Services.AuthenticationService
 {
