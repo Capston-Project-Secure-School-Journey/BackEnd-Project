@@ -1,12 +1,9 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.DTOs.Responses;
 using Api.Services.SchoolManagement;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
-using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
+using Api.TransferDTOs.Requests;
+using Api.TransferDTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

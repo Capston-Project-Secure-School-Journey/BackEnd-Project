@@ -1,12 +1,7 @@
 using Api.Domain.Models;
-using Api.DTOs.ClassManagement;
 using Api.DTOs.SchoolManagement;
-using Api.DTOs.StudentManagement;
-using Api.DTOs.TeacherManagement;
-using Api.DTOs.UserManagement;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
-using Api.Transfers.Responses;
 using AutoMapper;
 
 namespace Api.Mappings;
@@ -22,32 +17,5 @@ public class SchoolManagementProfile : Profile
             .ForMember(dest => dest.Images,
                 opt
                     => opt.MapFrom(src => src.Images.Select(im => im.Key).ToList()));
-
-        CreateMap<CreateTeacherRequest, CreateTeacherDto>();
-        CreateMap<UpdateTeacherRequest, UpdateTeacherDto>();
-        CreateMap<Teacher, TeacherResponse>();
-
-        CreateMap<CreateClassRequest, CreateClassDto>();
-        CreateMap<UpdateClassRequest, UpdateClassDto>();
-        CreateMap<Class, ClassResponse>().ForMember(x => x.ManagedTeachers,
-            opt =>
-                opt.MapFrom(x => x.ManagedTeachers.Select(mt =>
-                    new ManagedTeacherResponse()
-                    {
-                        Id = mt.ManagedTeacherId,
-                        Name = string.Empty
-                    })));
-
-        CreateMap<CreateStudentRequest, CreateStudentDto>();
-        CreateMap<UpdateStudentRequest, UpdateStudentDto>();
-        CreateMap<Student, StudentResponse>().
-            ForMember(x => x.ClassName,
-            opt =>
-                opt.MapFrom(x => x.Class.ClassName)).
-            ForMember(x => x.SchoolName,
-            opt =>
-                opt.MapFrom(x => x.School.SchoolName));
-        
-        CreateMap<CreateAccountRequest, CreateUserDto>();
     }
 }

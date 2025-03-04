@@ -1,11 +1,8 @@
-using Api.Domain;
-using Api.Domain.Models;
 using Api.DTOs.ClassManagement;
-using Api.DTOs.Responses;
 using Api.Extensions;
 using Api.Services.TeacherManagementService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +10,14 @@ namespace Api.Services.ClassManagementService;
 
 public class ClassManagementHandler : IClassManagementHandler
 {
-    private readonly Context _context;
     private readonly IMapper _mapper;
     private readonly IClassManagementService _classManagementService;
     private readonly ITeacherManagementService _teacherManagementService;
 
-    public ClassManagementHandler(Context context,
-        IClassManagementService classManagementService,
+    public ClassManagementHandler(IClassManagementService classManagementService,
         ITeacherManagementService teacherManagementService,
         IMapper mapper)
     {
-        _context = context;
         _classManagementService = classManagementService;
         _teacherManagementService = teacherManagementService;
         _mapper = mapper;

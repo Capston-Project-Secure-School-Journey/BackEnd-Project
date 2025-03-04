@@ -1,4 +1,4 @@
-namespace Api.Transfers.Requests;
+namespace Api.TransferDTOs.Requests;
 
 public class GetTeacherRequest: QueryTemplate
 {

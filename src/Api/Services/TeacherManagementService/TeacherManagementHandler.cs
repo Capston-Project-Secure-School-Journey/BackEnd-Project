@@ -1,10 +1,9 @@
 using Api.Common.Enums;
 using Api.Domain;
-using Api.DTOs.Responses;
 using Api.DTOs.TeacherManagement;
 using Api.Extensions;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using Api.Transfers.Requests;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -88,6 +87,6 @@ public class TeacherManagementHandler: ITeacherManagementHandler
     public async Task<Guid> GetSchoolIdBySchoolAdminId(Guid schoolAdminId)
     {
         var schoolAdmin = await _context.SchoolPersons.FirstOrDefaultAsync(x => x.Id == schoolAdminId && x.UserType == UserType.SchoolAdmin);
-        return schoolAdmin.SchoolId;
+        return schoolAdmin!.SchoolId;
     }
 }

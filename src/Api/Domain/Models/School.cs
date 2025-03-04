@@ -15,7 +15,7 @@ public class School : BaseModel
     public TimeSpan AfternoonStartTime { get; set; }
     public string? Email { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
-    public List<FileMetadata> Images { get; set; }
-    
-    public virtual ICollection<SchoolPerson> SchoolPersons { get; set; }
+    public List<FileMetadata> Images { get; set; } = null!;
+
+    public virtual ICollection<SchoolPerson> SchoolPersons { get; set; } = null!;
 }

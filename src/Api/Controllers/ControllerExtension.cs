@@ -1,6 +1,5 @@
 using Api.Common.Enums;
 using Api.Domain;
-using Api.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

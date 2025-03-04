@@ -7,6 +7,6 @@ public class CreateClassDto
 {
     public Guid SchoolId { get; set; }
     public Grade Grade { get; set; }
-    public List<ManagedTeacher> ManagedTeachers { get; set; }
-    public string ClassName { get; set; } = string.Empty;
+    public List<ManagedTeacher> ManagedTeachers { get; init; } = [];
+    public string ClassName { get; init; } = string.Empty;
 }

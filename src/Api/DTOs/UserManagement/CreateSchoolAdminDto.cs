@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using Api.Common.Enums;
-
 namespace Api.DTOs.UserManagement;
 
 public class CreateSchoolAdminDto
