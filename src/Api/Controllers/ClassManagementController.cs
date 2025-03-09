@@ -28,7 +28,7 @@ public class ClassManagementController : ControllerBase
     [HttpPost]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<ClassResponse>> CreateClass([FromBody] CreateClassRequest request)
+    public async Task<ActionResult<ClassDetailResponse>> CreateClass([FromBody] CreateClassRequest request)
     {
         var userId = this.GetUserId();
         var schoolId = this.GetSchoolId(_context, userId);
@@ -38,7 +38,7 @@ public class ClassManagementController : ControllerBase
     [HttpPut("{classId}")]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<ClassResponse>> UpdateClass([FromRoute] Guid classId,
+    public async Task<ActionResult<ClassDetailResponse>> UpdateClass([FromRoute] Guid classId,
         [FromBody] UpdateClassRequest request)
     {
         request.Id = classId;
@@ -49,7 +49,7 @@ public class ClassManagementController : ControllerBase
 
     [HttpGet("{classId}")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult<ClassResponse>> GetClass([FromRoute] Guid classId)
+    public async Task<ActionResult<ClassDetailResponse>> GetClass([FromRoute] Guid classId)
     {
         var userId = this.GetUserId();
         var schoolId = this.GetSchoolId(_context, userId);

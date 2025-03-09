@@ -13,7 +13,8 @@ public class ClassManagementProfile: Profile
     {
         CreateMap<CreateClassRequest, CreateClassDto>();
         CreateMap<UpdateClassRequest, UpdateClassDto>();
-        CreateMap<Class, ClassResponse>().ForMember(x => x.ManagedTeachers,
+        CreateMap<Class, ClassResponse>();
+        CreateMap<Class, ClassDetailResponse>().ForMember(x => x.ManagedTeachers,
             opt =>
                 opt.MapFrom(x => x.ManagedTeachers.Select(mt =>
                     new ManagedTeacherResponse()

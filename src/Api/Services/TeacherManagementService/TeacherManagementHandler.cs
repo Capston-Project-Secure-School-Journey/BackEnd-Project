@@ -1,7 +1,9 @@
 using Api.Common.Enums;
 using Api.Domain;
+using Api.Domain.Models;
 using Api.DTOs.TeacherManagement;
 using Api.Extensions;
+using Api.Services.UploadFileService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
@@ -14,14 +16,16 @@ public class TeacherManagementHandler: ITeacherManagementHandler
     private readonly IMapper _mapper;
     private readonly Context _context;
     private readonly ITeacherManagementService _teacherManagementService;
-    
+    private readonly IFileUploadService _uploadFileService;
     public TeacherManagementHandler(Context context, 
         IMapper mapper, 
-        ITeacherManagementService teacherManagementService)
+        ITeacherManagementService teacherManagementService,
+        IFileUploadService uploadFileService)
     {
         _context = context;
         _mapper = mapper;
         _teacherManagementService = teacherManagementService;
+        _uploadFileService = uploadFileService;
     }
 
 
@@ -31,42 +35,39 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         var total = await query.CountAsync();
 
         var data = await query
-            .Select(x => _mapper.Map<TeacherResponse>(x))
             .Pagination(request.Page, request.Limit)
+            .Select(x => _mapper.Map<TeacherResponse>(x))
             .ToListAsync();
-
         var response = new Pagination<TeacherResponse>(data, request.Limit, request.Page, total);
         
         return response;
     }
 
-    public async Task<TeacherResponse> GetTeacherById(Guid schoolId, Guid id)
+    public async Task<TeacherDetailResponse> GetTeacherById(Guid schoolId, Guid id)
     {
         await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
         var teacher =  await _teacherManagementService.GetTeacherById(id);
         
-        return _mapper.Map<TeacherResponse>(teacher);
+        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
-    public async Task<TeacherResponse> AddTeacher(Guid schoolId, CreateTeacherRequest request)
+    public async Task<TeacherDetailResponse> AddTeacher(Guid schoolId, CreateTeacherRequest request)
     {
         var dto = _mapper.Map<CreateTeacherDto>(request);
         dto.SchoolId = schoolId;
         var teacher = await _teacherManagementService.AddTeacher(dto);
         
-        var response = _mapper.Map<TeacherResponse>(teacher);
-        return response;
+        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
-    public async Task<TeacherResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request)
+    public async Task<TeacherDetailResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request)
     {
         await _teacherManagementService.IsOwnerOfTeacher(schoolId, request.Id);
         
         var dto = _mapper.Map<UpdateTeacherDto>(request);
         var teacher = await _teacherManagementService.UpdateTeacher(dto);
         
-        var response = _mapper.Map<TeacherResponse>(teacher);
-        return response;
+        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
     public async Task DeleteTeacher(Guid schoolId, Guid id)
@@ -89,4 +90,21 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         var schoolAdmin = await _context.SchoolPersons.FirstOrDefaultAsync(x => x.Id == schoolAdminId && x.UserType == UserType.SchoolAdmin);
         return schoolAdmin!.SchoolId;
     }
+
+    public async Task<string> UploadAvatar(Guid schoolId, Guid teacherId, IFormFile file)
+    {
+        await _teacherManagementService.IsOwnerOfTeacher(schoolId, teacherId);
+        return await _teacherManagementService.UploadAvatar(teacherId, file);
+    }
+
+    private async Task<TeacherDetailResponse> Map2TeacherResponse(Teacher teacher, 
+        IMapper mapper, 
+        IFileUploadService uploadFileService)
+    {
+        var response = mapper.Map<TeacherDetailResponse>(teacher);
+        if (teacher.AvatarKey != null)
+            response.AvatarUrl = await uploadFileService.GeneratePreSignedDownloadUrlAsync(teacher.AvatarKey.Value);
+        return response;
+    }
+    
 }

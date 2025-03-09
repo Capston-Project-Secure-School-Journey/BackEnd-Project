@@ -15,4 +15,5 @@ public interface ITeacherManagementService
     Task DeleteTeacher(List<Guid> ids); 
     Task CheckExistTeacher(Guid schoolId, Guid teacherId);
     Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId);
+    Task<string> UploadAvatar(Guid teacherId, IFormFile file);
 }

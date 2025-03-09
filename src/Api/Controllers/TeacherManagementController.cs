@@ -22,7 +22,7 @@ public class TeacherManagementController: ControllerBase
     [HttpPost]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<TeacherResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
+    public async Task<ActionResult<TeacherDetailResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
         var userId = this.GetUserId();
         var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
@@ -32,7 +32,7 @@ public class TeacherManagementController: ControllerBase
     [HttpPut("{teacherId}")]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<TeacherResponse>> UpdateTeacher([FromRoute]Guid teacherId, [FromBody] UpdateTeacherRequest request)
+    public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute]Guid teacherId, [FromBody] UpdateTeacherRequest request)
     {
         request.Id = teacherId;
         var userId = this.GetUserId();
@@ -42,7 +42,7 @@ public class TeacherManagementController: ControllerBase
     
     [HttpGet("{teacherId}")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult<TeacherResponse>> GetTeacher([FromRoute]Guid teacherId)
+    public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute]Guid teacherId)
     {
         var userId = this.GetUserId();
         var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
@@ -78,5 +78,17 @@ public class TeacherManagementController: ControllerBase
         await _teacherManagementHandler.DeleteTeacher(schoolId, teacherIds);
 
         return Ok();
+    }
+    
+    [HttpPost("{teacherId}/upload-avatar")]
+    [ValidateModel]
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<IActionResult> UploadAvatar([FromRoute] Guid teacherId,
+        [AllowedFile([ContentTypeEnum.ImagePng,
+        ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
+    {
+        var userId = this.GetUserId();
+        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        return Ok(await _teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
     }
 }
