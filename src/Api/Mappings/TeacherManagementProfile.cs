@@ -13,5 +13,6 @@ public class TeacherManagementProfile : Profile
         CreateMap<CreateTeacherRequest, CreateTeacherDto>();
         CreateMap<UpdateTeacherRequest, UpdateTeacherDto>();
         CreateMap<Teacher, TeacherResponse>();
+        CreateMap<Teacher, TeacherDetailResponse>();
     }
 }

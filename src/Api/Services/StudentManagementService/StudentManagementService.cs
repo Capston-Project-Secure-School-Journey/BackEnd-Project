@@ -85,9 +85,12 @@ public class StudentManagementService : IStudentManagementService
                 Gender = request.Gender,
                 ClassId = request.ClassId
             };
+
+            cl.NumberOfStudent += 1;
             
             _context.Students.Add(st);
             _context.Entry(st).State = EntityState.Added;
+            _context.Entry(cl).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(st.Id));
             var stream = _qrCodeGenerator.GenerateQrCodeStream(hash);
@@ -114,7 +117,10 @@ public class StudentManagementService : IStudentManagementService
             throw new BadRequestException("Lớp không tồn tại");
 
         var st = await GetStudentById(request.Id);
-
+        var oldClass = await _classManagementService.GetClassById(st.ClassId);
+        oldClass.NumberOfStudent -= 1;
+        cl.NumberOfStudent += 1;
+        
         st.FirstName = request.FirstName;
         st.LastName = request.LastName;
         st.DateOfBirth = request.DateOfBirth;
@@ -122,6 +128,8 @@ public class StudentManagementService : IStudentManagementService
         st.ClassId = request.ClassId;
 
         _context.Entry(st).State = EntityState.Modified;
+        _context.Entry(oldClass).State = EntityState.Modified;
+        _context.Entry(cl).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return st;
     }
@@ -130,6 +138,10 @@ public class StudentManagementService : IStudentManagementService
     {
         var student = await GetStudentById(id);
         _context.Entry(student).State = EntityState.Deleted;
+        await _context.Entry(student).Reference(x => x.Class).LoadAsync();
+        student.Class.NumberOfStudent -= 1;
+        _context.Entry(student.Class).State = EntityState.Modified;
+        
         await _context.SaveChangesAsync();
     }
 
@@ -158,5 +170,19 @@ public class StudentManagementService : IStudentManagementService
     {
         if (!(await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId)))
             throw new ForbiddenException("Bạn không có quyền truy cập");
+    }
+
+    public async Task<string> UploadAvatar(Guid studentId, IFormFile file)
+    {
+        var student = await GetStudentById(studentId);
+        
+        if(student.AvatarKey != null)
+            await _uploadFileService.DeleteFileAsync(student.AvatarKey.Value);
+        var response = await _uploadFileService.UploadFileAsync(file, "avatar/students");
+
+        student.AvatarKey = response.Key;
+        _context.Entry(student).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        return response.S3Url;
     }
 }

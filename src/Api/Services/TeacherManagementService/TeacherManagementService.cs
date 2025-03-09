@@ -2,6 +2,7 @@ using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.TeacherManagement;
+using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.TeacherManagementService;
@@ -9,10 +10,12 @@ namespace Api.Services.TeacherManagementService;
 public class TeacherManagementService : ITeacherManagementService
 {
     private readonly Context _context;
-
-    public TeacherManagementService(Context context)
+    private readonly IFileUploadService _uploadFileService;
+    public TeacherManagementService(Context context,
+        IFileUploadService uploadService)
     {
         _context = context;
+        _uploadFileService = uploadService;
     }
 
     public async Task<IEnumerable<Teacher>> GetTeachers(Guid schoolId)
@@ -97,6 +100,14 @@ public class TeacherManagementService : ITeacherManagementService
     {
         var teacher = await GetTeacherById(id);
         _context.Entry(teacher).State = EntityState.Deleted;
+        var managedClasses = _context.Classes.
+            Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
+
+        foreach (var i in managedClasses)
+        {
+            i.ManagedTeachers.Remove(i.ManagedTeachers.First(t => t.ManagedTeacherId == id));
+            _context.Entry(i).State = EntityState.Modified;
+        }
         await _context.SaveChangesAsync();
     }
 
@@ -127,5 +138,19 @@ public class TeacherManagementService : ITeacherManagementService
         {
             throw new ForbiddenException("Bạn không có quyền truy cập");
         }
+    }
+
+    public async Task<string> UploadAvatar(Guid teacherId, IFormFile file)
+    {
+        var teacher = await GetTeacherById(teacherId);
+        
+        if(teacher.AvatarKey != null)
+            await _uploadFileService.DeleteFileAsync(teacher.AvatarKey.Value);
+        var response = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
+        
+        teacher.AvatarKey = response.Key;
+        _context.Entry(teacher).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        return response.S3Url;
     }
 }

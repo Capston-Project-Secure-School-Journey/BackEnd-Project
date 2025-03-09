@@ -36,19 +36,16 @@ public class StudentManagementHandler : IStudentManagementHandler
 
         query = query.Pagination(request.Page, request.Limit);
 
-        var convertTask = query
-            .ToList()
-            .Select(x => MapStudent2StudentResponse(x, _context, _mapper, _uploadService))
-            .ToList();
-
-        var data = await Task.WhenAll(convertTask);
-
+        var data = await query
+            .Select(x => _mapper.Map<StudentResponse>(x))
+            .ToListAsync();
+        
         var response = new Pagination<StudentResponse>(data, request.Limit, request.Page, total);
 
         return response;
     }
 
-    public async Task<StudentResponse> GetStudentById(Guid schoolId, Guid id)
+    public async Task<StudentDetailResponse> GetStudentById(Guid schoolId, Guid id)
     {
         await _studentManagementService.IsOwnerOfStudent(schoolId, id);
         var student = await _studentManagementService.GetStudentById(id);
@@ -61,7 +58,7 @@ public class StudentManagementHandler : IStudentManagementHandler
         throw new NotImplementedException();
     }
 
-    public async Task<StudentResponse> AddStudent(Guid schoolId, CreateStudentRequest request)
+    public async Task<StudentDetailResponse> AddStudent(Guid schoolId, CreateStudentRequest request)
     {
         var dto = _mapper.Map<CreateStudentDto>(request);
         dto.SchoolId = schoolId;
@@ -70,7 +67,7 @@ public class StudentManagementHandler : IStudentManagementHandler
         return await MapStudent2StudentResponse(student, _context, _mapper, _uploadService);
     }
 
-    public async Task<StudentResponse> UpdateStudent(Guid schoolId, UpdateStudentRequest request)
+    public async Task<StudentDetailResponse> UpdateStudent(Guid schoolId, UpdateStudentRequest request)
     {
         await _studentManagementService.IsOwnerOfStudent(schoolId, request.Id);
 
@@ -97,7 +94,13 @@ public class StudentManagementHandler : IStudentManagementHandler
         await _studentManagementService.DeleteStudent(ids);
     }
 
-    private async Task<StudentResponse> MapStudent2StudentResponse(Student student, Context context,
+    public async Task<string> UploadAvatar(Guid schoolId, Guid studentId, IFormFile file)
+    {
+        await _studentManagementService.IsOwnerOfStudent(schoolId, studentId);
+        return await _studentManagementService.UploadAvatar(studentId, file);
+    }
+
+    private async Task<StudentDetailResponse> MapStudent2StudentResponse(Student student, Context context,
         IMapper mapper, IFileUploadService uploadService)
     {
         var entry = context.Entry(student);
@@ -106,7 +109,7 @@ public class StudentManagementHandler : IStudentManagementHandler
         if (entry.Reference(st => st.Class).IsLoaded == false)
             context.Entry(student).Reference(s => s.Class).Load();
 
-        var response = mapper.Map<StudentResponse>(student);
+        var response = mapper.Map<StudentDetailResponse>(student);
 
         if (student.QrImageKey != null)
         {
