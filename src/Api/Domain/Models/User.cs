@@ -17,6 +17,7 @@ public class User : BaseModel
     public DateOnly? DateOfBirth { get; set; }
     public string? Address { get; set; }
     public string? DetailAddress { get; set; }
-    public string? AvatarUrl { get; set; }
+    public Guid? AvatarKey { get; set; }
     public AccountStatus AccountStatus { get; set; }
+    public VerificationMethod? VerificationMethod { get; set; }
 }

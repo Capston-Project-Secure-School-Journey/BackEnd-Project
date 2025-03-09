@@ -163,6 +163,27 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             throw new Exception($"Error deleting file");
         }
     }
+    
+    public async Task<bool> DeleteFileAsync(Guid id)
+    {
+        try
+        {
+            var deleteRequest = new DeleteObjectRequest
+            {
+                BucketName = _bucketName,
+                Key = await GetS3Key(id)
+            };
+
+            await _s3Client.DeleteObjectAsync(deleteRequest);
+            await DeleteFileManagement(id);
+            
+            return true;
+        }
+        catch (AmazonS3Exception)
+        {
+            throw new Exception($"Error deleting file");
+        }
+    }
 
     public async Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request,
         int expirationMinutes = 60)

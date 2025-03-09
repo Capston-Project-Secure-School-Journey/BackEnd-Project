@@ -10,6 +10,7 @@ using Api.Services.ClassManagementService;
 using Api.Services.StudentManagementService;
 using Api.Services.TeacherManagementService;
 using Api.Services.UploadFileService;
+using Api.Services.UserService;
 
 namespace Api
 {
@@ -45,6 +46,9 @@ namespace Api
             
             services.AddScoped<IChildrenManagementService,ChildrenManagementService>();
             services.AddScoped<IChildrenManagementHandler, ChildrenManagementHandler>();
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserHandler, UserHandler>();
             
             services.AddSingleton<ValidateModelAttribute>();
         }
