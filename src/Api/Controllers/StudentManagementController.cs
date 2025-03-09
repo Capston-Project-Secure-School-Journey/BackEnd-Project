@@ -26,7 +26,7 @@ public class StudentManagementController: ControllerBase
     [HttpPost]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<StudentResponse>> CreateStudent([FromBody] CreateStudentRequest request)
+    public async Task<ActionResult<StudentDetailResponse>> CreateStudent([FromBody] CreateStudentRequest request)
     {
         var userId = this.GetUserId();
         var schoolId = this.GetSchoolId(_context, userId);
@@ -36,7 +36,7 @@ public class StudentManagementController: ControllerBase
     [HttpPut("{studentId}")]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<StudentResponse>> UpdateStudent([FromRoute] Guid studentId,
+    public async Task<ActionResult<StudentDetailResponse>> UpdateStudent([FromRoute] Guid studentId,
         [FromBody] UpdateStudentRequest request)
     {
         var userId = this.GetUserId();
@@ -81,10 +81,22 @@ public class StudentManagementController: ControllerBase
     
     [HttpGet("{studentId}")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<StudentResponse> GetStudent([FromRoute]Guid studentId)
+    public async Task<StudentDetailResponse> GetStudent([FromRoute]Guid studentId)
     {
         var userId = this.GetUserId();
         var schoolId = this.GetSchoolId(_context, userId);
         return await _studentManagementHandler.GetStudentById(schoolId, studentId);
+    }
+    
+    [HttpPost("{studentId}/upload-avatar")]
+    [ValidateModel]
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
+        [AllowedFile([ContentTypeEnum.ImagePng,
+            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
+    {
+        var userId = this.GetUserId();
+        var schoolId = this.GetSchoolId(_context, userId);
+        return Ok(await _studentManagementHandler.UploadAvatar(schoolId, studentId, file));
     }
 }

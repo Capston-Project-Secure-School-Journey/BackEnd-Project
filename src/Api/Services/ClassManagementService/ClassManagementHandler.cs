@@ -33,41 +33,40 @@ public class ClassManagementHandler : IClassManagementHandler
             .Pagination(request.Page, request.Limit)
             .ToListAsync();
         
-        await SetManagedTeachers(data);
         var response = new Pagination<ClassResponse>(data, request.Limit, request.Page, total);
         
         return response;
     }
 
-    public async Task<ClassResponse> GetClassById(Guid schoolId, Guid id)
+    public async Task<ClassDetailResponse> GetClassById(Guid schoolId, Guid id)
     {
         await _classManagementService.IsOwnerOfClass(schoolId, id);
         var cl = await _classManagementService.GetClassById(id);
-        var response = _mapper.Map<ClassResponse>(cl);
+        var response = _mapper.Map<ClassDetailResponse>(cl);
         
         await SetManagedTeachers(response);
         return response;
     }
 
-    public async Task<ClassResponse> AddClass(Guid schoolId, CreateClassRequest request)
+    public async Task<ClassDetailResponse> AddClass(Guid schoolId, CreateClassRequest request)
     {
         var dto = _mapper.Map<CreateClassDto>(request);
         dto.SchoolId = schoolId;
         var teacher = await _classManagementService.AddClass(dto);
         
-        var response = _mapper.Map<ClassResponse>(teacher);
+        var response = _mapper.Map<ClassDetailResponse>(teacher);
         await SetManagedTeachers(response);
         return response;
     }
 
-    public async Task<ClassResponse> UpdateClass(Guid schoolId, UpdateClassRequest request)
+    public async Task<ClassDetailResponse> UpdateClass(Guid schoolId, UpdateClassRequest request)
     {
         await _classManagementService.IsOwnerOfClass(schoolId, request.Id);
         var dto = _mapper.Map<UpdateClassDto>(request);
         dto.SchoolId = schoolId;
         var teacher = await _classManagementService.UpdateClass(dto);
         
-        var response = _mapper.Map<ClassResponse>(teacher);
+        var response = _mapper.Map<ClassDetailResponse>(teacher);
         await SetManagedTeachers(response);
         
         return response;
@@ -86,7 +85,7 @@ public class ClassManagementHandler : IClassManagementHandler
         await _classManagementService.DeleteClass(ids);
     }
 
-    private async Task SetManagedTeachers(List<ClassResponse> response)
+    private async Task SetManagedTeachers(List<ClassDetailResponse> response)
     {
         var map = new Dictionary<Guid, string>();
 
@@ -104,9 +103,9 @@ public class ClassManagementHandler : IClassManagementHandler
         }
     }
 
-    private async Task SetManagedTeachers(ClassResponse response)
+    private async Task SetManagedTeachers(ClassDetailResponse response)
     {
-        var temp = new List<ClassResponse> { response };
+        var temp = new List<ClassDetailResponse> { response };
         await SetManagedTeachers(temp);
     }
 }

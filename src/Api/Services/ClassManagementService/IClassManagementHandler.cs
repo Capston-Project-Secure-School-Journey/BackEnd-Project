@@ -6,9 +6,9 @@ namespace Api.Services.ClassManagementService;
 public interface IClassManagementHandler
 {
     Task<Pagination<ClassResponse>> GetClasses(Guid schoolId, GetClassesRequest request);
-    Task<ClassResponse> GetClassById(Guid schoolId, Guid id);
-    Task<ClassResponse> AddClass(Guid schoolId, CreateClassRequest request);
-    Task<ClassResponse> UpdateClass(Guid schoolId, UpdateClassRequest request);
+    Task<ClassDetailResponse> GetClassById(Guid schoolId, Guid id);
+    Task<ClassDetailResponse> AddClass(Guid schoolId, CreateClassRequest request);
+    Task<ClassDetailResponse> UpdateClass(Guid schoolId, UpdateClassRequest request);
     Task DeleteClass(Guid schoolId, Guid id);
     Task DeleteClass(Guid schoolId, List<Guid> ids);
 }

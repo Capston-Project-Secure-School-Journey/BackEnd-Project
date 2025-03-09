@@ -15,4 +15,5 @@ public interface IStudentManagementService
     Task DeleteStudent(List<Guid> ids); 
     Task CheckExistStudent(Guid schoolId, Guid studentId);
     Task IsOwnerOfStudent(Guid schoolId, Guid studentId);
+    Task<string> UploadAvatar(Guid studentId, IFormFile file);
 }

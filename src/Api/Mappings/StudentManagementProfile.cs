@@ -12,7 +12,8 @@ public class StudentManagementProfile: Profile
     {
         CreateMap<CreateStudentRequest, CreateStudentDto>();
         CreateMap<UpdateStudentRequest, UpdateStudentDto>();
-        CreateMap<Student, StudentResponse>().
+        CreateMap<Student, StudentResponse>();
+        CreateMap<Student, StudentDetailResponse>().
             ForMember(x => x.ClassName,
                 opt =>
                     opt.MapFrom(x => x.Class.ClassName)).

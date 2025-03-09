@@ -85,14 +85,19 @@ namespace Api.Domain
                     .IsRequired(false)
                     .HasColumnType("nvarchar(1000)");
 
-                entity.Property(u => u.AvatarUrl)
+                entity.Property(u => u.AvatarKey)
                     .HasColumnName("avatar_url")
                     .IsRequired(false)
-                    .HasColumnType("varchar(1000)");
+                    .HasColumnType("char(36)");
 
                 entity.Property(u => u.AccountStatus)
                     .HasColumnName("account_status")
                     .IsRequired()
+                    .HasColumnType("tinyint");
+                
+                entity.Property(u => u.VerificationMethod)
+                    .HasColumnName("verification_method")
+                    .IsRequired(false)
                     .HasColumnType("tinyint");
             });
 

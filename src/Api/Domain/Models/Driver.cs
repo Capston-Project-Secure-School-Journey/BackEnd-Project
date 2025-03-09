@@ -6,9 +6,15 @@ public class Driver: User
 {
     public VehicleType? VehicleType { get; set; }
     public string? LicenseNumber { get; set; }
-    public List<VerifiedBy> VerifiedBy { get; set; } = null!;
+    public List<VerifiedBy> VerifiedBy { get; set; }
     public DateTimeOffset? LastCheckDrivingLicense { get; set; }
-    public List<FileMetadata> DriverInformationImage { get; set; } = null!;
+    public List<FileMetadata> DriverInformationImage { get; set; }
+
+    public Driver()
+    {
+        DriverInformationImage = [];
+        VerifiedBy = [];
+    }
 }
 
 public class VerifiedBy

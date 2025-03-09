@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Api.DTOs;
@@ -24,5 +25,12 @@ public static class EnumExtension
             .GetField(value.ToString())
             ?.GetCustomAttribute<DisplayAttribute>()?
             .Name ?? value.ToString();
+    }
+    
+    public static string GetDescription(this Enum value)
+    {
+        var field = value.GetType().GetField(value.ToString());
+        var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
+        return attribute != null ? attribute.Description : value.ToString();
     }
 }
