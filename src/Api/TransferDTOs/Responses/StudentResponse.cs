@@ -10,4 +10,6 @@ public class StudentResponse
     public string LastName { get; set; } = string.Empty;
     public DateOnly  DateOfBirth { get; set; }
     public Gender Gender { get; set; }
+    public Guid ClassId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
 }
