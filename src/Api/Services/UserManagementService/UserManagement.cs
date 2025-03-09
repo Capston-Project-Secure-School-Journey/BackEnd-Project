@@ -59,7 +59,7 @@ public class UserManagement : IUserManagement
         if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
             throw new BadRequestException("Đã tồn tại tài khoản.");
 
-        if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
+        if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
         {
             throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
         }
