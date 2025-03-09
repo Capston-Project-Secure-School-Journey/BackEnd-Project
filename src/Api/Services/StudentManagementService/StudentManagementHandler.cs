@@ -37,6 +37,7 @@ public class StudentManagementHandler : IStudentManagementHandler
         query = query.Pagination(request.Page, request.Limit);
 
         var data = await query
+            .Include(x => x.Class)
             .Select(x => _mapper.Map<StudentResponse>(x))
             .ToListAsync();
         

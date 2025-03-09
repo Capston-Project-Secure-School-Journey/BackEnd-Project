@@ -59,6 +59,25 @@ public class UserService: IUserService
             if (user.PhoneNumber != dto.PhoneNumber && user.VerificationMethod == VerificationMethod.PhoneNumber)
                 throw new BadRequestException("Account đã sử dụng số điện thoại để xác thực. Bạn không thể thay đổi số điện thoại.");
         }
+        
+        
+        if (string.IsNullOrEmpty(dto.Email) && string.IsNullOrEmpty(dto.PhoneNumber))
+        {
+            throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
+        }
+
+        if (!string.IsNullOrEmpty(dto.Email))
+        {
+            if (_context.Users.Any(x => x.Email == dto.Email))
+                throw new BadRequestException("Email đã được đăng kí.");
+        }
+
+        if (!string.IsNullOrEmpty(dto.PhoneNumber))
+        {
+            if (_context.Users.Any(x => x.PhoneNumber == dto.PhoneNumber))
+                throw new BadRequestException("Số điện thoại đã được đăng kí.");
+        }
+        
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.DateOfBirth = dto.DateOfBirth;
