@@ -68,6 +68,7 @@ public class SchoolManagement : ISchoolManagement
     public async Task DeleteSchool(Guid schoolId)
     {
         var school = await GetById(schoolId);
+        
         _context.Entry(school).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
     }

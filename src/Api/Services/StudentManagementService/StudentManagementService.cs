@@ -137,11 +137,11 @@ public class StudentManagementService : IStudentManagementService
     public async Task DeleteStudent(Guid id)
     {
         var student = await GetStudentById(id);
-        _context.Entry(student).State = EntityState.Deleted;
         await _context.Entry(student).Reference(x => x.Class).LoadAsync();
         student.Class.NumberOfStudent -= 1;
         _context.Entry(student.Class).State = EntityState.Modified;
-        
+        _context.Entry(student).State = EntityState.Deleted;
+
         await _context.SaveChangesAsync();
     }
 
