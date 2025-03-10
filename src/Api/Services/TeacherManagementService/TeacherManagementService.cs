@@ -99,7 +99,6 @@ public class TeacherManagementService : ITeacherManagementService
     public async Task DeleteTeacher(Guid id)
     {
         var teacher = await GetTeacherById(id);
-        _context.Entry(teacher).State = EntityState.Deleted;
         var managedClasses = _context.Classes.
             Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
 
@@ -108,6 +107,7 @@ public class TeacherManagementService : ITeacherManagementService
             i.ManagedTeachers.Remove(i.ManagedTeachers.First(t => t.ManagedTeacherId == id));
             _context.Entry(i).State = EntityState.Modified;
         }
+        _context.Entry(teacher).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
     }
 
