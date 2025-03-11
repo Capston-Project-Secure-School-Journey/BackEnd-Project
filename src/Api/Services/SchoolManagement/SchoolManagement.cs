@@ -83,11 +83,11 @@ public class SchoolManagement : ISchoolManagement
                 await DeleteSchool(schoolId);
             }
             await _context.SaveChangesAsync();
-            await trans.CommitTransactionAsync();
+            await trans.CommitAsync();
         }
         catch (Exception)
         {
-            await trans.RollbackTransactionAsync();
+            await trans.RollbackAsync();
             throw;
         }
     }
