@@ -80,7 +80,7 @@ public class SchoolManagement : ISchoolManagement
         {
             foreach (var schoolId in schoolIds)
             {
-                await DeleteSchool(schoolId)
+                await DeleteSchool(schoolId);
             }
             await _context.SaveChangesAsync();
             await trans.CommitTransactionAsync();
