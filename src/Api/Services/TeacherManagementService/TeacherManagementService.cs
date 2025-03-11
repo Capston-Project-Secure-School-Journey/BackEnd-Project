@@ -99,8 +99,10 @@ public class TeacherManagementService : ITeacherManagementService
     public async Task DeleteTeacher(Guid id)
     {
         var teacher = await GetTeacherById(id);
-        var managedClasses = _context.Classes.
-            Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
+        var managedClasses = _context.Classes
+            .Where(c => c.SchoolId == teacher.SchoolId)
+            .ToList()
+            .Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
 
         foreach (var i in managedClasses)
         {
