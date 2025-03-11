@@ -75,20 +75,19 @@ public class SchoolManagement : ISchoolManagement
 
     public async Task DeleteSchool(List<Guid> schoolIds)
     {
-        await _context.Database.BeginTransactionAsync();
+        var trans = await _context.Database.BeginTransactionAsync();
         try
         {
             foreach (var schoolId in schoolIds)
             {
-                var school = await GetById(schoolId);
-                _context.Entry(school).State = EntityState.Deleted;
+                await DeleteSchool(schoolId)
             }
             await _context.SaveChangesAsync();
-            await _context.Database.CommitTransactionAsync();
+            await trans.CommitTransactionAsync();
         }
         catch (Exception)
         {
-            await _context.Database.RollbackTransactionAsync();
+            await trans.RollbackTransactionAsync();
             throw;
         }
     }
