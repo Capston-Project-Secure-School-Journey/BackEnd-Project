@@ -15,6 +15,14 @@ namespace Api.Attributes
                 var checker = context.HttpContext.RequestServices.GetService<IAuthorizationChecker>();
                 checker!.Check(context, userTypeFilter);
             }
+            catch (UnAuthorizedException)
+            {
+                throw;
+            }
+            catch (ForbiddenException)
+            {
+                throw;
+            }
             catch (Exception)
             {
                 throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
