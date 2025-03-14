@@ -66,13 +66,13 @@ public class UserService: IUserService
             throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
         }
 
-        if (!string.IsNullOrEmpty(dto.Email))
+        if (!string.IsNullOrEmpty(dto.Email) && user.Email != dto.Email)
         {
             if (_context.Users.Any(x => x.Email == dto.Email))
                 throw new BadRequestException("Email đã được đăng kí.");
         }
 
-        if (!string.IsNullOrEmpty(dto.PhoneNumber))
+        if (!string.IsNullOrEmpty(dto.PhoneNumber) && user.PhoneNumber != dto.PhoneNumber)
         {
             if (_context.Users.Any(x => x.PhoneNumber == dto.PhoneNumber))
                 throw new BadRequestException("Số điện thoại đã được đăng kí.");
