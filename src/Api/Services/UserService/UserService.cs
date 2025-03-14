@@ -52,12 +52,18 @@ public class UserService: IUserService
         if (user == null)
             throw new NotFoundException("Không tìm thấy người dùng.");
 
-        if (user.AccountStatus == AccountStatus.Verified)
+        if (user.AccountStatus == AccountStatus.Verified && (user.UserType == UserType.Parent || user.UserType == UserType.Driver))
         {
             if (user.Email != dto.Email && user.VerificationMethod == VerificationMethod.Email)
-                throw new BadRequestException("Account đã sử dụng email để xác thực. Bạn không thể thay đổi email.");
+            {
+                user.AccountStatus = AccountStatus.New;
+                user.VerificationMethod = null;
+            }
             if (user.PhoneNumber != dto.PhoneNumber && user.VerificationMethod == VerificationMethod.PhoneNumber)
-                throw new BadRequestException("Account đã sử dụng số điện thoại để xác thực. Bạn không thể thay đổi số điện thoại.");
+            {
+                user.AccountStatus = AccountStatus.New;
+                user.VerificationMethod = null;
+            }
         }
         
         
