@@ -7,7 +7,7 @@ using Api.TransferDTOs.Responses;
 namespace Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("auth")]
     public class AuthenController: ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;

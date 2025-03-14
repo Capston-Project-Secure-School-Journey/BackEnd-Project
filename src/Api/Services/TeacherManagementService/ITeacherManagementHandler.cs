@@ -11,7 +11,5 @@ public interface ITeacherManagementHandler
     Task<TeacherDetailResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request);
     Task DeleteTeacher(Guid schoolId, Guid id);
     Task DeleteTeacher(Guid schoolId, List<Guid> ids);
-    
-    Task<Guid> GetSchoolIdBySchoolAdminId(Guid schoolAdminId);
     Task<string> UploadAvatar(Guid schoolId, Guid teacherId, IFormFile file);
 }

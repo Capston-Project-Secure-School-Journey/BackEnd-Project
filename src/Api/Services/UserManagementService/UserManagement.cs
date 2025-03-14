@@ -30,6 +30,7 @@ public class UserManagement : IUserManagement
             Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
             UserType = UserType.SchoolAdmin,
             AccountStatus = AccountStatus.Verified,
+            VerificationMethod = VerificationMethod.Email,
             SchoolId = request.SchoolId
         };
 

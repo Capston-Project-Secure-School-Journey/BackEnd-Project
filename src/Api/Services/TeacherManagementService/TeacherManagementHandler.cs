@@ -48,7 +48,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
         var teacher =  await _teacherManagementService.GetTeacherById(id);
         
-        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
     public async Task<TeacherDetailResponse> AddTeacher(Guid schoolId, CreateTeacherRequest request)
@@ -57,7 +57,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         dto.SchoolId = schoolId;
         var teacher = await _teacherManagementService.AddTeacher(dto);
         
-        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
     public async Task<TeacherDetailResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request)
@@ -67,7 +67,7 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         var dto = _mapper.Map<UpdateTeacherDto>(request);
         var teacher = await _teacherManagementService.UpdateTeacher(dto);
         
-        return await Map2TeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
     }
 
     public async Task DeleteTeacher(Guid schoolId, Guid id)
@@ -85,19 +85,13 @@ public class TeacherManagementHandler: ITeacherManagementHandler
         await _teacherManagementService.DeleteTeacher(ids);
     }
 
-    public async Task<Guid> GetSchoolIdBySchoolAdminId(Guid schoolAdminId)
-    {
-        var schoolAdmin = await _context.SchoolPersons.FirstOrDefaultAsync(x => x.Id == schoolAdminId && x.UserType == UserType.SchoolAdmin);
-        return schoolAdmin!.SchoolId;
-    }
-
     public async Task<string> UploadAvatar(Guid schoolId, Guid teacherId, IFormFile file)
     {
         await _teacherManagementService.IsOwnerOfTeacher(schoolId, teacherId);
         return await _teacherManagementService.UploadAvatar(teacherId, file);
     }
 
-    private async Task<TeacherDetailResponse> Map2TeacherResponse(Teacher teacher, 
+    private async Task<TeacherDetailResponse> MapToTeacherResponse(Teacher teacher, 
         IMapper mapper, 
         IFileUploadService uploadFileService)
     {

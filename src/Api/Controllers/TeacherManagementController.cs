@@ -10,7 +10,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("teachers")]
-public class TeacherManagementController: ControllerBase
+public class TeacherManagementController : ControllerBase
 {
     private readonly ITeacherManagementHandler _teacherManagementHandler;
 
@@ -18,77 +18,77 @@ public class TeacherManagementController: ControllerBase
     {
         _teacherManagementHandler = teacherManagementHandler;
     }
-    
+
     [HttpPost]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<TeacherDetailResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.AddTeacher(schoolId, request);
     }
-    
+
     [HttpPut("{teacherId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute]Guid teacherId, [FromBody] UpdateTeacherRequest request)
+    public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute] Guid teacherId, [FromBody] UpdateTeacherRequest request)
     {
         request.Id = teacherId;
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.UpdateTeacher(schoolId, request);
     }
-    
+
     [HttpGet("{teacherId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
-    public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute]Guid teacherId)
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute] Guid teacherId)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.GetTeacherById(schoolId, teacherId);
     }
-    
+
     [HttpGet]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<Pagination<TeacherResponse>>> GetTeachers([FromQuery] GetTeacherRequest request)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.GetTeachers(schoolId, request);
     }
-    
+
     [HttpDelete("{teacherId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
-    public async Task<IActionResult> DeleteTeacher([FromRoute]Guid teacherId)
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<IActionResult> DeleteTeacher([FromRoute] Guid teacherId)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         await _teacherManagementHandler.DeleteTeacher(schoolId, teacherId);
 
         return Ok();
     }
-    
+
     [HttpDelete]
-    [Authorize(false, UserType.SchoolAdmin)]
-    public async Task<IActionResult> DeleteTeacher([FromBody]List<Guid> teacherIds)
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<IActionResult> DeleteTeacher([FromBody] List<Guid> teacherIds)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         await _teacherManagementHandler.DeleteTeacher(schoolId, teacherIds);
 
         return Ok();
     }
-    
+
     [HttpPost("{teacherId}/upload-avatar")]
     [ValidateModel]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid teacherId,
         [AllowedFile([ContentTypeEnum.ImagePng,
         ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
     {
         var userId = this.GetUserId();
-        var schoolId = await _teacherManagementHandler.GetSchoolIdBySchoolAdminId(userId);
+        var schoolId = this.GetSchoolId();
         return Ok(await _teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
     }
 }

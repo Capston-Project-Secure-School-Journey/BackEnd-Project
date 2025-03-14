@@ -65,7 +65,7 @@ namespace Api.Services.TokenService
             return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
         }
 
-        public (Guid?, string?, AccountStatus?) ValidateToken(string token, TokenType type = TokenType.Login)
+        public (Guid?, string?, AccountStatus?, Guid? schoolId) ValidateToken(string token, TokenType type = TokenType.Login)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -91,6 +91,9 @@ namespace Api.Services.TokenService
             var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
             var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
             var accountStatus = Enum.Parse<AccountStatus>(jwtToken.Claims.First(x => x.Type == "AccountStatus").Value.ToString());
+            Guid? schoolId = null;
+            if (jwtToken.Claims.Any(x => x.Type == "SchoolId"))
+                schoolId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "SchoolId").Value);
             var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 
             if (typeInToken == null)
@@ -101,7 +104,7 @@ namespace Api.Services.TokenService
             {
                 throw new Exception("Token is not valid");
             }
-            return (userId, userType, accountStatus);
+            return (userId, userType, accountStatus, schoolId);
         }
     }
 }

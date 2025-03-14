@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Api.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class AuthorizeAttribute(bool isVerifed, params UserType[] userTypeFilter) : Attribute, IAuthorizationFilter
+    public class AuthorizeAttribute(params UserType[] userTypeFilter) : Attribute, IAuthorizationFilter
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             try
             {
                 var checker = context.HttpContext.RequestServices.GetService<IAuthorizationChecker>();
-                checker!.Check(context, userTypeFilter, isVerifed);
+                checker!.Check(context, userTypeFilter);
             }
             catch (UnAuthorizedException)
             {
@@ -33,7 +33,7 @@ namespace Api.Attributes
 
     public interface IAuthorizationChecker
     {
-        void Check(AuthorizationFilterContext context, UserType[] userTypeFilter, bool isVerifed = false);
+        void Check(AuthorizationFilterContext context, UserType[] userTypeFilter);
     }
     
     public class AuthorizationChecker : IAuthorizationChecker
@@ -44,7 +44,7 @@ namespace Api.Attributes
             this._tokenService = tokenService;
         }
 
-        public void Check(AuthorizationFilterContext context, UserType[] userTypeFilter, bool isVerifed = false) 
+        public void Check(AuthorizationFilterContext context, UserType[] userTypeFilter) 
         {
             var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
@@ -59,11 +59,6 @@ namespace Api.Attributes
             {
                 RemoveHeader(context.HttpContext);
                 AddHeader(context.HttpContext, userInfo);
-                
-                if(isVerifed && userInfo.Item3.Value == AccountStatus.New)
-                {
-                    throw new ForbiddenException("Tài khoản của bạn chưa được xác thực");
-                }
 
                 if(userInfo.Item3.Value == AccountStatus.Deactive)
                 {
@@ -97,13 +92,19 @@ namespace Api.Attributes
             {
                 context.Request.Headers.Remove("Authorization-AccountStatus");
             }
+
+            if (context.Request.Headers.Any(x => x.Key == "Authorization-SchoolId"))
+            {
+                context.Request.Headers.Remove("Authorization-SchoolId");
+            }
         }
 
-        private void AddHeader(HttpContext context, (Guid?, string?, AccountStatus?) userInfo)
+        private void AddHeader(HttpContext context, (Guid?, string?, AccountStatus?, Guid? schoolId) userInfo)
         {
             context.Request.Headers.TryAdd("Authorization-UserId", userInfo.Item1?.ToString());
             context.Request.Headers.TryAdd("Authorization-UserType", userInfo.Item2);
             context.Request.Headers.TryAdd("Authorization-AccountStatus", userInfo.Item3.ToString());
+            context.Request.Headers.TryAdd("Authorization-SchoolId", userInfo.Item4?.ToString());
         }
     }
 }

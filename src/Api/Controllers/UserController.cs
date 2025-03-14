@@ -20,7 +20,7 @@ public class UserController: ControllerBase
     }
     
     [HttpGet]
-    [Authorize(false, UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<UserProfile> GetProfile()
     {
         return await _userHandler.GetProfile(this.GetUserId(), this.GetUserType());
@@ -28,7 +28,7 @@ public class UserController: ControllerBase
     
     [HttpPut]
     [ValidateModel]
-    [Authorize(false, UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<UserProfile> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         return await _userHandler.UpdateProfile(this.GetUserId(), request);
@@ -36,7 +36,7 @@ public class UserController: ControllerBase
     
     [HttpPost("upload-avatar")]
     [ValidateModel]
-    [Authorize(false, UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<string> UploadAvatar(
         [AllowedFile([ContentTypeEnum.ImagePng,
             ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)

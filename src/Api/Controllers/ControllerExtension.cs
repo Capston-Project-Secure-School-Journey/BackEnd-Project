@@ -11,7 +11,6 @@ public static class ControllerExtension
         if (controller.Request.Headers["Authorization-UserId"].First() == null)
             throw new UnauthorizedAccessException();
         return Guid.Parse(controller.Request.Headers["Authorization-UserId"].First()!);
-
     }
     
     public static UserType GetUserType(this ControllerBase controller)
@@ -20,11 +19,20 @@ public static class ControllerExtension
             throw new UnauthorizedAccessException();
         return (UserType)
             Convert.ToInt16(controller.Request.Headers["Authorization-UserType"].First());
-
     }
 
-    public static Guid GetSchoolId(this ControllerBase controller, Context context, Guid userId)
+    public static AccountStatus GetAccountStatus(this ControllerBase controller)
     {
-        return context.SchoolPersons.FirstOrDefault(person => person.Id == userId)!.SchoolId;
+        if (controller.Request.Headers["Authorization-AccountStatus"].First() == null)
+            throw new UnauthorizedAccessException();
+        return (AccountStatus)
+            Convert.ToInt16(controller.Request.Headers["Authorization-AccountStatus"].First());
+    }
+
+    public static Guid GetSchoolId(this ControllerBase controller)
+    {
+        if (controller.Request.Headers["Authorization-SchoolId"].First() == null)
+            throw new UnauthorizedAccessException();
+        return Guid.Parse(controller.Request.Headers["Authorization-SchoolId"].First()!);
     }
 }
