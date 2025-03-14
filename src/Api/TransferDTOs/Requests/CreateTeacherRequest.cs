@@ -18,11 +18,11 @@ public class CreateTeacherRequest
     [EnumDataType(typeof(Gender), ErrorMessage = "Loại giới tính không hợp lệ.")]
     public Gender Gender { get; set; }
     [Required(ErrorMessage = "Số điện thoại không được để trống.")]
-    [DataType(DataType.PhoneNumber, ErrorMessage = "Số điện thoại không đúng.")]
+    [RegularExpression(@"^(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$", ErrorMessage = "Số điện thoại không đúng.")]
     [MaxLength(11, ErrorMessage = "Số điện thoại không được quá 11 ký tự.")]
     public string PhoneNumber { get; set; } = string.Empty;
     [Required(ErrorMessage = "Địa Chỉ email không được để trống.")]
     [MaxLength(200, ErrorMessage = "Email không được quá 200 ký tự.")]
-    [DataType(DataType.EmailAddress, ErrorMessage = "Địa chỉ email không đúng.")]
+    [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Địa chỉ email không đúng.")]
     public string Email { get; set; } = string.Empty;
 }

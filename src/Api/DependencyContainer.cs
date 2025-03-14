@@ -22,6 +22,7 @@ namespace Api
 
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<IAuthorizationChecker, AuthorizationChecker>();
+            services.AddSingleton<IVerifedEmailChecker, VerifedEmailChecker>();
             services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();

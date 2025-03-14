@@ -14,55 +14,52 @@ namespace Api.Controllers;
 public class StudentManagementController: ControllerBase
 {
     private readonly IStudentManagementHandler _studentManagementHandler;
-    private readonly Context _context;
     
-    public StudentManagementController(IStudentManagementHandler studentManagementHandler,
-        Context context)
+    public StudentManagementController(IStudentManagementHandler studentManagementHandler)
     {
         _studentManagementHandler = studentManagementHandler;
-        _context = context;
     }
 
     [HttpPost]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> CreateStudent([FromBody] CreateStudentRequest request)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         return await _studentManagementHandler.AddStudent(schoolId, request);
     }
 
     [HttpPut("{studentId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> UpdateStudent([FromRoute] Guid studentId,
         [FromBody] UpdateStudentRequest request)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         
         request.Id = studentId;
         return await _studentManagementHandler.UpdateStudent(schoolId, request);
     }
     
     [HttpDelete("{studentId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromRoute] Guid studentId)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         
         await _studentManagementHandler.DeleteStudent(schoolId, studentId);
         return Ok();
     }
     
     [HttpDelete("")]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromBody] List<Guid> studentIds)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         
         await _studentManagementHandler.DeleteStudent(schoolId, studentIds);
         return Ok();
@@ -70,33 +67,33 @@ public class StudentManagementController: ControllerBase
     
     
     [HttpGet]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<Pagination<StudentResponse>> GetStudents([FromQuery]GetStudentRequest request)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         
         return await _studentManagementHandler.GetStudents(schoolId, request);
     }
     
     [HttpGet("{studentId}")]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<StudentDetailResponse> GetStudent([FromRoute]Guid studentId)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         return await _studentManagementHandler.GetStudentById(schoolId, studentId);
     }
     
     [HttpPost("{studentId}/upload-avatar")]
     [ValidateModel]
-    [Authorize(false, UserType.SchoolAdmin)]
+    [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
         [AllowedFile([ContentTypeEnum.ImagePng,
             ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
     {
         var userId = this.GetUserId();
-        var schoolId = this.GetSchoolId(_context, userId);
+        var schoolId = this.GetSchoolId();
         return Ok(await _studentManagementHandler.UploadAvatar(schoolId, studentId, file));
     }
 }
