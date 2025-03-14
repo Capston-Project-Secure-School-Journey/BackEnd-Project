@@ -20,7 +20,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpPost]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<TeacherDetailResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
@@ -30,7 +30,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpPut("{teacherId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute]Guid teacherId, [FromBody] UpdateTeacherRequest request)
     {
@@ -41,7 +41,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpGet("{teacherId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute]Guid teacherId)
     {
         var userId = this.GetUserId();
@@ -50,7 +50,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpGet]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<ActionResult<Pagination<TeacherResponse>>> GetTeachers([FromQuery] GetTeacherRequest request)
     {
         var userId = this.GetUserId();
@@ -59,7 +59,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpDelete("{teacherId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteTeacher([FromRoute]Guid teacherId)
     {
         var userId = this.GetUserId();
@@ -70,7 +70,7 @@ public class TeacherManagementController: ControllerBase
     }
     
     [HttpDelete]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteTeacher([FromBody]List<Guid> teacherIds)
     {
         var userId = this.GetUserId();
@@ -82,7 +82,7 @@ public class TeacherManagementController: ControllerBase
     
     [HttpPost("{teacherId}/upload-avatar")]
     [ValidateModel]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid teacherId,
         [AllowedFile([ContentTypeEnum.ImagePng,
         ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)

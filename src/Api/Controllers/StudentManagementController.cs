@@ -24,7 +24,7 @@ public class StudentManagementController: ControllerBase
     }
 
     [HttpPost]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> CreateStudent([FromBody] CreateStudentRequest request)
     {
@@ -34,7 +34,7 @@ public class StudentManagementController: ControllerBase
     }
 
     [HttpPut("{studentId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> UpdateStudent([FromRoute] Guid studentId,
         [FromBody] UpdateStudentRequest request)
@@ -47,7 +47,7 @@ public class StudentManagementController: ControllerBase
     }
     
     [HttpDelete("{studentId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromRoute] Guid studentId)
     {
         var userId = this.GetUserId();
@@ -58,7 +58,7 @@ public class StudentManagementController: ControllerBase
     }
     
     [HttpDelete("")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromBody] List<Guid> studentIds)
     {
         var userId = this.GetUserId();
@@ -70,7 +70,7 @@ public class StudentManagementController: ControllerBase
     
     
     [HttpGet]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<Pagination<StudentResponse>> GetStudents([FromQuery]GetStudentRequest request)
     {
         var userId = this.GetUserId();
@@ -80,7 +80,7 @@ public class StudentManagementController: ControllerBase
     }
     
     [HttpGet("{studentId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<StudentDetailResponse> GetStudent([FromRoute]Guid studentId)
     {
         var userId = this.GetUserId();
@@ -90,7 +90,7 @@ public class StudentManagementController: ControllerBase
     
     [HttpPost("{studentId}/upload-avatar")]
     [ValidateModel]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
         [AllowedFile([ContentTypeEnum.ImagePng,
             ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)

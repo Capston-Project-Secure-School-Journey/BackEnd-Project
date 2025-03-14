@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Api.Domain.Models;
+using Api.Common.Enums;
 
 namespace Api.Services.TokenService
 {
@@ -64,7 +65,7 @@ namespace Api.Services.TokenService
             return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
         }
 
-        public (Guid?, string?) ValidateToken(string token, TokenType type = TokenType.Login)
+        public (Guid?, string?, AccountStatus?) ValidateToken(string token, TokenType type = TokenType.Login)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -89,6 +90,7 @@ namespace Api.Services.TokenService
             var jwtToken = (JwtSecurityToken)validatedToken;
             var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
             var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
+            var accountStatus = Enum.Parse<AccountStatus>(jwtToken.Claims.First(x => x.Type == "AccountStatus").Value.ToString());
             var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 
             if (typeInToken == null)
@@ -99,7 +101,7 @@ namespace Api.Services.TokenService
             {
                 throw new Exception("Token is not valid");
             }
-            return (userId, userType);
+            return (userId, userType, accountStatus);
         }
     }
 }
