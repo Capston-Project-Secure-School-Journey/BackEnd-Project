@@ -26,7 +26,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<ClassDetailResponse>> CreateClass([FromBody] CreateClassRequest request)
     {
@@ -36,7 +36,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpPut("{classId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<ClassDetailResponse>> UpdateClass([FromRoute] Guid classId,
         [FromBody] UpdateClassRequest request)
@@ -48,7 +48,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpGet("{classId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<ActionResult<ClassDetailResponse>> GetClass([FromRoute] Guid classId)
     {
         var userId = this.GetUserId();
@@ -57,7 +57,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<ActionResult<Pagination<ClassResponse>>> GetClasses([FromQuery] GetClassesRequest request)
     {
         var userId = this.GetUserId();
@@ -66,7 +66,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpDelete("{classId}")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteClass([FromRoute] Guid classId)
     {
         var userId = this.GetUserId();
@@ -77,7 +77,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpDelete]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteClasses([FromBody] List<Guid> classIds)
     {
         var userId = this.GetUserId();
@@ -88,7 +88,7 @@ public class ClassManagementController : ControllerBase
     }
 
     [HttpGet("grades")]
-    [Authorize(UserType.SchoolAdmin)]
+    [Authorize(false, UserType.SchoolAdmin)]
     public async Task<ActionResult<List<ComboBoxItem>>> GetGrades()
     {
         var userId = this.GetUserId();

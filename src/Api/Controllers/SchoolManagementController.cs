@@ -20,7 +20,7 @@ public class SchoolManagementController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     [ValidateModel]
     public async Task<ActionResult<SchoolDetailResponse>> CreateSchool([FromBody] CreateSchoolRequest request)
     {
@@ -28,7 +28,7 @@ public class SchoolManagementController : ControllerBase
     }
 
     [HttpPut("{schoolId}")]
-    [Authorize(UserType.Admin, UserType.SchoolAdmin)]
+    [Authorize(false, UserType.Admin, UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<SchoolDetailResponse>> UpdateSchool([FromRoute] Guid schoolId,
         [FromBody] UpdateSchoolRequest request)
@@ -39,7 +39,7 @@ public class SchoolManagementController : ControllerBase
     }
     
     [HttpDelete("{schoolId}")]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromRoute] Guid schoolId)
     {
         await _schoolManagementHandler.DeleteSchool(schoolId);
@@ -47,7 +47,7 @@ public class SchoolManagementController : ControllerBase
     }
     
     [HttpDelete("")]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromBody] List<Guid> schoolIds)
     {
         await _schoolManagementHandler.DeleteSchool(schoolIds);
@@ -56,21 +56,21 @@ public class SchoolManagementController : ControllerBase
     
     
     [HttpGet]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     public async Task<Pagination<SchoolResponse>> GetSchools([FromQuery]GetSchoolRequest request)
     {
         return await _schoolManagementHandler.GetSchools(request);
     }
     
     [HttpGet("{schoolId}")]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     public async Task<SchoolDetailResponse> GetSchool([FromRoute]Guid schoolId)
     {
         return await _schoolManagementHandler.GetSchool(schoolId);
     }
     
     [HttpPost("{schoolId}/change-school-admin-password")]
-    [Authorize(UserType.Admin)]
+    [Authorize(false, UserType.Admin)]
     [ValidateModel]
     public async Task<ActionResult> ChangeSchoolAdminPassword([FromRoute]Guid schoolId, [FromForm] [PasswordStrength] string newPassword)
     {

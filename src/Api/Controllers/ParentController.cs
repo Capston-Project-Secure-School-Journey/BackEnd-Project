@@ -18,7 +18,7 @@ public class ParentController: ControllerBase
     }
     
     [HttpGet("my-children")]
-    [Authorize(UserType.Parent)]
+    [Authorize(true, UserType.Parent)]
     public async Task<IEnumerable<ChildDto>> GetMyChildren()
     {
         var userId = this.GetUserId();
@@ -26,17 +26,17 @@ public class ParentController: ControllerBase
     }
     
     [HttpGet("my-children/{childId}")]
-    [Authorize(UserType.Parent)]
-    public async Task<ActionResult<ChildDetailDto>> CreateClass([FromRoute] Guid childId)
+    [Authorize(true, UserType.Parent)]
+    public async Task<ActionResult<ChildDetailDto>> GetChildById([FromRoute] Guid childId)
     {
         var userId = this.GetUserId();
         return await _childrenManagementService.GetChildById(userId, childId);
     }
     
     [HttpPost]
-    [Authorize(UserType.Parent)]
+    [Authorize(true, UserType.Parent)]
     [ValidateModel]
-    public async Task<ActionResult> CreateClass([FromBody] RegisterChildDto request)
+    public async Task<ActionResult> RegisterChild([FromBody] RegisterChildDto request)
     {
         var userId = this.GetUserId();
         await _childrenManagementService.RegisterChild(userId, request);
