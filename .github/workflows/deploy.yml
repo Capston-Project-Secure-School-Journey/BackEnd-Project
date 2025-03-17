@@ -14,6 +14,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Create appsettings.json file from secrets
+        run: echo '${{ secrets.APPSETTINGS_JSON }}' > src/Api/appsettings.json
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -22,6 +25,9 @@ jobs:
 
       - name: Build Docker Compose
         run: docker compose build
+      
+      - name: Remove appsettings.json file after build
+        run: rm -f src/Api/appsettings.json
 
       - name: Push Docker Image to Docker Hub
         run: docker compose push
