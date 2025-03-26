@@ -24,7 +24,6 @@ public class TeacherManagementController : ControllerBase
     [ValidateModel]
     public async Task<ActionResult<TeacherDetailResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.AddTeacher(schoolId, request);
     }
@@ -32,10 +31,10 @@ public class TeacherManagementController : ControllerBase
     [HttpPut("{teacherId}")]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
-    public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute] Guid teacherId, [FromBody] UpdateTeacherRequest request)
+    public async Task<ActionResult<TeacherDetailResponse>> UpdateTeacher([FromRoute] Guid teacherId,
+        [FromBody] UpdateTeacherRequest request)
     {
         request.Id = teacherId;
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.UpdateTeacher(schoolId, request);
     }
@@ -44,7 +43,6 @@ public class TeacherManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute] Guid teacherId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.GetTeacherById(schoolId, teacherId);
     }
@@ -53,7 +51,6 @@ public class TeacherManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<Pagination<TeacherResponse>>> GetTeachers([FromQuery] GetTeacherRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _teacherManagementHandler.GetTeachers(schoolId, request);
     }
@@ -62,7 +59,6 @@ public class TeacherManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteTeacher([FromRoute] Guid teacherId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         await _teacherManagementHandler.DeleteTeacher(schoolId, teacherId);
 
@@ -73,7 +69,6 @@ public class TeacherManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteTeacher([FromBody] List<Guid> teacherIds)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         await _teacherManagementHandler.DeleteTeacher(schoolId, teacherIds);
 
@@ -84,10 +79,12 @@ public class TeacherManagementController : ControllerBase
     [ValidateModel]
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid teacherId,
-        [AllowedFile([ContentTypeEnum.ImagePng,
-        ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
+        [AllowedFile([
+            ContentTypeEnum.ImagePng,
+            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg
+        ], 5)]
+        IFormFile file)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return Ok(await _teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
     }

@@ -33,7 +33,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         try
         {
-            Guid fmKey = Guid.Empty;
+            var fmKey = Guid.Empty;
 
             var fileName = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
@@ -42,7 +42,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 BucketName = _bucketName,
                 Key = fileName,
                 InputStream = file.OpenReadStream(),
-                ContentType = file.ContentType,
+                ContentType = file.ContentType
             };
 
             await _s3Client.PutObjectAsync(request);
@@ -87,12 +87,9 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         try
         {
             long streamLength = 0;
-            if (stream.CanSeek)
-            {
-                streamLength = stream.Length;
-            }
-            
-            Guid fmKey = Guid.Empty;
+            if (stream.CanSeek) streamLength = stream.Length;
+
+            var fmKey = Guid.Empty;
             var key = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(fileName)}";
 
             var request = new PutObjectRequest
@@ -100,12 +97,11 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 BucketName = _bucketName,
                 Key = key,
                 InputStream = stream,
-                ContentType = contentType,
+                ContentType = contentType
             };
 
             await _s3Client.PutObjectAsync(request);
 
-            
 
             try
             {
@@ -132,7 +128,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 Key = fmKey,
                 ContentType = contentType,
                 Size = streamLength,
-                S3Url = await GeneratePreSignedDownloadUrlAsync(fileName, 30),
+                S3Url = await GeneratePreSignedDownloadUrlAsync(fileName, 30)
             };
 
             return response;
@@ -163,7 +159,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             throw new Exception($"Error deleting file");
         }
     }
-    
+
     public async Task<bool> DeleteFileAsync(Guid id)
     {
         try
@@ -176,7 +172,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
             await _s3Client.DeleteObjectAsync(deleteRequest);
             await DeleteFileManagement(id);
-            
+
             return true;
         }
         catch (AmazonS3Exception)
@@ -260,7 +256,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             throw new Exception($"Error generating pre-signed download URL");
         }
     }
-    
+
     public async Task<string> GeneratePreSignedDownloadUrlAsync(Guid fileManagementKey, int expirationMinutes = 60)
     {
         try

@@ -48,7 +48,7 @@ public class SchoolManagementHandler : ISchoolManagementHandler
                 Password = data.SchoolAdminPassword,
                 SchoolId = school.Id
             });
-            
+
             var response = _mapper.Map<SchoolDetailResponse>(school);
             response.SchoolAdminUserName = data.SchoolAdminUserName;
 
@@ -84,7 +84,7 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     {
         await _userManagement.ChangeSchoolAdminPassword(schoolId, newPassword);
     }
-    
+
     public async Task DeleteSchool(Guid schoolId)
     {
         await _schoolManagement.DeleteSchool(schoolId);

@@ -7,104 +7,101 @@ using System.IdentityModel.Tokens.Jwt;
 using Api.Domain.Models;
 using Api.Common.Enums;
 
-namespace Api.Services.TokenService
+namespace Api.Services.TokenService;
+
+public enum TokenType
 {
-    public enum TokenType
+    VerifyEmail,
+    ForgotEmail,
+    Login
+}
+
+public class TokenService : ITokenService
+{
+    private readonly TokenSettings _tokenSettings;
+
+    public TokenService(IOptions<TokenSettings> tokenSettings)
     {
-        VerifyEmail,
-        ForgotEmail,
-        Login
+        _tokenSettings = tokenSettings.Value;
     }
 
-    public class TokenService : ITokenService
+    public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        private readonly TokenSettings _tokenSettings;
+        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
+        var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
 
-        public TokenService(IOptions<TokenSettings> tokenSettings)
+        var tokeOptions = new JwtSecurityToken(
+            _tokenSettings.Issuer,
+            _tokenSettings.Audience,
+            claims,
+            expires: DateTime.Now.AddHours(Convert.ToInt16(_tokenSettings.AccessTokenExpirationHours)),
+            signingCredentials: signinCredentials
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+        return tokenString;
+    }
+
+    public string GenerateAccessToken(User data, int expireHours = 48)
+    {
+        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
+        var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
+        var claims = new List<Claim>();
+        claims.AddRange(new[]
         {
-            _tokenSettings = tokenSettings.Value;
-        }
+            new Claim("Id", data.Id.ToString()),
+            new Claim("Email", data.Email),
+            new Claim("Phone", data.PhoneNumber),
+            new Claim("UserType", data.UserType.ToString()),
+            new Claim("UserTypeName", data.UserTypeName)
+        });
 
-        public string GenerateAccessToken(IEnumerable<Claim> claims)
+        var tokeOptions = new JwtSecurityToken(
+            _tokenSettings.Issuer,
+            _tokenSettings.Audience,
+            claims,
+            expires: DateTime.Now.AddHours(expireHours),
+            signingCredentials: signinCredentials
+        );
+        return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+    }
+
+    public (Guid?, string?, AccountStatus?, Guid? schoolId) ValidateToken(string token,
+        TokenType type = TokenType.Login)
+    {
+        if (string.IsNullOrEmpty(token)) throw new Exception("Token is not valid");
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        var tokenValidationParameters = new TokenValidationParameters
         {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
-            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = _tokenSettings.Issuer,
+            ValidAudience = _tokenSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key))
+        };
 
-            var tokeOptions = new JwtSecurityToken(
-                issuer: _tokenSettings.Issuer,
-                audience: _tokenSettings.Audience,
-                claims: claims,
-                expires: DateTime.Now.AddHours(Convert.ToInt16(_tokenSettings.AccessTokenExpirationHours)),
-                signingCredentials: signinCredentials
-            );
+        tokenHandler.ValidateToken(token,
+            tokenValidationParameters
+            , out var validatedToken);
+        var jwtToken = (JwtSecurityToken)validatedToken;
+        var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+        var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
+        var accountStatus =
+            Enum.Parse<AccountStatus>(jwtToken.Claims.First(x => x.Type == "AccountStatus").Value.ToString());
+        Guid? schoolId = null;
+        if (jwtToken.Claims.Any(x => x.Type == "SchoolId"))
+            schoolId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "SchoolId").Value);
+        var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-            return tokenString;
-        }
+        if (typeInToken == null) throw new Exception("Token is not valid");
 
-        public string GenerateAccessToken(User data, int expireHours = 48)
-        {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
-            var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
-            var claims = new List<Claim>();
-            claims.AddRange(new[] {
-                new Claim("Id", data.Id.ToString()) ,
-                new Claim("Email", data.Email),
-                new Claim("Phone", data.PhoneNumber),
-                new Claim("UserType", data.UserType.ToString()),
-                new Claim("UserTypeName", data.UserTypeName),
-            });
+        if (typeInToken != null && (TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
+            throw new Exception("Token is not valid");
 
-            var tokeOptions = new JwtSecurityToken(
-                issuer: _tokenSettings.Issuer,
-                audience: _tokenSettings.Audience,
-                claims: claims,
-                expires: DateTime.Now.AddHours(expireHours),
-                signingCredentials: signinCredentials
-            );
-            return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-        }
-
-        public (Guid?, string?, AccountStatus?, Guid? schoolId) ValidateToken(string token, TokenType type = TokenType.Login)
-        {
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new Exception("Token is not valid");
-            }
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = false,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
-                ValidateLifetime = true,
-                ValidIssuer = _tokenSettings.Issuer,
-                ValidAudience = _tokenSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key))
-            };
-
-            tokenHandler.ValidateToken(token,
-                tokenValidationParameters
-                , out SecurityToken validatedToken);
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
-            var accountStatus = Enum.Parse<AccountStatus>(jwtToken.Claims.First(x => x.Type == "AccountStatus").Value.ToString());
-            Guid? schoolId = null;
-            if (jwtToken.Claims.Any(x => x.Type == "SchoolId"))
-                schoolId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "SchoolId").Value);
-            var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
-
-            if (typeInToken == null)
-            {
-                throw new Exception("Token is not valid");
-            }
-            if (typeInToken != null && (TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
-            {
-                throw new Exception("Token is not valid");
-            }
-            return (userId, userType, accountStatus, schoolId);
-        }
+        return (userId, userType, accountStatus, schoolId);
     }
 }

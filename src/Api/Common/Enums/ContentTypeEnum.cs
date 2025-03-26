@@ -1,6 +1,7 @@
 using System.ComponentModel;
 
 namespace Api.Common.Enums;
+
 public enum ContentTypeEnum
 {
     [Description("image/jpeg")] ImageJpeg,
@@ -13,14 +14,22 @@ public enum ContentTypeEnum
     [Description("image/svg+xml")] ImageSvgXml,
 
     [Description("application/msword")] ApplicationMsWord,
-    [Description("application/vnd.openxmlformats-officedocument.wordprocessingml.document")] ApplicationOpenXmlWord,
+
+    [Description("application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
+    ApplicationOpenXmlWord,
     [Description("application/pdf")] ApplicationPdf,
 
-    [Description("application/vnd.ms-excel")] ApplicationMsExcel,
-    [Description("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")] ApplicationOpenXmlExcel,
+    [Description("application/vnd.ms-excel")]
+    ApplicationMsExcel,
 
-    [Description("application/vnd.ms-powerpoint")] ApplicationMsPowerPoint,
-    [Description("application/vnd.openxmlformats-officedocument.presentationml.presentation")] ApplicationOpenXmlPowerPoint,
+    [Description("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    ApplicationOpenXmlExcel,
+
+    [Description("application/vnd.ms-powerpoint")]
+    ApplicationMsPowerPoint,
+
+    [Description("application/vnd.openxmlformats-officedocument.presentationml.presentation")]
+    ApplicationOpenXmlPowerPoint,
 
     [Description("text/plain")] TextPlain,
     [Description("text/csv")] TextCsv,
@@ -29,8 +38,12 @@ public enum ContentTypeEnum
     [Description("application/xml")] ApplicationXml,
 
     [Description("application/zip")] ApplicationZip,
-    [Description("application/x-7z-compressed")] Application7Z,
-    [Description("application/x-rar-compressed")] ApplicationRar,
+
+    [Description("application/x-7z-compressed")]
+    Application7Z,
+
+    [Description("application/x-rar-compressed")]
+    ApplicationRar,
     [Description("application/gzip")] ApplicationGzip,
 
     [Description("audio/mpeg")] AudioMpeg,

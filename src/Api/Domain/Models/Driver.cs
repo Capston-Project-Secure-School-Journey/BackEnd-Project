@@ -2,7 +2,7 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class Driver: User
+public class Driver : User
 {
     public VehicleType? VehicleType { get; set; }
     public string? LicenseNumber { get; set; }

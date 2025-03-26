@@ -70,6 +70,59 @@ namespace Api.Migrations
                     b.ToTable("classes", (string)null);
                 });
 
+            modelBuilder.Entity("Api.Domain.Models.ClassSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("class_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<sbyte?>("Grade")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("grade");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<sbyte>("ScheduleType")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("schedule_type");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("school_id");
+
+                    b.Property<sbyte>("SessionType")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("session_type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("class_schedules", (string)null);
+                });
+
             modelBuilder.Entity("Api.Domain.Models.FileManagement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -446,6 +499,66 @@ namespace Api.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("Api.Domain.Models.UserBan", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
+
+                    b.Property<DateTime>("BanDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("ban_date");
+
+                    b.Property<DateTime>("BanExpiryDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("ban_expiry_date");
+
+                    b.Property<sbyte>("BanType")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("ban_type");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("user_bans", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.UserRequestedLog", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
+
+                    b.Property<DateTime>("DatetimeRequested")
+                        .HasColumnType("datetime")
+                        .HasColumnName("datetime_requested");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("user_id");
+
+                    b.Property<sbyte>("UserRequestedType")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("user_requested_type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("user_requested_logs", (string)null);
+                });
+
             modelBuilder.Entity("Api.Domain.Models.Driver", b =>
                 {
                     b.HasBaseType("Api.Domain.Models.User");
@@ -512,6 +625,25 @@ namespace Api.Migrations
                     b.Navigation("School");
                 });
 
+            modelBuilder.Entity("Api.Domain.Models.ClassSchedule", b =>
+                {
+                    b.HasOne("Api.Domain.Models.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Api.Domain.Models.School", "School")
+                        .WithMany("ClassSchedules")
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("School");
+                });
+
             modelBuilder.Entity("Api.Domain.Models.Student", b =>
                 {
                     b.HasOne("Api.Domain.Models.Class", "Class")
@@ -560,6 +692,8 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Domain.Models.School", b =>
                 {
+                    b.Navigation("ClassSchedules");
+
                     b.Navigation("SchoolPersons");
                 });
 

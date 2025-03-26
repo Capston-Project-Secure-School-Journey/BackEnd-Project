@@ -16,11 +16,13 @@ public class School : BaseModel
     public string? Email { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
     public List<FileMetadata> Images { get; set; }
-
-    public virtual ICollection<SchoolPerson> SchoolPersons { get; set; } = null!;
+    public HashSet<ClassSchedule> ClassSchedules { get; set; }
+    public HashSet<SchoolPerson> SchoolPersons { get; set; }
 
     public School()
     {
         Images = [];
+        ClassSchedules = new HashSet<ClassSchedule>();
+        SchoolPersons = new HashSet<SchoolPerson>();
     }
 }

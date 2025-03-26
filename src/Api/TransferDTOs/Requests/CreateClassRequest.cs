@@ -11,6 +11,7 @@ public class CreateClassRequest
     public Grade Grade { get; set; }
 
     public List<ManagedTeacher> ManagedTeachers { get; set; } = [];
+
     [Required(ErrorMessage = "Tên lớp không được để trống.")]
     public string ClassName { get; set; } = string.Empty;
 }
