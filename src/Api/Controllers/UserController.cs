@@ -40,7 +40,8 @@ public class UserController : ControllerBase
     public async Task<string> UploadAvatar(
         [AllowedFile([
             ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg
+            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
+            ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
         ], 5)]
         IFormFile file)
     {
