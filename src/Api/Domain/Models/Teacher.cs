@@ -2,7 +2,7 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class Teacher: BaseModel
+public class Teacher : BaseModel
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
@@ -14,7 +14,12 @@ public class Teacher: BaseModel
     public string PhoneNumber { get; set; } = null!;
     public string Email { get; set; } = null!;
     public Guid? AvatarKey { get; set; }
-    
-    public virtual School School { get; set; } = null!;
-    public virtual HashSet<Class> ManagedClasses { get; set; } = null!;
+
+    public School School { get; set; } = null!;
+    public HashSet<Class> ManagedClasses { get; set; }
+
+    public Teacher()
+    {
+        ManagedClasses = new HashSet<Class>();
+    }
 }

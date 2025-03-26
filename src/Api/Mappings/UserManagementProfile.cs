@@ -4,7 +4,7 @@ using AutoMapper;
 
 namespace Api.Mappings;
 
-public class UserManagementProfile: Profile
+public class UserManagementProfile : Profile
 {
     public UserManagementProfile()
     {

@@ -1,5 +1,4 @@
 using Api.Common.Enums;
-using Api.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -12,7 +11,7 @@ public static class ControllerExtension
             throw new UnauthorizedAccessException();
         return Guid.Parse(controller.Request.Headers["Authorization-UserId"].First()!);
     }
-    
+
     public static UserType GetUserType(this ControllerBase controller)
     {
         if (controller.Request.Headers["Authorization-UserType"].First() == null)

@@ -37,7 +37,7 @@ public class SchoolManagementController : ControllerBase
             this.GetUserId(),
             this.GetUserType());
     }
-    
+
     [HttpDelete("{schoolId}")]
     [Authorize(UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromRoute] Guid schoolId)
@@ -45,7 +45,7 @@ public class SchoolManagementController : ControllerBase
         await _schoolManagementHandler.DeleteSchool(schoolId);
         return Ok();
     }
-    
+
     [HttpDelete("")]
     [Authorize(UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromBody] List<Guid> schoolIds)
@@ -53,31 +53,32 @@ public class SchoolManagementController : ControllerBase
         await _schoolManagementHandler.DeleteSchool(schoolIds);
         return Ok();
     }
-    
-    
+
+
     [HttpGet]
     [Authorize(UserType.Admin)]
-    public async Task<Pagination<SchoolResponse>> GetSchools([FromQuery]GetSchoolRequest request)
+    public async Task<Pagination<SchoolResponse>> GetSchools([FromQuery] GetSchoolRequest request)
     {
         return await _schoolManagementHandler.GetSchools(request);
     }
-    
+
     [HttpGet("{schoolId}")]
     [Authorize(UserType.Admin)]
-    public async Task<SchoolDetailResponse> GetSchool([FromRoute]Guid schoolId)
+    public async Task<SchoolDetailResponse> GetSchool([FromRoute] Guid schoolId)
     {
         return await _schoolManagementHandler.GetSchool(schoolId);
     }
-    
+
     [HttpPost("{schoolId}/change-school-admin-password")]
     [Authorize(UserType.Admin)]
     [ValidateModel]
-    public async Task<ActionResult> ChangeSchoolAdminPassword([FromRoute]Guid schoolId, [FromForm] [PasswordStrength] string newPassword)
+    public async Task<ActionResult> ChangeSchoolAdminPassword([FromRoute] Guid schoolId,
+        [FromForm] [PasswordStrength] string newPassword)
     {
         await _schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
         return Ok();
     }
-    
+
     // [HttpGet()]
     // [Authorize(UserType.Admin)]
     // public async Task<ActionResult<string>> GetPreSignedUploadImage()

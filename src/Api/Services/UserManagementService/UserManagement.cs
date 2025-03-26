@@ -61,21 +61,15 @@ public class UserManagement : IUserManagement
             throw new BadRequestException("Đã tồn tại tài khoản.");
 
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
-        {
             throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
-        }
 
         if (!string.IsNullOrEmpty(request.Email))
-        {
             if (_context.Users.Any(x => x.Email == request.Email))
                 throw new BadRequestException("Email đã được đăng kí.");
-        }
 
         if (!string.IsNullOrEmpty(request.PhoneNumber))
-        {
             if (_context.Users.Any(x => x.PhoneNumber == request.PhoneNumber))
                 throw new BadRequestException("Số điện thoại đã được đăng kí.");
-        }
 
 
         if (request.UserType != UserType.Driver && request.UserType != UserType.Parent)
@@ -117,7 +111,7 @@ public class UserManagement : IUserManagement
             user = parent;
         }
 
-        
+
         await _context.SaveChangesAsync();
         return user;
     }
@@ -149,10 +143,7 @@ public class UserManagement : IUserManagement
         var trans = await _context.Database.BeginTransactionAsync();
         try
         {
-            foreach (var i in schoolIds)
-            {
-                await DeleteSchoolAdmin(i);
-            }
+            foreach (var i in schoolIds) await DeleteSchoolAdmin(i);
 
             await trans.CommitAsync();
         }

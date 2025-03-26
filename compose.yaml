@@ -3,7 +3,7 @@
     image: tpham1467/nginx:latest
     container_name: nginx
     build:
-      context: ./src/nginx
+      context: ./src/Nginx
       dockerfile: Dockerfile
     ports:
       - "443:443"

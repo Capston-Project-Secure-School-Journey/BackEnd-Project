@@ -2,14 +2,13 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class Parent: User
+public class Parent : User
 {
+    public List<RelationshipWithStudent> RelationshipWithStudents { get; set; }
     public Parent()
     {
         RelationshipWithStudents = [];
     }
-    
-    public List<RelationshipWithStudent> RelationshipWithStudents { get; set; }
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global

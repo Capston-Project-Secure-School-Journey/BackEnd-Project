@@ -4,7 +4,7 @@ using AutoMapper;
 
 namespace Api.Mappings;
 
-public class ChildrenManagementProfile: Profile
+public class ChildrenManagementProfile : Profile
 {
     public ChildrenManagementProfile()
     {

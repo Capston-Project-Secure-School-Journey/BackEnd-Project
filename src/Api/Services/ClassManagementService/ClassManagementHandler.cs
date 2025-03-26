@@ -25,16 +25,17 @@ public class ClassManagementHandler : IClassManagementHandler
 
     public async Task<Pagination<ClassResponse>> GetClasses(Guid schoolId, GetClassesRequest request)
     {
-        var query = await _classManagementService.GetClassesQueryAbleByFilter(schoolId, request.ClassName, request.Grade);
+        var query = await _classManagementService.GetClassesQueryAbleByFilter(schoolId, request.ClassName,
+            request.Grade);
         var total = await query.CountAsync();
 
         var data = await query
             .Select(x => _mapper.Map<ClassResponse>(x))
             .Pagination(request.Page, request.Limit)
             .ToListAsync();
-        
+
         var response = new Pagination<ClassResponse>(data, request.Limit, request.Page, total);
-        
+
         return response;
     }
 
@@ -43,7 +44,7 @@ public class ClassManagementHandler : IClassManagementHandler
         await _classManagementService.IsOwnerOfClass(schoolId, id);
         var cl = await _classManagementService.GetClassById(id);
         var response = _mapper.Map<ClassDetailResponse>(cl);
-        
+
         await SetManagedTeachers(response);
         return response;
     }
@@ -53,7 +54,7 @@ public class ClassManagementHandler : IClassManagementHandler
         var dto = _mapper.Map<CreateClassDto>(request);
         dto.SchoolId = schoolId;
         var teacher = await _classManagementService.AddClass(dto);
-        
+
         var response = _mapper.Map<ClassDetailResponse>(teacher);
         await SetManagedTeachers(response);
         return response;
@@ -65,10 +66,10 @@ public class ClassManagementHandler : IClassManagementHandler
         var dto = _mapper.Map<UpdateClassDto>(request);
         dto.SchoolId = schoolId;
         var teacher = await _classManagementService.UpdateClass(dto);
-        
+
         var response = _mapper.Map<ClassDetailResponse>(teacher);
         await SetManagedTeachers(response);
-        
+
         return response;
     }
 
@@ -90,7 +91,6 @@ public class ClassManagementHandler : IClassManagementHandler
         var map = new Dictionary<Guid, string>();
 
         foreach (var managedTeacher in response.SelectMany(cl => cl.ManagedTeachers))
-        {
             if (!map.TryGetValue(managedTeacher.Id, out var value))
             {
                 var teacher = await _teacherManagementService.GetTeacherById(managedTeacher.Id);
@@ -99,8 +99,9 @@ public class ClassManagementHandler : IClassManagementHandler
                 map[managedTeacher.Id] = managedTeacher.Name;
             }
             else
+            {
                 managedTeacher.Name = value;
-        }
+            }
     }
 
     private async Task SetManagedTeachers(ClassDetailResponse response)

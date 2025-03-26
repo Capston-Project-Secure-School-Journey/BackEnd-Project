@@ -24,7 +24,7 @@ public class SchoolManagement : ISchoolManagement
             throw new NotFoundException("School is not found");
         return school;
     }
-    
+
     public async Task<School> CreateSchool(CreateSchoolDto data)
     {
         var school = new School();
@@ -68,7 +68,7 @@ public class SchoolManagement : ISchoolManagement
     public async Task DeleteSchool(Guid schoolId)
     {
         var school = await GetById(schoolId);
-        
+
         _context.Entry(school).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
     }
@@ -78,10 +78,8 @@ public class SchoolManagement : ISchoolManagement
         var trans = await _context.Database.BeginTransactionAsync();
         try
         {
-            foreach (var schoolId in schoolIds)
-            {
-                await DeleteSchool(schoolId);
-            }
+            foreach (var schoolId in schoolIds) await DeleteSchool(schoolId);
+
             await _context.SaveChangesAsync();
             await trans.CommitAsync();
         }
@@ -92,26 +90,21 @@ public class SchoolManagement : ISchoolManagement
         }
     }
 
-    public async  Task<IEnumerable<School>> GetSchools()
+    public async Task<IEnumerable<School>> GetSchools()
     {
         return await _context.Schools.ToListAsync();
     }
-    
-    public async  Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null)
+
+    public async Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null)
     {
         var query = _context.Schools
-                                                .AsQueryable()
-                                                .AsNoTracking();
-        if (schoolType != null)
-        {
-            query = query.Where(s => s.SchoolType == schoolType);
-        }
+            .AsQueryable()
+            .AsNoTracking();
+        if (schoolType != null) query = query.Where(s => s.SchoolType == schoolType);
 
         if (!string.IsNullOrEmpty(schoolName))
-        {
             query = query.Where(s => EF.Functions.Like(s.SchoolName, schoolName + "%"));
-        }
-        
+
         return await query.ToListAsync();
     }
 
@@ -120,16 +113,10 @@ public class SchoolManagement : ISchoolManagement
         var query = _context.Schools
             .AsQueryable()
             .AsNoTracking();
-        
-        if (schoolType != null)
-        {
-            query = query.Where(s => s.SchoolType == schoolType);
-        }
 
-        if (!string.IsNullOrEmpty(schoolName))
-        {
-            query = query.Where(s => s.SchoolName.Contains(schoolName));
-        }
+        if (schoolType != null) query = query.Where(s => s.SchoolType == schoolType);
+
+        if (!string.IsNullOrEmpty(schoolName)) query = query.Where(s => s.SchoolName.Contains(schoolName));
 
         return Task.FromResult(query);
     }

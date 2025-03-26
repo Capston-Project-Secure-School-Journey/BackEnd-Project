@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
@@ -5,6 +6,7 @@ using Api.Domain.Models;
 using Api.DTOs.ChildrenManagement;
 using Api.Extensions;
 using Api.Services.UploadFileService;
+using Api.Services.UserBanService;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,13 +17,16 @@ public class ChildrenManagementService : IChildrenManagementService
     private readonly Context _context;
     private readonly IMapper _mapper;
     private readonly IFileUploadService _uploadFileService;
+    private readonly IUserBanService _userBanService;
 
     public ChildrenManagementService(Context context, IMapper mapper,
-        IFileUploadService uploadFileService)
+        IFileUploadService uploadFileService,
+        IUserBanService userBanService)
     {
         _context = context;
         _mapper = mapper;
         _uploadFileService = uploadFileService;
+        _userBanService = userBanService;
     }
 
 
@@ -38,13 +43,11 @@ public class ChildrenManagementService : IChildrenManagementService
 
         IQueryable<Student>? children = null;
         foreach (var id in childrenId)
-        {
             if (children == null)
                 children = _context.Students.AsQueryable().Where(x => x.Id == id.StudentId);
             else
                 children = children.Union(
                     _context.Students.AsQueryable().Where(x => x.Id == id.StudentId));
-        }
 
         var response = children!
             .ToList()
@@ -71,17 +74,24 @@ public class ChildrenManagementService : IChildrenManagementService
 
     public async Task RegisterChild(Guid parentId, RegisterChildDto dto)
     {
+        await _userBanService.CheckUserBaned(parentId, BanType.AddChild, true);
+        
         var student = FindStudentWithHash(dto.SecretCode);
         var parent = await GetParent(parentId);
 
         if (!student.FirstName.Equals(dto.FirstName, StringComparison.CurrentCultureIgnoreCase) ||
             !student.LastName.Equals(dto.LastName, StringComparison.CurrentCultureIgnoreCase) ||
             student.DateOfBirth != dto.DateOfBirth)
+        {
+            await _userBanService.AddErrorRequest(parent.Id, BanType.AddChild);
             throw new BadRequestException(
                 "Thông tin học sinh không trùng khớp. Lưu ý nếu sai quá 5 lần bạn sẽ bị cấm trong 24h");
-
+        }
+        await _userBanService.RemoveUserBan(parentId, BanType.AddChild);
         if (parent.RelationshipWithStudents.Count == 0)
+        {
             parent.RelationshipWithStudents = [];
+        }
         else
         {
             if (parent.RelationshipWithStudents.Any(x => x.StudentId == student.Id))
@@ -92,7 +102,7 @@ public class ChildrenManagementService : IChildrenManagementService
             new RelationshipWithStudent()
             {
                 StudentId = student.Id,
-                Relationship = dto.Relationship,
+                Relationship = dto.Relationship
             });
 
         _context.Entry(parent).State = EntityState.Modified;

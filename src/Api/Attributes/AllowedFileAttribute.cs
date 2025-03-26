@@ -4,7 +4,7 @@ using Api.Extensions;
 
 namespace Api.Attributes;
 
-public class AllowedFileAttribute: ValidationAttribute
+public class AllowedFileAttribute : ValidationAttribute
 {
     private readonly ContentTypeEnum[] _allowedContentTypes;
     private readonly long _maxFileSizeInBytes;
@@ -35,26 +35,17 @@ public class AllowedFileAttribute: ValidationAttribute
             return ValidationResult.Success;
         }
 
-        if (value is not IFormFile file)
-        {
-            return new ValidationResult("Invalid file type. Expected IFormFile.");
-        }
+        if (value is not IFormFile file) return new ValidationResult("Invalid file type. Expected IFormFile.");
 
-        if (file.Length == 0)
-        {
-            return new ValidationResult("File không hợp lệ.");
-        }
+        if (file.Length == 0) return new ValidationResult("File không hợp lệ.");
 
         if (file.Length > _maxFileSizeInBytes)
-        {
             return new ValidationResult($"File không được quá {_maxFileSizeInBytes / (1024 * 1024)} MB.");
-        }
 
         var contentType = file.ContentType.ToLowerInvariant();
         if (_allowedContentTypes.All(t => t.GetDescription() != contentType))
-        {
-            return new ValidationResult($"Loại file '{contentType}' không được cho phép tải. Chỉ chấp nhận: {string.Join(", ", _allowedContentTypes)}");
-        }
+            return new ValidationResult(
+                $"Loại file '{contentType}' không được cho phép tải. Chỉ chấp nhận: {string.Join(", ", _allowedContentTypes)}");
 
         var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var allowedExtensions = _allowedContentTypes
@@ -63,13 +54,11 @@ public class AllowedFileAttribute: ValidationAttribute
             .ToArray();
 
         if (allowedExtensions.Length > 0 && !allowedExtensions.Contains(fileExtension))
-        {
-            return new ValidationResult($"Loại file '{fileExtension}' không được phép tải. Chỉ chấp nhận: {string.Join(", ", _allowedContentTypes)}");
-        }
+            return new ValidationResult(
+                $"Loại file '{fileExtension}' không được phép tải. Chỉ chấp nhận: {string.Join(", ", _allowedContentTypes)}");
 
         return ValidationResult.Success;
 #pragma warning restore CS8603 // Possible null reference return.
-
     }
 
     /// <summary>
@@ -123,5 +112,4 @@ public class AllowedFileAttribute: ValidationAttribute
             _ => string.Empty
         };
     }
-
 }

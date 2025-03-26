@@ -20,8 +20,8 @@ public class Student : BaseModel
     public int? LocationGroup { get; set; }
     public List<ManagedBy> ManagedBy { get; set; } = null!;
 
-    public virtual School School { get; set; } = null!;
-    public virtual Class Class { get; set; } = null!;
+    public School School { get; set; } = null!;
+    public Class Class { get; set; } = null!;
 }
 
 public class ManagedBy
