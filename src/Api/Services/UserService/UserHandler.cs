@@ -9,12 +9,13 @@ using AutoMapper;
 
 namespace Api.Services.UserService;
 
-public class UserHandler: IUserHandler
+public class UserHandler : IUserHandler
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
     private readonly IFileUploadService _uploadFileService;
     private readonly Context _context;
+
     public UserHandler(IUserService userService, IMapper mapper,
         IFileUploadService uploadFileService,
         Context context)
@@ -24,7 +25,7 @@ public class UserHandler: IUserHandler
         _uploadFileService = uploadFileService;
         _context = context;
     }
-    
+
     public async Task<UserProfile> GetProfile(Guid id, UserType userType)
     {
         var user = await _userService.GetUser(id, userType);
@@ -42,7 +43,7 @@ public class UserHandler: IUserHandler
         var user = await _userService.UpdateUserInfo(id, dto);
         return await MapUserToUserProfile(user);
     }
-    
+
     private async Task<UserProfile> MapUserToUserProfile(User user)
     {
         UserProfile? profile;
@@ -51,7 +52,7 @@ public class UserHandler: IUserHandler
             var schoolPerson = user as SchoolPerson;
             profile = _mapper.Map<UserProfile>(schoolPerson!);
             var entity = _context.Entry(schoolPerson!);
-            
+
             if (!entity.Reference(x => x.School).IsLoaded)
                 await entity.Reference(x => x.School).LoadAsync();
             profile.SchoolName = schoolPerson!.School.SchoolName;
@@ -66,12 +67,13 @@ public class UserHandler: IUserHandler
                 profile.DriverInformationImage.Add(url);
             }
         }
-        else 
+        else
+        {
             profile = _mapper.Map<UserProfile>(user);
-        
+        }
+
         if (user.AvatarKey != null)
             profile.AvatarUrl = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(user.AvatarKey.Value);
         return profile;
     }
-    
 }

@@ -7,14 +7,15 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("users")]
-public class UserManagementController: ControllerBase
+public class UserManagementController : ControllerBase
 {
     private readonly IUserManagementHandler _userManagementHandler;
+
     public UserManagementController(IUserManagementHandler userManagementHandler)
     {
         _userManagementHandler = userManagementHandler;
     }
-    
+
     [HttpPost("register")]
     [ValidateModel]
     public async Task<ActionResult> CreateUser([FromBody] CreateAccountRequest request)

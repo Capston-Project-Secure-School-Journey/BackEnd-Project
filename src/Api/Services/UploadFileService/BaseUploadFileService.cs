@@ -43,7 +43,7 @@ public class BaseUploadFileService(Context context)
             await _context.SaveChangesAsync();
         }
     }
-    
+
     protected async Task<string> GetS3Key(Guid id)
     {
         var file = await CheckIfFileExist(id);
@@ -52,12 +52,12 @@ public class BaseUploadFileService(Context context)
 
     public async Task MarkFileAsUploadedAsync(Guid id)
     {
-        var file = await this.CheckIfFileExist(id);
+        var file = await CheckIfFileExist(id);
         file.IsUploaded = true;
         _context.Entry(file).State = EntityState.Modified;
         await _context.SaveChangesAsync();
     }
-    
+
     private async Task<FileManagement> CheckIfFileExist(Guid id)
     {
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);

@@ -12,7 +12,7 @@ public interface IStudentManagementService
     Task<Student> AddStudent(CreateStudentDto request);
     Task<Student> UpdateStudent(UpdateStudentDto request);
     Task DeleteStudent(Guid id);
-    Task DeleteStudent(List<Guid> ids); 
+    Task DeleteStudent(List<Guid> ids);
     Task CheckExistStudent(Guid schoolId, Guid studentId);
     Task IsOwnerOfStudent(Guid schoolId, Guid studentId);
     Task<string> UploadAvatar(Guid studentId, IFormFile file);

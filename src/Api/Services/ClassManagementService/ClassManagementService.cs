@@ -46,14 +46,9 @@ public class ClassManagementService : IClassManagementService
             .Where(cl => cl.SchoolId == schoolId);
 
         if (!string.IsNullOrWhiteSpace(className))
-        {
             query = query.Where(cl => EF.Functions.Like(cl.ClassName, className + "%"));
-        }
 
-        if (grade.HasValue)
-        {
-            query = query.Where(cl => cl.Grade == grade);
-        }
+        if (grade.HasValue) query = query.Where(cl => cl.Grade == grade);
 
         return Task.FromResult(query);
     }
@@ -62,10 +57,7 @@ public class ClassManagementService : IClassManagementService
     {
         var cl = await _context.Classes.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (cl == null)
-        {
-            throw new NotFoundException("Lớp học không tồn tại");
-        }
+        if (cl == null) throw new NotFoundException("Lớp học không tồn tại");
 
         return cl;
     }
@@ -76,9 +68,7 @@ public class ClassManagementService : IClassManagementService
 
         ValidateGrade(school.SchoolType, request.Grade);
         foreach (var i in request.ManagedTeachers)
-        {
             await _teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
-        }
 
         await CheckExistClassName(request.SchoolId, request.ClassName);
 
@@ -104,12 +94,10 @@ public class ClassManagementService : IClassManagementService
         var cl = await GetClassById(request.Id);
 
         foreach (var i in request.ManagedTeachers)
-        {
             await _teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
-        }
-        
+
         ValidateGrade(school.SchoolType, request.Grade);
-        
+
         if (cl.ClassName != request.ClassName)
             await CheckExistClassName(request.SchoolId, request.ClassName);
 
@@ -153,10 +141,7 @@ public class ClassManagementService : IClassManagementService
             var trans = await _context.Database.BeginTransactionAsync();
             try
             {
-                foreach (var id in ids)
-                {
-                    await DeleteClassNoTransaction(id);
-                }
+                foreach (var id in ids) await DeleteClassNoTransaction(id);
 
                 await trans.CommitAsync();
             }
@@ -175,17 +160,13 @@ public class ClassManagementService : IClassManagementService
     public async Task IsOwnerOfClass(Guid schoolId, Guid classId)
     {
         if (!await _context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
-        {
             throw new ForbiddenException("Bạn không có quyền truy cập");
-        }
     }
 
     private async Task CheckExistClassName(Guid schoolId, string className)
     {
         if (await _context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
-        {
             throw new BadRequestException("Tên lớp bị trùng");
-        }
     }
 
     private async Task DeleteClassNoTransaction(Guid id)
@@ -195,12 +176,10 @@ public class ClassManagementService : IClassManagementService
         await _context.Entry(cl)
             .Collection<Student>(c => c.Students)
             .LoadAsync();
-        
+
         // Delete students
-        foreach (var clStudent in cl.Students)
-        {
-            _context.Entry(clStudent).State = EntityState.Deleted;
-        }
+        foreach (var clStudent in cl.Students) _context.Entry(clStudent).State = EntityState.Deleted;
+
         _context.Entry(cl).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
     }

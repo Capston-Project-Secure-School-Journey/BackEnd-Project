@@ -30,7 +30,6 @@ public class ClassManagementController : ControllerBase
     [ValidateModel]
     public async Task<ActionResult<ClassDetailResponse>> CreateClass([FromBody] CreateClassRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _classManagementHandler.AddClass(schoolId, request);
     }
@@ -42,7 +41,6 @@ public class ClassManagementController : ControllerBase
         [FromBody] UpdateClassRequest request)
     {
         request.Id = classId;
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _classManagementHandler.UpdateClass(schoolId, request);
     }
@@ -51,7 +49,6 @@ public class ClassManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<ClassDetailResponse>> GetClass([FromRoute] Guid classId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _classManagementHandler.GetClassById(schoolId, classId);
     }
@@ -60,7 +57,6 @@ public class ClassManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<Pagination<ClassResponse>>> GetClasses([FromQuery] GetClassesRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _classManagementHandler.GetClasses(schoolId, request);
     }
@@ -69,7 +65,6 @@ public class ClassManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteClass([FromRoute] Guid classId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         await _classManagementHandler.DeleteClass(schoolId, classId);
 
@@ -80,7 +75,6 @@ public class ClassManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteClasses([FromBody] List<Guid> classIds)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         await _classManagementHandler.DeleteClass(schoolId, classIds);
 
@@ -91,7 +85,6 @@ public class ClassManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ActionResult<List<ComboBoxItem>>> GetGrades()
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         var schoolType = (await _context.Schools.FirstOrDefaultAsync(school => school.Id == schoolId))!.SchoolType;
 

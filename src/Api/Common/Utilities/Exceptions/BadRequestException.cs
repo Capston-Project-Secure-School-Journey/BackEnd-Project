@@ -1,13 +1,15 @@
 using System.Globalization;
 
-namespace Api.Common.Utilities.Exceptions
+namespace Api.Common.Utilities.Exceptions;
+
+public class BadRequestException : Exception
 {
-    public class BadRequestException : Exception
+    public BadRequestException(string message) : base(message)
     {
-        public BadRequestException(string message) : base(message) { }
-        public BadRequestException(string message, params object[] args)
-            : base(string.Format(CultureInfo.CurrentCulture, message, args))
-        {
-        }
+    }
+
+    public BadRequestException(string message, params object[] args)
+        : base(string.Format(CultureInfo.CurrentCulture, message, args))
+    {
     }
 }

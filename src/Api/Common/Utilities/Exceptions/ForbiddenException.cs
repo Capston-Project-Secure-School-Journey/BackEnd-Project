@@ -1,13 +1,15 @@
 using System.Globalization;
 
-namespace Api.Common.Utilities.Exceptions
+namespace Api.Common.Utilities.Exceptions;
+
+public class ForbiddenException : Exception
 {
-    public class ForbiddenException : Exception
+    public ForbiddenException(string message) : base(message)
     {
-        public ForbiddenException(string message) : base(message) { }
-        public ForbiddenException(string message, params object[] args)
-            : base(string.Format(CultureInfo.CurrentCulture, message, args))
-        {
-        }
+    }
+
+    public ForbiddenException(string message, params object[] args)
+        : base(string.Format(CultureInfo.CurrentCulture, message, args))
+    {
     }
 }
