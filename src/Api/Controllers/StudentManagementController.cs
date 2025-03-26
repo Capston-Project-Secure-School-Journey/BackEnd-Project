@@ -84,7 +84,8 @@ public class StudentManagementController : ControllerBase
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
         [AllowedFile([
             ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg
+            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
+            ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
         ], 5)]
         IFormFile file)
     {

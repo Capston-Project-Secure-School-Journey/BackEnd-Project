@@ -12,7 +12,10 @@ public enum ContentTypeEnum
     [Description("image/tiff")] ImageTiff,
     [Description("image/webp")] ImageWebp,
     [Description("image/svg+xml")] ImageSvgXml,
-
+    [Description("image/heic")] ImageHeic,
+    [Description("image/heif")] ImageHeif,
+    [Description("image/heics")] ImageHeics,
+    
     [Description("application/msword")] ApplicationMsWord,
 
     [Description("application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
