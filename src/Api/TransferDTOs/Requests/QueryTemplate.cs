@@ -1,5 +1,5 @@
-
 namespace Api.TransferDTOs.Requests;
+
 public class QueryTemplate
 {
     public int Limit { get; set; } = 15;

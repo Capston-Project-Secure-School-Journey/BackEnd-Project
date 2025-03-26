@@ -11,6 +11,7 @@ public class TeacherManagementService : ITeacherManagementService
 {
     private readonly Context _context;
     private readonly IFileUploadService _uploadFileService;
+
     public TeacherManagementService(Context context,
         IFileUploadService uploadService)
     {
@@ -109,6 +110,7 @@ public class TeacherManagementService : ITeacherManagementService
             i.ManagedTeachers.Remove(i.ManagedTeachers.First(t => t.ManagedTeacherId == id));
             _context.Entry(i).State = EntityState.Modified;
         }
+
         _context.Entry(teacher).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
     }
@@ -130,26 +132,24 @@ public class TeacherManagementService : ITeacherManagementService
 
     public async Task CheckExistTeacher(Guid schoolId, Guid teacherId)
     {
-        if (!(await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId)))
+        if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
             throw new NotFoundException("Không tìm thấy giáo viên");
     }
 
     public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)
     {
         if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
-        {
             throw new ForbiddenException("Bạn không có quyền truy cập");
-        }
     }
 
     public async Task<string> UploadAvatar(Guid teacherId, IFormFile file)
     {
         var teacher = await GetTeacherById(teacherId);
-        
-        if(teacher.AvatarKey != null)
+
+        if (teacher.AvatarKey != null)
             await _uploadFileService.DeleteFileAsync(teacher.AvatarKey.Value);
         var response = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
-        
+
         teacher.AvatarKey = response.Key;
         _context.Entry(teacher).State = EntityState.Modified;
         await _context.SaveChangesAsync();

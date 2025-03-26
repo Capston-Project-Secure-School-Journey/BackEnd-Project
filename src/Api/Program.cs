@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -14,12 +15,18 @@ var serverVersion = new MySqlServerVersion(new Version(9, 2, 0));
 var cors = "AllowSpecificOrigin";
 Console.WriteLine($"connectionString: {connectionString}");
 builder.Services.AddDbContext<Context>(
-    options => options.UseMySql(connectionString, serverVersion,  b => b.UseMicrosoftJson())
+    options =>
+    {
+        options.UseMySql(connectionString, serverVersion, b => b.UseMicrosoftJson());
         // The following three options help with debugging, but should
         // be changed or removed for production.
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableSensitiveDataLogging()
-        .EnableDetailedErrors());
+        if (builder.Environment.IsDevelopment())
+        {
+            options.LogTo(Log.Information, LogLevel.Information)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors();
+        }
+    });
 
 DependencyContainer.RegisterServices(builder.Services);
 // Add services to the container.
@@ -39,7 +46,6 @@ builder.Services.AddSwaggerDocument(config =>
             Email = string.Empty,
             Url = ""
         };
-
     };
     config.AddSecurity("Bearer", Enumerable.Empty<string>(), new OpenApiSecurityScheme
     {
@@ -82,8 +88,22 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    // .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://test.tpham.info:9200"))  
+    // {  
+    //     AutoRegisterTemplate = true,  
+    //     IndexFormat = "SSAST-logs-{0:yyyy.MM.   dd}"  
+    // })  
+    .CreateLogger();
+builder.Services.AddSerilog();
+
 var app = builder.Build();
 
+app.UseMiddleware<TimeMeasuringMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseOpenApi();
 app.UseSwaggerUI();
@@ -93,19 +113,10 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-    if (dbContext.Database.GetPendingMigrations().Any())
-    {
-        dbContext.Database.Migrate();
-    }
+    if (dbContext.Database.GetPendingMigrations().Any()) dbContext.Database.Migrate();
 
-    if (!dbContext.Users.Any())
-    {
-        DbInitializer.SeedData(dbContext);
-    }
+    if (!dbContext.Users.Any()) DbInitializer.SeedData(dbContext);
 }
 
-app.Run();
-
-
-
-
+await app.RunAsync();
+Log.CloseAndFlush();

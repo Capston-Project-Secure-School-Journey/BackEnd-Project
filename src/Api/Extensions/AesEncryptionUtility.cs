@@ -27,7 +27,7 @@ public class AesEncryptionUtility
         byte[] iv;
         byte[] encryptedBytes;
 
-        using (Aes aesAlg = Aes.Create())
+        using (var aesAlg = Aes.Create())
         {
             aesAlg.GenerateIV();
             iv = aesAlg.IV;
@@ -36,14 +36,14 @@ public class AesEncryptionUtility
             aesAlg.Mode = CipherMode.CBC;
             aesAlg.Padding = PaddingMode.PKCS7;
 
-            using (ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV))
+            using (var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV))
             {
                 // Encrypt
-                using (MemoryStream msEncrypt = new MemoryStream())
+                using (var msEncrypt = new MemoryStream())
                 {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
                     {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        using (var swEncrypt = new StreamWriter(csEncrypt))
                         {
                             swEncrypt.Write(plainText);
                         }
@@ -55,7 +55,7 @@ public class AesEncryptionUtility
         }
 
         // Combine IV and encrypted bytes
-        byte[] combinedBytes = new byte[iv.Length + encryptedBytes.Length];
+        var combinedBytes = new byte[iv.Length + encryptedBytes.Length];
         Buffer.BlockCopy(iv, 0, combinedBytes, 0, iv.Length);
         Buffer.BlockCopy(encryptedBytes, 0, combinedBytes, iv.Length, encryptedBytes.Length);
 
@@ -79,25 +79,25 @@ public class AesEncryptionUtility
             throw new ArgumentNullException(nameof(base64Key));
 
         // Convert base64 key to byte array
-        byte[] key = Convert.FromBase64String(base64Key);
+        var key = Convert.FromBase64String(base64Key);
 
         // Validate key length
         if (key.Length != 32)
             throw new ArgumentException("Key must be 32 bytes long for AES-256", nameof(base64Key));
 
         // Decode base64 cipher text
-        byte[] combinedBytes = Convert.FromBase64String(cipherText);
+        var combinedBytes = Convert.FromBase64String(cipherText);
 
         // Extract IV (first 16 bytes)
-        byte[] iv = new byte[16];
+        var iv = new byte[16];
         Buffer.BlockCopy(combinedBytes, 0, iv, 0, iv.Length);
 
         // Extract encrypted bytes
-        byte[] encryptedBytes = new byte[combinedBytes.Length - iv.Length];
+        var encryptedBytes = new byte[combinedBytes.Length - iv.Length];
         Buffer.BlockCopy(combinedBytes, iv.Length, encryptedBytes, 0, encryptedBytes.Length);
 
         // Decrypt
-        using (Aes aesAlg = Aes.Create())
+        using (var aesAlg = Aes.Create())
         {
             aesAlg.Key = key;
             aesAlg.IV = iv;
@@ -105,13 +105,13 @@ public class AesEncryptionUtility
             aesAlg.Padding = PaddingMode.PKCS7;
 
             // Create decryptor
-            using (ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV))
+            using (var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV))
             {
-                using (MemoryStream msDecrypt = new MemoryStream(encryptedBytes))
+                using (var msDecrypt = new MemoryStream(encryptedBytes))
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        using (var srDecrypt = new StreamReader(csDecrypt))
                         {
                             // Read decrypted text
                             return srDecrypt.ReadToEnd();
@@ -124,7 +124,7 @@ public class AesEncryptionUtility
 
     public static string Encrypt(object obj, string base64Key)
     {
-        string json = JsonSerializer.Serialize(obj);
+        var json = JsonSerializer.Serialize(obj);
         return Encrypt(json, base64Key);
     }
 

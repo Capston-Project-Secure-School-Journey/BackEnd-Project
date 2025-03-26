@@ -2,7 +2,7 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class FileManagement: BaseModel
+public class FileManagement : BaseModel
 {
     public Guid Id { get; set; }
     public string FileName { get; set; } = string.Empty;

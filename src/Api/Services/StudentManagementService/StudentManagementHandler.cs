@@ -40,7 +40,7 @@ public class StudentManagementHandler : IStudentManagementHandler
             .Include(x => x.Class)
             .Select(x => _mapper.Map<StudentResponse>(x))
             .ToListAsync();
-        
+
         var response = new Pagination<StudentResponse>(data, request.Limit, request.Page, total);
 
         return response;
@@ -87,10 +87,7 @@ public class StudentManagementHandler : IStudentManagementHandler
 
     public async Task DeleteStudent(Guid schoolId, List<Guid> ids)
     {
-        foreach (var id in ids)
-        {
-            await _studentManagementService.IsOwnerOfStudent(schoolId, id);
-        }
+        foreach (var id in ids) await _studentManagementService.IsOwnerOfStudent(schoolId, id);
 
         await _studentManagementService.DeleteStudent(ids);
     }

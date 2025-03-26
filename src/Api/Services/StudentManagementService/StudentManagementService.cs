@@ -87,7 +87,7 @@ public class StudentManagementService : IStudentManagementService
             };
 
             cl.NumberOfStudent += 1;
-            
+
             _context.Students.Add(st);
             _context.Entry(st).State = EntityState.Added;
             _context.Entry(cl).State = EntityState.Modified;
@@ -120,7 +120,7 @@ public class StudentManagementService : IStudentManagementService
         var oldClass = await _classManagementService.GetClassById(st.ClassId);
         oldClass.NumberOfStudent -= 1;
         cl.NumberOfStudent += 1;
-        
+
         st.FirstName = request.FirstName;
         st.LastName = request.LastName;
         st.DateOfBirth = request.DateOfBirth;
@@ -162,21 +162,21 @@ public class StudentManagementService : IStudentManagementService
 
     public async Task CheckExistStudent(Guid schoolId, Guid studentId)
     {
-        if (!(await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId)))
+        if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
             throw new NotFoundException("Không tồn tại học sinh");
     }
 
     public async Task IsOwnerOfStudent(Guid schoolId, Guid studentId)
     {
-        if (!(await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId)))
+        if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
             throw new ForbiddenException("Bạn không có quyền truy cập");
     }
 
     public async Task<string> UploadAvatar(Guid studentId, IFormFile file)
     {
         var student = await GetStudentById(studentId);
-        
-        if(student.AvatarKey != null)
+
+        if (student.AvatarKey != null)
             await _uploadFileService.DeleteFileAsync(student.AvatarKey.Value);
         var response = await _uploadFileService.UploadFileAsync(file, "avatar/students");
 

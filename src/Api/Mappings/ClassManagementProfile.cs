@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace Api.Mappings;
 
-public class ClassManagementProfile: Profile
+public class ClassManagementProfile : Profile
 {
     public ClassManagementProfile()
     {
@@ -15,13 +15,13 @@ public class ClassManagementProfile: Profile
         CreateMap<UpdateClassRequest, UpdateClassDto>();
         CreateMap<Class, ClassResponse>();
         CreateMap<Class, ClassDetailResponse>().ForMember(x => x.ManagedTeachers,
-            opt =>
-                opt.MapFrom(x => x.ManagedTeachers.Select(mt =>
-                    new ManagedTeacherResponse()
-                    {
-                        Id = mt.ManagedTeacherId,
-                        Name = string.Empty
-                    })))
+                opt =>
+                    opt.MapFrom(x => x.ManagedTeachers.Select(mt =>
+                        new ManagedTeacherResponse()
+                        {
+                            Id = mt.ManagedTeacherId,
+                            Name = string.Empty
+                        })))
             .ForMember(x => x.GradeName, opt =>
                 opt.MapFrom(x => EnumExtension.GetEnumDisplayName(x.Grade)));
     }

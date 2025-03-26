@@ -1,7 +1,6 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.Domain;
 using Api.Services.StudentManagementService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
@@ -11,10 +10,10 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("students")]
-public class StudentManagementController: ControllerBase
+public class StudentManagementController : ControllerBase
 {
     private readonly IStudentManagementHandler _studentManagementHandler;
-    
+
     public StudentManagementController(IStudentManagementHandler studentManagementHandler)
     {
         _studentManagementHandler = studentManagementHandler;
@@ -25,7 +24,6 @@ public class StudentManagementController: ControllerBase
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> CreateStudent([FromBody] CreateStudentRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _studentManagementHandler.AddStudent(schoolId, request);
     }
@@ -36,63 +34,60 @@ public class StudentManagementController: ControllerBase
     public async Task<ActionResult<StudentDetailResponse>> UpdateStudent([FromRoute] Guid studentId,
         [FromBody] UpdateStudentRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
-        
+
         request.Id = studentId;
         return await _studentManagementHandler.UpdateStudent(schoolId, request);
     }
-    
+
     [HttpDelete("{studentId}")]
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromRoute] Guid studentId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
-        
+
         await _studentManagementHandler.DeleteStudent(schoolId, studentId);
         return Ok();
     }
-    
+
     [HttpDelete("")]
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> DeleteStudent([FromBody] List<Guid> studentIds)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
-        
+
         await _studentManagementHandler.DeleteStudent(schoolId, studentIds);
         return Ok();
     }
-    
-    
+
+
     [HttpGet]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<Pagination<StudentResponse>> GetStudents([FromQuery]GetStudentRequest request)
+    public async Task<Pagination<StudentResponse>> GetStudents([FromQuery] GetStudentRequest request)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
-        
+
         return await _studentManagementHandler.GetStudents(schoolId, request);
     }
-    
+
     [HttpGet("{studentId}")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<StudentDetailResponse> GetStudent([FromRoute]Guid studentId)
+    public async Task<StudentDetailResponse> GetStudent([FromRoute] Guid studentId)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return await _studentManagementHandler.GetStudentById(schoolId, studentId);
     }
-    
+
     [HttpPost("{studentId}/upload-avatar")]
     [ValidateModel]
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
-        [AllowedFile([ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg], 5)]IFormFile file)
+        [AllowedFile([
+            ContentTypeEnum.ImagePng,
+            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg
+        ], 5)]
+        IFormFile file)
     {
-        var userId = this.GetUserId();
         var schoolId = this.GetSchoolId();
         return Ok(await _studentManagementHandler.UploadAvatar(schoolId, studentId, file));
     }
