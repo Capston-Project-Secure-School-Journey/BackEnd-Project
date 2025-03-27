@@ -107,4 +107,21 @@ public class ClassManagementController : ControllerBase
 
         return data;
     }
+    
+    [HttpGet("class-combobox")]
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<ActionResult<List<ComboBoxItem>>> GetClassCombobox([FromQuery] string name)
+    {
+        var schoolId = this.GetSchoolId();
+        var classCombobox = await _context.Classes
+            .Where(cl => schoolId == cl.SchoolId)
+            .OrderBy(x => x.Grade)
+            .ThenBy(x => x.ClassName)
+            .Select(x => new ComboBoxItem() {Id = x.Id, Name = x.ClassName})
+            .ToListAsync();
+        if (!string.IsNullOrEmpty(name)) classCombobox = classCombobox
+            .Where(x => x.Name.ToLower().Contains(name.ToLower()))
+            .ToList();
+        return classCombobox;
+    }
 }

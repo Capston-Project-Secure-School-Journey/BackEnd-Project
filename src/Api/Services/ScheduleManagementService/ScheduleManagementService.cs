@@ -16,7 +16,7 @@ public class ScheduleManagementService : IScheduleManagementService
     private readonly Context _context;
     private readonly IClassManagementService _classManagementService;
     private readonly IServiceProvider _serviceProvider;
-    
+
     public ScheduleManagementService(Context context,
         IClassManagementService classManagementService,
         IServiceProvider serviceProvider)
@@ -49,9 +49,26 @@ public class ScheduleManagementService : IScheduleManagementService
 
             // ReSharper disable once MethodSupportsCancellation
             var classes = await query.ToListAsync();
+            classes = classes.Where(c => !dto.ClassException.Contains(c.Id)).ToList();
 
             if (classes.Count > 0)
             {
+                var scheduleGroup = new ScheduleGroup
+                {
+                    SchoolId = schoolId,
+                    ScheduleType = dto.ScheduleType,
+                    Grade = dto.Grade,
+                    SessionType = dto.SessionType,
+                    Date = dto.Date,
+                    ClassException = dto.ClassException
+                };
+
+                // ReSharper disable once MethodSupportsCancellation
+                await _context.ScheduleGroups.AddAsync(scheduleGroup);
+                _context.Entry(scheduleGroup).State = EntityState.Added;
+                // ReSharper disable once MethodSupportsCancellation
+                await _context.SaveChangesAsync();
+
                 foreach (var cl in classes)
                 {
                     checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, cl.Id, dto.SessionType, cts.Token));
@@ -63,7 +80,8 @@ public class ScheduleManagementService : IScheduleManagementService
                         ScheduleType = dto.ScheduleType,
                         SessionType = dto.SessionType,
                         Grade = dto.ScheduleType == ScheduleType.Grade ? dto.Grade : null,
-                        Note = dto.Note
+                        Note = dto.Note,
+                        ScheduleGroupId = scheduleGroup.Id
                     };
                     schedules.Add(schedule);
                 }
@@ -89,7 +107,8 @@ public class ScheduleManagementService : IScheduleManagementService
                 ScheduleType = dto.ScheduleType,
                 SessionType = dto.SessionType,
                 Grade = null,
-                Note = dto.Note
+                Note = dto.Note,
+                ScheduleGroupId = null
             };
             checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, dto.ClassId.Value, dto.SessionType, cts.Token));
             schedules.Add(schedule);
@@ -118,7 +137,9 @@ public class ScheduleManagementService : IScheduleManagementService
     public async Task<ClassSchedule> UpdateSchedule(Guid schoolId, UpdateScheduleDto dto)
     {
         CheckScheduleDate(dto.Date);
-        var schedule = await _context.ClassSchedules.FirstOrDefaultAsync(c => c.Id == dto.Id && c.SchoolId == schoolId);
+        var schedule = await _context.ClassSchedules
+            .Include(c => c.Class)
+            .FirstOrDefaultAsync(c => c.Id == dto.Id && c.SchoolId == schoolId);
 
         if (schedule == null)
             throw new BadRequestException("Không tìm thấy lịch học");
@@ -128,7 +149,26 @@ public class ScheduleManagementService : IScheduleManagementService
             dto.Date != schedule.Date ||
             dto.SessionType != schedule.SessionType)
         {
-            schedule.ScheduleType = ScheduleType.Class;
+            var group = FindScheduleGroupMatchWithSchedule(
+                schedule.SchoolId,
+                dto.Date,
+                dto.SessionType,
+                schedule.Class.Grade);
+
+            if (group != null)
+            {
+                schedule.ScheduleGroupId = group.Id;
+                schedule.ScheduleType = group.ScheduleType;
+                
+                if (group.ScheduleType is ScheduleType.Grade)
+                    schedule.Grade = group.Grade;
+            }
+            else
+            {
+                schedule.ScheduleType = ScheduleType.Class;
+                schedule.ScheduleGroupId = null;
+                schedule.Grade = null;
+            }
         }
 
         schedule.SessionType = dto.SessionType;
@@ -170,8 +210,7 @@ public class ScheduleManagementService : IScheduleManagementService
     {
         var monthRange = GetMonthRange(date);
 
-        var schedules = await _context.ClassSchedules
-            .Include(c => c.Class)
+        var scheduleGroups = await _context.ScheduleGroups
             .AsNoTracking()
             .Where(c => c.SchoolId == schoolId &&
                         c.Date >= monthRange.StartOfMonth &&
@@ -181,49 +220,78 @@ public class ScheduleManagementService : IScheduleManagementService
             .ThenBy(c => c.SessionType)
             .ToListAsync();
 
-        var response = new ClassSchedulePaginationResponse();
-        ScheduleType? oldScheduleType = schedules.FirstOrDefault()?.ScheduleType;
-        SessionType? oldSessionType = schedules.FirstOrDefault()?.SessionType;
-        bool firstTime = true;
+        var classNames = await _context.Classes
+            .AsNoTracking()
+            .Where(x => x.SchoolId == schoolId)
+            .Select(x => new { x.Id, x.ClassName })
+            .ToListAsync();
         
+        var response = new ClassSchedulePaginationResponse();
+
+        foreach (var group in scheduleGroups)
+        {
+            var classResponse = new ClassScheduleResponseView();
+            if (group.ScheduleType == ScheduleType.Grade)
+            {
+                classResponse.ClassId = null;
+                classResponse.ClassName = string.Empty;
+                classResponse.Date = group.Date;
+                classResponse.SessionType = group.SessionType;
+                classResponse.ScheduleType = group.ScheduleType;
+                classResponse.Grade = group.Grade;
+                classResponse.ClassException = group.ClassException;
+                classResponse.ClassNameException = group.ClassException
+                    .Select(x => classNames.First(k => k.Id == x).ClassName)
+                    .ToList();
+            }
+            else if (group.ScheduleType == ScheduleType.School)
+            {
+                classResponse.ClassId = null;
+                classResponse.ClassName = string.Empty;
+                classResponse.Date = group.Date;
+                classResponse.SessionType = group.SessionType;
+                classResponse.ScheduleType = group.ScheduleType;
+                classResponse.Grade = null;
+                classResponse.ClassException = group.ClassException;
+                classResponse.ClassException = group.ClassException;
+                classResponse.ClassNameException = group.ClassException
+                    .Select(x => classNames.First(k => k.Id == x).ClassName)
+                    .ToList();
+            }
+
+            // ReSharper disable once UnusedVariable
+            if (response.ClassSchedules.TryGetValue(group.Date, out var a))
+            {
+                response.ClassSchedules[group.Date] = response.ClassSchedules[group.Date].Append(classResponse);
+            }
+            else
+                response.ClassSchedules.Add(group.Date, new List<ClassScheduleResponseView>() { classResponse });
+        }
+
+        var schedules = await _context.ClassSchedules
+            .Include(c => c.Class)
+            .AsNoTracking()
+            .Where(c => c.SchoolId == schoolId &&
+                        c.Date >= monthRange.StartOfMonth &&
+                        c.Date <= monthRange.EndOfMonth &&
+                        c.ScheduleType == ScheduleType.Class)
+            .OrderBy(c => c.Date)
+            .ThenByDescending(c => c.ScheduleType)
+            .ThenBy(c => c.SessionType)
+            .ToListAsync();
+
         foreach (var schedule in schedules)
         {
-            if (schedule.ScheduleType is ScheduleType.Grade or ScheduleType.School)
-                if ((oldScheduleType == schedule.ScheduleType &&
-                     oldSessionType == schedule.SessionType) && !firstTime)
-                    continue;
-
-            var classResponse = new ClassScheduleResponseView();
-            if (schedule.ScheduleType == ScheduleType.Class)
+            var classResponse = new ClassScheduleResponseView
             {
-                classResponse.ClassId = schedule.ClassId;
-                classResponse.ClassName = schedule.Class.ClassName;
-                classResponse.Date = schedule.Date;
-                classResponse.SessionType = schedule.SessionType;
-                classResponse.ScheduleType = schedule.ScheduleType;
-                classResponse.Note = schedule.Note;
-                classResponse.Grade = null;
-            }
-            else if (schedule.ScheduleType == ScheduleType.Grade)
-            {
-                classResponse.ClassId = null;
-                classResponse.ClassName = string.Empty;
-                classResponse.Date = schedule.Date;
-                classResponse.SessionType = schedule.SessionType;
-                classResponse.ScheduleType = schedule.ScheduleType;
-                classResponse.Note = schedule.Note;
-                classResponse.Grade = schedule.Grade;
-            }
-            else if (schedule.ScheduleType == ScheduleType.School)
-            {
-                classResponse.ClassId = null;
-                classResponse.ClassName = string.Empty;
-                classResponse.Date = schedule.Date;
-                classResponse.SessionType = schedule.SessionType;
-                classResponse.ScheduleType = schedule.ScheduleType;
-                classResponse.Note = schedule.Note;
-                classResponse.Grade = null;
-            }
+                ClassId = schedule.ClassId,
+                ClassName = schedule.Class.ClassName,
+                Date = schedule.Date,
+                SessionType = schedule.SessionType,
+                ScheduleType = schedule.ScheduleType,
+                Note = schedule.Note,
+                Grade = null
+            };
 
             // ReSharper disable once UnusedVariable
             if (response.ClassSchedules.TryGetValue(schedule.Date, out var a))
@@ -231,14 +299,39 @@ public class ScheduleManagementService : IScheduleManagementService
                 response.ClassSchedules[schedule.Date] = response.ClassSchedules[schedule.Date].Append(classResponse);
             }
             else
-                response.ClassSchedules.Add(schedule.Date,new List<ClassScheduleResponseView>(){classResponse});
-            
-            oldScheduleType = schedule.ScheduleType;
-            oldSessionType = schedule.SessionType;
-            firstTime = false;
+                response.ClassSchedules.Add(schedule.Date, new List<ClassScheduleResponseView>() { classResponse });
         }
 
+        foreach (var k in response.ClassSchedules.Keys)
+        {
+            response.ClassSchedules[k] = response.ClassSchedules[k]
+                .OrderByDescending(c => c.ScheduleType)
+                .ThenByDescending(c => c.SessionType);
+        }
         return response;
+    }
+
+    private ScheduleGroup? FindScheduleGroupMatchWithSchedule(Guid schoolId,
+        DateOnly date,
+        SessionType sessionType,
+        Grade grade)
+    {
+        var schoolGroup = _context.ScheduleGroups
+            .FirstOrDefault(g => g.SchoolId == schoolId
+                                 && g.Date == date
+                                 && g.SessionType == sessionType);
+
+        if (schoolGroup != null) return schoolGroup;
+
+        var gradeGroup = _context.ScheduleGroups
+            .FirstOrDefault(g => g.SchoolId == schoolId
+                                 && g.Date == date
+                                 && g.SessionType == sessionType
+                                 && g.Grade == grade);
+
+        if (gradeGroup != null) return gradeGroup;
+
+        return null;
     }
 
     public Task<IEnumerable<ClassSchedule>> CloneMonthSchedule(Guid schoolId, DateOnly date)
@@ -268,15 +361,15 @@ public class ScheduleManagementService : IScheduleManagementService
         StringBuilder builder = new StringBuilder();
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<Context>();
-            
+
         var query = context.ClassSchedules
             .Where(c => c.SchoolId == schoolId
                         && c.ClassId == classId
                         && c.Date == date
             );
         if (sessionType != SessionType.FullDay)
-            query = query.Where(c => 
-                (c.SessionType == sessionType || 
+            query = query.Where(c =>
+                (c.SessionType == sessionType ||
                  c.SessionType == SessionType.FullDay));
         if (query.Any())
         {
@@ -360,7 +453,7 @@ public class ScheduleManagementService : IScheduleManagementService
         DateOnly endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
         return (startOfMonth, endOfMonth);
     }
-    
+
     private (DateOnly StartOfMonth, DateOnly EndOfMonth) GetMonthRange(DateOnly date)
     {
         return GetMonthRange(new DateTime(date.Year, date.Month, 1));
