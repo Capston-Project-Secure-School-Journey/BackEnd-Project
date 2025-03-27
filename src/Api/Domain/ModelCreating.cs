@@ -540,6 +540,59 @@ public static class ModelCreating
                 .WithMany()
                 .HasForeignKey(t => t.ClassId)
                 .OnDelete(DeleteBehavior.NoAction);
+            
+            entity.Property(t => t.ScheduleGroupId)
+                .HasColumnName("schedule_group_id")
+                .HasColumnType("char(36)")
+                .IsRequired(false);
+            
+            entity.HasOne(t => t.ScheduleGroup)
+                .WithMany()
+                .HasForeignKey(t => t.ScheduleGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // schedule group
+        builder.Entity<ScheduleGroup>(entity =>
+        {
+            entity.ToTable("schedule_groups");
+
+            entity.HasKey(t => t.Id);
+
+            entity.Property(c => c.Id)
+                .HasColumnName("id")
+                .HasColumnType("char(36)")
+                .IsRequired();
+
+            entity.Property(t => t.SchoolId)
+                .HasColumnName("school_id")
+                .HasColumnType("char(36)")
+                .IsRequired();
+
+            entity.Property(t => t.SessionType)
+                .HasColumnName("session_type")
+                .HasColumnType("tinyint")
+                .IsRequired();
+
+            entity.Property(t => t.Date)
+                .HasColumnName("date")
+                .HasColumnType("date")
+                .IsRequired();
+
+            entity.Property(t => t.Grade)
+                .HasColumnName("grade")
+                .HasColumnType("tinyint")
+                .IsRequired(false);
+
+            entity.Property(t => t.ScheduleType)
+                .HasColumnName("schedule_type")
+                .HasColumnType("tinyint")
+                .IsRequired();
+            
+            entity.HasOne(t => t.School)
+                .WithMany()
+                .HasForeignKey(t => t.SchoolId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
         
         //user requested log
