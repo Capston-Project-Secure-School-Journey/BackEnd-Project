@@ -10,4 +10,5 @@ public class CreateScheduleDto
     public ScheduleType ScheduleType { get; set; }
     public Guid? ClassId { get; set; }
     public Grade? Grade { get; set; }
+    public List<Guid> ClassException { get; set; } = [];
 }

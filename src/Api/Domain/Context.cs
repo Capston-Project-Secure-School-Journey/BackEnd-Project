@@ -15,6 +15,7 @@ public class Context : DbContext
     public DbSet<Student> Students { get; set; }
     public DbSet<FileManagement> FileManagements { get; set; }
     public DbSet<ClassSchedule> ClassSchedules { get; set; }
+    public DbSet<ScheduleGroup> ScheduleGroups { get; set; }
     public DbSet<UserRequestedLog> UserRequestedLogs { get; set; }
     public DbSet<UserBan> UserBans { get; set; }
     public Context(DbContextOptions options) :
