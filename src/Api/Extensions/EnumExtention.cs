@@ -12,7 +12,7 @@ public static class EnumExtension
     {
         return Enum.GetValues(typeof(T))
             .Cast<T>()
-            .Select(status => new ComboBoxItem
+            .Select(status => new ComboBoxItem()
             {
                 Name = GetEnumDisplayName(status),
                 Id = Convert.ToInt16(status)
