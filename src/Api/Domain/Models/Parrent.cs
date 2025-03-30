@@ -14,6 +14,7 @@ public class Parent : User
 // ReSharper disable once ClassNeverInstantiated.Global
 public class RelationshipWithStudent
 {
+    public bool IsFirstAdded { get; set; }
     public Relationship Relationship { get; set; }
     public Guid StudentId { get; set; }
 }

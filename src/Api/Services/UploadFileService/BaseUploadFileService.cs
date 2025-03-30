@@ -58,6 +58,11 @@ public class BaseUploadFileService(Context context)
         await _context.SaveChangesAsync();
     }
 
+    public async Task<FileManagement> GetFileData(Guid id)
+    {
+        return await CheckIfFileExist(id);
+    }
+    
     private async Task<FileManagement> CheckIfFileExist(Guid id)
     {
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);

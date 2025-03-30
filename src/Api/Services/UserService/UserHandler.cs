@@ -37,12 +37,19 @@ public class UserHandler : IUserHandler
         return await _userService.UpdateAvatar(id, file);
     }
 
+    public async Task<UserProfile> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request)
+    {
+        var user = await _userService.UpdateDriverInformation(id, request);
+        return await MapUserToUserProfile(user);
+    }
+
     public async Task<UserProfile> UpdateProfile(Guid id, UpdateProfileRequest request)
     {
         var dto = _mapper.Map<UpdateUserInfoDto>(request);
         var user = await _userService.UpdateUserInfo(id, dto);
         return await MapUserToUserProfile(user);
     }
+    
 
     private async Task<UserProfile> MapUserToUserProfile(User user)
     {
@@ -61,10 +68,18 @@ public class UserHandler : IUserHandler
         {
             var driver = user as Driver;
             profile = _mapper.Map<UserProfile>(user as Driver);
-            foreach (var i in driver!.DriverInformationImage)
+            foreach (var i in driver!.DriverInformationImages)
             {
                 var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(i.FileManagementId);
-                profile.DriverInformationImage.Add(url);
+                profile.DriverInformationImages.Add((url, i.Type));
+                profile.DriverInformationImageKeys.Add((i.FileManagementId, i.Type));
+            }
+            
+            foreach (var i in driver.VehicleImages)
+            {
+                var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(i.FileManagementId);
+                profile.VehicleImages.Add(url);
+                profile.VehicleImageKeys.Add(i.FileManagementId);
             }
         }
         else

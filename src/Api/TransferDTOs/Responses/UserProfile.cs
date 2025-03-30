@@ -23,9 +23,15 @@ public class UserProfile
     public VerificationMethod? VerificationMethod { get; set; }
     public Guid? SchoolId { get; set; }
     public string SchoolName { get; set; } = string.Empty;
-    public VehicleType? VehicleType { get; set; }
+    
+    // driver
+    public string VehicleType { get; set; } = string.Empty;
     public string LicenseNumber { get; set; } = string.Empty;
+    public int SeatingCapacity { get; set; }
     public List<VerifiedBy> VerifiedBy { get; set; } = [];
-    public DateTimeOffset? LastCheckDrivingLicense { get; set; }
-    public List<string> DriverInformationImage { get; set; } = [];
+    public DateTime? LastCheckDrivingLicense { get; set; }
+    public List<string> VehicleImages { get; set; } = [];
+    public List<(string, DriverInformationImageType)> DriverInformationImages { get; set; } = [];
+    public List<Guid> VehicleImageKeys { get; set; } = [];
+    public List<(Guid, DriverInformationImageType)> DriverInformationImageKeys { get; set; } = [];
 }

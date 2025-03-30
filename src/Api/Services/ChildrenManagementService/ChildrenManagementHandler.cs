@@ -25,4 +25,9 @@ public class ChildrenManagementHandler : IChildrenManagementHandler
     {
         await _childrenManagementService.RegisterChild(parentId, dto);
     }
+
+    public async Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto)
+    {
+        return await _childrenManagementService.UpdateChildPickupLocation(parentId, dto);
+    }
 }
