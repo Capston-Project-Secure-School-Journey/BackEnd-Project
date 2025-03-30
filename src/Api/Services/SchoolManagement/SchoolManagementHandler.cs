@@ -8,6 +8,7 @@ using Api.DTOs.UserManagement;
 using Api.Extensions;
 using Api.Services.UserManagementService;
 using Api.Services.UploadFileService;
+using Api.Services.UserBanService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -21,18 +22,21 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     private readonly Context _context;
     private readonly IFileUploadService _uploadFileService;
     private readonly IUserManagement _userManagement;
+    private readonly IUserBanService _userBanService;
 
     public SchoolManagementHandler(ISchoolManagement schoolManagement,
         IFileUploadService uploadFileService,
         IUserManagement userManagement,
         IMapper mapper,
-        Context context)
+        Context context,
+        IUserBanService userBanService)
     {
         _schoolManagement = schoolManagement;
         _mapper = mapper;
         _context = context;
         _uploadFileService = uploadFileService;
         _userManagement = userManagement;
+        _userBanService = userBanService;
     }
 
     public async Task<SchoolDetailResponse> CreateSchool(CreateSchoolRequest data)
@@ -76,6 +80,8 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         dto.Id = schoolId;
         var school = await _schoolManagement.UpdateSchool(dto);
         var response = _mapper.Map<SchoolDetailResponse>(school);
+        response.Images = await GetPreSignedDownload(response.Images);
+        response.ImageKeys = school.Images.Select(x => x.FileManagementId).ToList();
         await AttachSchoolAdminInfo(response);
         return response;
     }
@@ -117,20 +123,29 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         var school = await _schoolManagement.GetSchool(schoolId);
         var response = _mapper.Map<SchoolDetailResponse>(school);
         response.Images = await GetPreSignedDownload(response.Images);
+        response.ImageKeys = school.Images.Select(x => x.FileManagementId).ToList();
         await AttachSchoolAdminInfo(response);
         return response;
     }
 
-    public async Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid schoolId)
+    public async Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid userId,
+        Guid schoolId,
+        string fileName,
+        string contentType,
+        long fileSize)
     {
+        await _userBanService.CheckUserBaned(userId, BanType.S3PreSigned, true);
+
         var request = new PreSignedUrlRequest()
         {
-            ContentType = "image/jpg",
-            FileSize = 10 * 1024 * 1024,
-            Prefix = "/school/" + schoolId
+            FileName = fileName,
+            ContentType = contentType,
+            FileSize = fileSize,
+            Prefix = "school-images/" + schoolId
         };
-        var data = await _uploadFileService.GeneratePreSignedUploadUrlAsync(request);
-        return data;
+        var response = await _uploadFileService.GeneratePreSignedUploadUrlAsync(request);
+        await _userBanService.AddErrorRequest(userId, BanType.S3PreSigned);
+        return response;
     }
 
     private async Task<List<string>> GetPreSignedDownload(List<string> keys)

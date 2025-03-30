@@ -86,7 +86,7 @@ public class StudentManagementController : ControllerBase
             ContentTypeEnum.ImagePng,
             ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
             ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
-        ], 5)]
+        ], 10)]
         IFormFile file)
     {
         var schoolId = this.GetSchoolId();

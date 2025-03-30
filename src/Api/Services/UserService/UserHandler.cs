@@ -1,8 +1,10 @@
 using Api.Common.Enums;
 using Api.Domain;
 using Api.Domain.Models;
+using Api.DTOs.UploadFileService;
 using Api.DTOs.User;
 using Api.Services.UploadFileService;
+using Api.Services.UserBanService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
@@ -15,15 +17,21 @@ public class UserHandler : IUserHandler
     private readonly IMapper _mapper;
     private readonly IFileUploadService _uploadFileService;
     private readonly Context _context;
+    private readonly IUserBanService _userBanService;
+    private readonly IFileUploadService _fileUploadService;
 
     public UserHandler(IUserService userService, IMapper mapper,
         IFileUploadService uploadFileService,
-        Context context)
+        Context context,
+        IUserBanService userBanService,
+        IFileUploadService fileUploadService)
     {
         _userService = userService;
         _mapper = mapper;
         _uploadFileService = uploadFileService;
         _context = context;
+        _userBanService = userBanService;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<UserProfile> GetProfile(Guid id, UserType userType)
@@ -43,13 +51,29 @@ public class UserHandler : IUserHandler
         return await MapUserToUserProfile(user);
     }
 
+    public async Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid userId, string fileName, string contentType,
+        long fileSize)
+    {
+        await _userBanService.CheckUserBaned(userId, BanType.S3PreSigned, true);
+        var request = new PreSignedUrlRequest()
+        {
+            Prefix = $"driver-images/{userId}",
+            FileName = fileName,
+            FileSize = fileSize,
+            ContentType = contentType,
+        };
+        var response = await _fileUploadService.GeneratePreSignedUploadUrlAsync(request);
+        await _userBanService.AddErrorRequest(userId, BanType.S3PreSigned);
+        return response;
+    }
+
     public async Task<UserProfile> UpdateProfile(Guid id, UpdateProfileRequest request)
     {
         var dto = _mapper.Map<UpdateUserInfoDto>(request);
         var user = await _userService.UpdateUserInfo(id, dto);
         return await MapUserToUserProfile(user);
     }
-    
+
 
     private async Task<UserProfile> MapUserToUserProfile(User user)
     {
@@ -74,7 +98,7 @@ public class UserHandler : IUserHandler
                 profile.DriverInformationImages.Add((url, i.Type));
                 profile.DriverInformationImageKeys.Add((i.FileManagementId, i.Type));
             }
-            
+
             foreach (var i in driver.VehicleImages)
             {
                 var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(i.FileManagementId);

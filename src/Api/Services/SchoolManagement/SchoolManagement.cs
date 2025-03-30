@@ -3,6 +3,8 @@ using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.SchoolManagement;
+using Api.Extensions;
+using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.SchoolManagement;
@@ -10,10 +12,13 @@ namespace Api.Services.SchoolManagement;
 public class SchoolManagement : ISchoolManagement
 {
     private readonly Context _context;
+    private readonly IFileUploadService _fileUploadService;
 
-    public SchoolManagement(Context dbContext)
+    public SchoolManagement(Context dbContext,
+        IFileUploadService fileUploadService)
     {
         _context = dbContext;
+        _fileUploadService = fileUploadService;
     }
 
     private async Task<School> GetById(Guid id)
@@ -59,7 +64,7 @@ public class SchoolManagement : ISchoolManagement
         school.AfternoonStartTime = data.AfternoonStartTime;
         school.Email = data.Email;
         school.PhoneNumber = data.PhoneNumber;
-
+        school.Images = await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, _fileUploadService);
         _context.Entry(school).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return school;

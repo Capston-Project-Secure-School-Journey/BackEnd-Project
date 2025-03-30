@@ -1,4 +1,5 @@
 using Api.Common.Enums;
+using Api.DTOs.UploadFileService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 
@@ -10,4 +11,5 @@ public interface IUserHandler
     Task<UserProfile> UpdateProfile(Guid id, UpdateProfileRequest request);
     Task<string> UpdateAvatar(Guid id, IFormFile file);
     Task<UserProfile> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request);
+    Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid userId, string fileName, string contentType, long fileSize);
 }
