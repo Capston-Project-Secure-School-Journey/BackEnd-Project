@@ -1,7 +1,9 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
+using Api.Common.Utilities.Exceptions;
 using Api.Domain;
+using Api.DTOs.UploadFileService;
 using Api.Extensions;
 using Api.Services.SchoolManagement;
 using Api.TransferDTOs.Requests;
@@ -84,7 +86,7 @@ public class SchoolManagementController : ControllerBase
         await _schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
         return Ok();
     }
-    
+
     [HttpGet("search-schools")]
     [Authorize(UserType.Driver, UserType.Parent)]
     public async Task<ActionResult> SearchSchools([FromQuery] string schoolName)
@@ -92,10 +94,10 @@ public class SchoolManagementController : ControllerBase
         var query = _context.Schools
             .AsQueryable()
             .AsNoTracking();
-        
+
         if (!string.IsNullOrEmpty(schoolName))
             query = query.Where(sc => sc.SchoolName.Contains(schoolName));
-        
+
         var schools = await query
             .OrderBy(sc => sc.SchoolName)
             .Select(sc => new
@@ -107,7 +109,42 @@ public class SchoolManagementController : ControllerBase
                 sc.Id,
             })
             .ToListAsync();
-        
+
         return Ok(schools);
+    }
+
+    [HttpPost("{schoolId}/pre-signed-upload-url")]
+    [ValidateModel]
+    [Authorize(UserType.SchoolAdmin, UserType.Admin)]
+    public async Task<PreSignedUrlResponse> GetPreSignedUploadUrl(
+        [FromRoute] Guid schoolId,
+        string fileName,
+        long fileSize,
+        string contentType)
+    {
+        if ((fileSize / 1024f / 1024f) > 10)
+        {
+            throw new BadRequestException($"File quá lớn. Yêu cầu file nhỏ hơn 10Mb");
+        }
+
+        List<string> acceptContentType =
+        [
+            ContentTypeEnum.ImagePng.GetDescription(),
+            ContentTypeEnum.ImageJpeg.GetDescription(),
+            ContentTypeEnum.ImageHeic.GetDescription(),
+            ContentTypeEnum.ImageHeics.GetDescription(),
+            ContentTypeEnum.ImageHeif.GetDescription()
+        ];
+
+        if (!acceptContentType.Contains(contentType))
+        {
+            throw new BadRequestException("Loại file không được chấp nhận.");
+        }
+
+        return await _schoolManagementHandler.GetPreSignedUploadImage(this.GetUserId(),
+            schoolId,
+            fileName,
+            contentType,
+            fileSize);
     }
 }

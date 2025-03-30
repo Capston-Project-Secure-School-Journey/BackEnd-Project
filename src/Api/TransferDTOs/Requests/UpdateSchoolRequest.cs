@@ -38,4 +38,6 @@ public class UpdateSchoolRequest
     [Required]
     [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public List<Guid> ImageKeys { get; set; } = [];
 }
