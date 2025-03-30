@@ -15,4 +15,5 @@ public class UpdateSchoolDto
     public TimeSpan AfternoonStartTime { get; set; }
     public string? Email { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
+    public List<Guid> ImageKeys { get; set; } = [];
 }

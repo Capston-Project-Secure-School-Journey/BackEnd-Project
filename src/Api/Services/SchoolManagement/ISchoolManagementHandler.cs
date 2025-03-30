@@ -16,6 +16,10 @@ public interface ISchoolManagementHandler
     Task DeleteSchool(List<Guid> schoolIds);
     Task<Pagination<SchoolResponse>> GetSchools(GetSchoolRequest request);
     Task<SchoolDetailResponse> GetSchool(Guid schoolId);
-    Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid schoolId);
+    Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid userId, 
+        Guid schoolId,
+        string fileName,
+        string contentType,
+        long fileSize);
     Task ChangeSchoolAdminPassword(Guid schoolId, string newPassword);
 }
