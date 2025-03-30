@@ -1,7 +1,7 @@
-using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain.Models;
 using Api.Services.UploadFileService;
+using Api.TransferDTOs.Requests;
 
 namespace Api.Extensions;
 
@@ -50,7 +50,7 @@ public static class RefreshUploadedFileList
     }
     
     public static async Task<List<DriverInformationImage>> RefreshUploadedFiles(List<DriverInformationImage> currentFiles, 
-        List<(Guid, DriverInformationImageType)> newFiles,
+        List<DriverInformationImageDto> newFiles,
         IFileUploadService fileUploadService)
     {
         var baseUploadService = fileUploadService as BaseUploadFileService;
@@ -60,7 +60,7 @@ public static class RefreshUploadedFileList
 
         foreach (var i in newFiles)
         {
-            var fileData = await baseUploadService!.GetFileData(i.Item1);
+            var fileData = await baseUploadService!.GetFileData(i.Id);
 
             if (fileData == null)
                 throw new BadRequestException("Tải ảnh bằng lái không thành công.");
@@ -74,7 +74,7 @@ public static class RefreshUploadedFileList
                     {
                         Key = fileData.S3Key, 
                         FileManagementId = fileData.Id ,
-                        Type = i.Item2
+                        Type = i.Type
                     });
                 else
                     throw new BadRequestException("Tải ảnh bằng lái không thành công.");
