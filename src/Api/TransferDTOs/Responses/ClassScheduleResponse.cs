@@ -41,15 +41,15 @@ public class ClassScheduleResponseView
             if (SessionType == SessionType.FullDay)
                 builder.Append($"{ClassName} học cả ngày");
             else
-                builder.Append($"{ClassName} học vào buổi {EnumExtension.GetEnumDisplayName(SessionType)}");
+                builder.Append($"{ClassName} học vào buổi {SessionType.GetEnumDisplayName()}");
         }
         else if (ScheduleType == ScheduleType.Grade)
         {
             if (SessionType == SessionType.FullDay)
-                builder.Append($"Khối {EnumExtension.GetEnumDisplayName(Grade!.Value)} học cả ngày\n");
+                builder.Append($"Khối {Grade!.Value.GetEnumDisplayName()} học cả ngày\n");
             else
-                builder.Append($"Khối {EnumExtension.GetEnumDisplayName(Grade!.Value)} " +
-                               $"học vào buổi {EnumExtension.GetEnumDisplayName(SessionType)}\n");
+                builder.Append($"Khối {Grade!.Value.GetEnumDisplayName()} " +
+                               $"học vào buổi {SessionType.GetEnumDisplayName()}\n");
 
             if (ClassException.Count > 0)
             {
@@ -67,7 +67,7 @@ public class ClassScheduleResponseView
                 builder.Append($"Toàn trường học cả ngày\n");
             else
                 builder.Append($"Toàn trường " +
-                               $"học vào buổi {EnumExtension.GetEnumDisplayName(SessionType)}\n");
+                               $"học vào buổi {SessionType.GetEnumDisplayName()}\n");
 
             if (ClassException.Count > 0)
             {

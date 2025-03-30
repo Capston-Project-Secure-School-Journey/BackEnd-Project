@@ -16,4 +16,5 @@ public class ChildDetailDto
     public string PickUpLocation { get; set; } = string.Empty;
     public decimal PickUpLat { get; set; }
     public decimal PickUpLng { get; set; }
+    public bool IsFirstAdded { get; set; }
 }

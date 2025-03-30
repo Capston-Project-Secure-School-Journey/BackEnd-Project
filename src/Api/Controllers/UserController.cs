@@ -1,6 +1,10 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
+using Api.Common.Utilities.Exceptions;
+using Api.DTOs.UploadFileService;
+using Api.Extensions;
+using Api.Services.UploadFileService;
 using Api.Services.UserService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
@@ -13,10 +17,13 @@ namespace Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserHandler _userHandler;
+    private readonly IFileUploadService _fileUploadService;
 
-    public UserController(IUserHandler userHandler)
+    public UserController(IUserHandler userHandler,
+        IFileUploadService fileUploadService)
     {
         _userHandler = userHandler;
+        _fileUploadService = fileUploadService;
     }
 
     [HttpGet]
@@ -47,4 +54,47 @@ public class UserController : ControllerBase
     {
         return await _userHandler.UpdateAvatar(this.GetUserId(), file);
     }
+
+    [HttpPost("driver-information")]
+    [ValidateModel]
+    [Authorize(UserType.Driver)]
+    public async Task<UserProfile> UpdateDriverInformation([FromBody] UpdateDriverInformationRequest request)
+    {
+        return await _userHandler.UpdateDriverInformation(this.GetUserId(), request);
+    }
+    
+    [HttpPost("pre-signed-upload-url")]
+    [ValidateModel]
+    [Authorize(UserType.Driver)]
+    public async Task<PreSignedUrlResponse> GetPreSignedUploadUrl(
+        string fileName,
+        long fileSize,
+        string contentType)
+    {
+        if ((fileSize / 1024f / 1024f) > 30)
+        {
+            throw new BadRequestException("File size is too large.");
+        }
+        
+        List<string> acceptContentType = [ContentTypeEnum.ImagePng.GetDescription(),
+            ContentTypeEnum.ImageJpeg.GetDescription(), 
+            ContentTypeEnum.ImageHeic.GetDescription(),
+            ContentTypeEnum.ImageHeics.GetDescription(), 
+            ContentTypeEnum.ImageHeif.GetDescription()];
+
+        if (!acceptContentType.Contains(contentType))
+        {
+            throw new BadRequestException("File size is not supported.");
+        }
+        
+        var request = new PreSignedUrlRequest()
+        {
+            Prefix = $"driver-images/{this.GetUserId()}",
+            FileName = fileName,
+            FileSize = fileSize,
+            ContentType = contentType,
+        };
+        return await _fileUploadService.GeneratePreSignedUploadUrlAsync(request);
+    }
+    
 }

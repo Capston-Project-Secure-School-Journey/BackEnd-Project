@@ -44,7 +44,17 @@ public class ParentController : ControllerBase
     {
         var userId = this.GetUserId();
         await _childrenManagementService.RegisterChild(userId, request);
-
         return Ok();
+    }
+    
+    [HttpPost("child-pick-up-location")]
+    [Authorize(UserType.Parent)]
+    [CheckVerifiedEmail]
+    [ValidateModel]
+    public async Task<ActionResult> UpdateChildPickupLocation([FromBody] UpdateChildPickupLocationDto request)
+    {
+        var userId = this.GetUserId();
+        var message = await _childrenManagementService.UpdateChildPickupLocation(userId, request);
+        return Ok(message);
     }
 }

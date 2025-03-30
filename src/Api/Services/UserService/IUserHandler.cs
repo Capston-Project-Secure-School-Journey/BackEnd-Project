@@ -9,4 +9,5 @@ public interface IUserHandler
     Task<UserProfile> GetProfile(Guid id, UserType userType);
     Task<UserProfile> UpdateProfile(Guid id, UpdateProfileRequest request);
     Task<string> UpdateAvatar(Guid id, IFormFile file);
+    Task<UserProfile> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request);
 }

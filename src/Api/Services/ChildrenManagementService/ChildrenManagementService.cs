@@ -38,7 +38,7 @@ public class ChildrenManagementService : IChildrenManagementService
             return new List<ChildDto>();
 
         var childrenId = parent.RelationshipWithStudents
-            .Select(x => new { x.StudentId, x.Relationship })
+            .Select(x => new { x.StudentId, x.Relationship, x.IsFirstAdded })
             .ToList();
 
         IQueryable<Student>? children = null;
@@ -53,7 +53,11 @@ public class ChildrenManagementService : IChildrenManagementService
             .ToList()
             .Select(MapStudentToChildDto)
             .ToList();
-
+        
+        foreach (var child in response)
+        {
+            child.IsFirstAdded = childrenId.First(x => x.StudentId == child.Id).IsFirstAdded;
+        }
         return response;
     }
 
@@ -69,7 +73,9 @@ public class ChildrenManagementService : IChildrenManagementService
 
         var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == childId);
 
-        return await MapStudentToChildDetailDto(child!);
+        var response = await MapStudentToChildDetailDto(child!);
+        response.IsFirstAdded = parent.RelationshipWithStudents.First(x => x.StudentId == child!.Id).IsFirstAdded;
+        return response;
     }
 
     public async Task RegisterChild(Guid parentId, RegisterChildDto dto)
@@ -98,15 +104,57 @@ public class ChildrenManagementService : IChildrenManagementService
                 throw new BadRequestException("Học sinh đã được thêm trước đây.");
         }
 
+        var isFirstAdded = await _context.Parents
+            .FromSqlRaw(
+                @"SELECT * FROM users 
+                  WHERE discriminator = 'parent' 
+                    and IsDeleted = 0 
+                    and  JSON_CONTAINS(RelationshipWithStudents, JSON_OBJECT('StudentId', {0})",
+                student.Id)
+            .AnyAsync();
+        
         parent.RelationshipWithStudents.Add(
             new RelationshipWithStudent()
             {
                 StudentId = student.Id,
-                Relationship = dto.Relationship
+                Relationship = dto.Relationship,
+                IsFirstAdded = !isFirstAdded,
             });
 
         _context.Entry(parent).State = EntityState.Modified;
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto)
+    {
+        var parent = await GetParent(parentId);
+        if (parent.RelationshipWithStudents.All(x => x.StudentId != dto.ChildId))
+            throw new BadRequestException("Bạn không có quyền truy cập");
+        
+        if(!parent.RelationshipWithStudents.First(x => x.StudentId == dto.ChildId).IsFirstAdded)
+            throw new BadRequestException("Chỉ có phụ huynh thêm con đầu tiên mới được chỉnh sửa địa chỉ.");
+        
+        var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
+        
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        child.PickUpLocation = dto.PickUpLocation;
+        child.PickUpLat = dto.PickUpLat;
+        child.PickUpLng = dto.PickUpLng;
+        // UTC
+        child.LastTimeUpdatedPickupLocation = DateTime.Now;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        _context.Entry(child).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        
+        var date = DateTime.Now;
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
+            date = date.AddDays(2);
+        
+        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+        DateTime startOfCurrentWeek = DateTime.Now.AddDays(-diff).Date;
+        DateOnly startOfNextWeek = DateOnly.FromDateTime(startOfCurrentWeek.AddDays(7));
+
+        return $"Địa chỉ có hiệu lực từ ngày: {startOfNextWeek.ToShortDateString()}. Vì vậy hãy đón con tại địa chỉ cũ.";
     }
 
     private Student FindStudentWithHash(string hash)

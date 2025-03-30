@@ -17,6 +17,7 @@ public class Student : BaseModel
     public string PickUpLocation { get; set; } = string.Empty;
     public decimal PickUpLat { get; set; }
     public decimal PickUpLng { get; set; }
+    public DateTime? LastTimeUpdatedPickupLocation { get; set; }
     public int? LocationGroup { get; set; }
     public List<ManagedBy> ManagedBy { get; set; } = null!;
 
