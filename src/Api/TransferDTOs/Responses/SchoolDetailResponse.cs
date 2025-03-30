@@ -18,4 +18,5 @@ public class SchoolDetailResponse
 
     public string? SchoolAdminUserName { get; set; }
     public List<string> Images { get; set; } = [];
+    public List<Guid> ImageKeys { get; set; } = [];
 }
