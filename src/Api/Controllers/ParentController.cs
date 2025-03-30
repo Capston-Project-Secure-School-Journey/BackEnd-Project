@@ -47,7 +47,7 @@ public class ParentController : ControllerBase
         return Ok();
     }
     
-    [HttpPost("child-pick-up-location")]
+    [HttpPut("child-pick-up-location")]
     [Authorize(UserType.Parent)]
     [CheckVerifiedEmail]
     [ValidateModel]

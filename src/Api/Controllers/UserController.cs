@@ -51,7 +51,7 @@ public class UserController : ControllerBase
         return await _userHandler.UpdateAvatar(this.GetUserId(), file);
     }
 
-    [HttpPost("driver-information")]
+    [HttpPut("driver-information")]
     [ValidateModel]
     [Authorize(UserType.Driver)]
     public async Task<UserProfile> UpdateDriverInformation([FromBody] UpdateDriverInformationRequest request)
