@@ -164,14 +164,18 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         try
         {
+            var s3Key = await GetS3Key(id);
             var deleteRequest = new DeleteObjectRequest
             {
                 BucketName = _bucketName,
-                Key = await GetS3Key(id)
+                Key = s3Key
             };
 
-            await _s3Client.DeleteObjectAsync(deleteRequest);
             await DeleteFileManagement(id);
+            if (await FileExist(s3Key))
+            {
+                await _s3Client.DeleteObjectAsync(deleteRequest);
+            }
 
             return true;
         }
@@ -179,6 +183,21 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         {
             throw new Exception($"Error deleting file");
         }
+    }
+
+    public async Task DeleteFileAsync(List<Guid> ids)
+    {
+        var tasks = new List<Task<bool>>();
+
+        foreach (var id in ids)
+        {
+            var s3Key = await GetS3Key(id);
+            tasks.Add(FileExist(s3Key, true));
+        }
+
+        await Task.WhenAll(tasks);
+        foreach (var id in ids)
+            await DeleteFileAsync(id);
     }
 
     public async Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request,
@@ -274,6 +293,26 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         catch (AmazonS3Exception)
         {
             throw new Exception($"Error generating pre-signed download URL");
+        }
+    }
+
+    private async Task<bool> FileExist(string key, bool isThrow = false)
+    {
+        try
+        {
+            var metadataRequest = new GetObjectMetadataRequest
+            {
+                BucketName = _bucketName,
+                Key = key
+            };
+            await _s3Client.GetObjectMetadataAsync(metadataRequest);
+            return true;
+        }
+        catch (AmazonS3Exception)
+        {
+            if (isThrow)
+                throw new Exception($"Error checking if the file exists with the key {key}");
+            return false;
         }
     }
 }

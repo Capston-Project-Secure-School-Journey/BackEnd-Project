@@ -4,15 +4,19 @@ namespace Api.Domain.Models;
 
 public class Driver : User
 {
-    public VehicleType? VehicleType { get; set; }
-    public string? LicenseNumber { get; set; }
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string VehicleType { get; set; } = string.Empty;
+    public string LicenseNumber { get; set; } = string.Empty;
+    public int SeatingCapacity { get; set; }
     public List<VerifiedBy> VerifiedBy { get; set; }
-    public DateTimeOffset? LastCheckDrivingLicense { get; set; }
-    public List<FileMetadata> DriverInformationImage { get; set; }
+    public DateTime? LastCheckDrivingLicense { get; set; }
+    public List<DriverInformationImage> DriverInformationImages { get; set; }
+    public List<FileMetadata>  VehicleImages { get; set; }
 
     public Driver()
     {
-        DriverInformationImage = [];
+        DriverInformationImages = [];
+        VehicleImages = [];
         VerifiedBy = [];
     }
 }
@@ -21,4 +25,9 @@ public class VerifiedBy
 {
     public Guid SchoolId { get; set; }
     public DateTime VerifiedAt { get; set; }
+}
+
+public class DriverInformationImage : FileMetadata
+{
+    public DriverInformationImageType Type { get; set; }
 }

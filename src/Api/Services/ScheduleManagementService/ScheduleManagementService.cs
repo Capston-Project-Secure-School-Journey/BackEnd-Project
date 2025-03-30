@@ -390,7 +390,7 @@ public class ScheduleManagementService : IScheduleManagementService
             if (schedule!.SessionType == SessionType.FullDay)
                 builder.Append($"Đã có lịch học cả ngày\n");
             else
-                builder.Append($"Đã có lịch học vào buổi {EnumExtension.GetEnumDisplayName(schedule.SessionType)}\n");
+                builder.Append($"Đã có lịch học vào buổi {schedule.SessionType.GetEnumDisplayName()}\n");
             builder.Append($"Vui lòng kiểm tra lại!");
 
             if (token.IsCancellationRequested)

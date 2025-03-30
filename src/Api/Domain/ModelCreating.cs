@@ -119,23 +119,28 @@ public static class ModelCreating
             entity.Property(u => u.VehicleType)
                 .HasColumnName("vehicle_type")
                 .IsRequired(false)
-                .HasColumnType("tinyint");
+                .HasColumnType("nvarchar(200)");
 
             entity.Property(u => u.LicenseNumber)
                 .HasColumnName("license_number")
                 .IsRequired(false)
-                .HasColumnType("varchar(15)");
+                .HasColumnType("varchar(50)");
 
             entity.Property(u => u.VerifiedBy)
                 .HasColumnName("verified_by")
                 .IsRequired(false)
                 .HasColumnType("json");
 
-            entity.Property(u => u.DriverInformationImage)
-                .HasColumnName("driver_information_image")
+            entity.Property(u => u.DriverInformationImages)
+                .HasColumnName("driver_information_images")
                 .IsRequired(false)
                 .HasColumnType("json");
-
+            
+            entity.Property(u => u.VehicleImages)
+                .HasColumnName("vehicle_images")
+                .IsRequired(false)
+                .HasColumnType("json");
+            
             entity.Property(u => u.LastCheckDrivingLicense)
                 .HasColumnName("last_check_driving_license")
                 .IsRequired(false)
@@ -350,7 +355,12 @@ public static class ModelCreating
                     .HasColumnName("managed_by")
                     .IsRequired(false)
                     .HasColumnType("json");
-
+                
+                entity.Property(u => u.LastTimeUpdatedPickupLocation)
+                    .HasColumnName("last_time_updated_pickup_location")
+                    .IsRequired(false)
+                    .HasColumnType("datetime");
+                
                 entity.HasOne(s => s.School)
                     .WithMany()
                     .HasForeignKey(s => s.SchoolId)

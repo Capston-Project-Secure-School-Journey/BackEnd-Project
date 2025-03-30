@@ -7,4 +7,5 @@ public interface IChildrenManagementHandler
     Task<IEnumerable<ChildDto>> GetMyChildren(Guid parentId);
     Task<ChildDetailDto> GetChildById(Guid parentId, Guid childId);
     Task RegisterChild(Guid parentId, RegisterChildDto dto);
+    Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto);
 }

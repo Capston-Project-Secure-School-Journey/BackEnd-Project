@@ -14,20 +14,20 @@ public static class EnumExtension
             .Cast<T>()
             .Select(status => new ComboBoxItem()
             {
-                Name = GetEnumDisplayName(status),
+                Name = status.GetEnumDisplayName(),
                 Id = Convert.ToInt16(status)
             })
             .ToList();
     }
-
-    public static string GetEnumDisplayName<T>(T value) where T : Enum
+    
+    public static string GetEnumDisplayName<T>(this T value) where T : Enum
     {
         return value.GetType()
             .GetField(value.ToString())
             ?.GetCustomAttribute<DisplayAttribute>()?
             .Name ?? value.ToString();
     }
-
+    
     public static string GetDescription(this Enum value)
     {
         var field = value.GetType().GetField(value.ToString());
