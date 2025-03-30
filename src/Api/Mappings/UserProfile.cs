@@ -9,9 +9,12 @@ public class UserProfile : Profile
 {
     public UserProfile()
     {
-        CreateMap<Driver, TransferDTOs.Responses.UserProfile>().ForMember(x => x.DriverInformationImage,
+        CreateMap<Driver, TransferDTOs.Responses.UserProfile>().ForMember(x => x.DriverInformationImages,
             opt =>
-                opt.Ignore());
+                opt.Ignore())
+            .ForMember(x => x.VehicleImages,
+                opt =>
+                    opt.Ignore());
         CreateMap<User, TransferDTOs.Responses.UserProfile>();
         CreateMap<SchoolPerson, TransferDTOs.Responses.UserProfile>();
         CreateMap<UpdateProfileRequest, UpdateUserInfoDto>();

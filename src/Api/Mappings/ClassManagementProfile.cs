@@ -23,6 +23,6 @@ public class ClassManagementProfile : Profile
                             Name = string.Empty
                         })))
             .ForMember(x => x.GradeName, opt =>
-                opt.MapFrom(x => EnumExtension.GetEnumDisplayName(x.Grade)));
+                opt.MapFrom(x => x.Grade.GetEnumDisplayName()));
     }
 }
