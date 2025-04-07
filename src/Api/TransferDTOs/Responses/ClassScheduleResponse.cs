@@ -15,6 +15,7 @@ public class ClassScheduleResponse
     public Guid ClassId { get; set; }
     public string ClassName { get; set; } = string.Empty;
     public Grade? Grade { get; set; }
+    public string GradeName { get; set; } = string.Empty;
     
 }
 
@@ -31,56 +32,60 @@ public class ClassScheduleResponseView
     public List<Guid> ClassException = [];
     public List<string> ClassNameException = [];
     
-    public string TextDisplay => GetDisplayText();
+    public List<string> TextDisplay => GetDisplayText();
 
-    private string GetDisplayText()
+    private List<string> GetDisplayText()
     {
-        StringBuilder builder = new StringBuilder();
+        var result = new List<string>();
         if (ScheduleType == ScheduleType.Class)
         {
             if (SessionType == SessionType.FullDay)
-                builder.Append($"{ClassName} học cả ngày");
+                result.Add($"{ClassName} học cả ngày");
             else
-                builder.Append($"{ClassName} học vào buổi {SessionType.GetEnumDisplayName()}");
+                result.Add($"{ClassName} học vào buổi {SessionType.GetEnumDisplayName()}");
         }
         else if (ScheduleType == ScheduleType.Grade)
         {
             if (SessionType == SessionType.FullDay)
-                builder.Append($"Khối {Grade!.Value.GetEnumDisplayName()} học cả ngày\n");
+                result.Add($"Khối {Grade!.Value.GetEnumDisplayName()} học cả ngày");
             else
-                builder.Append($"Khối {Grade!.Value.GetEnumDisplayName()} " +
-                               $"học vào buổi {SessionType.GetEnumDisplayName()}\n");
+                result.Add($"Khối {Grade!.Value.GetEnumDisplayName()} " +
+                           $"học vào buổi {SessionType.GetEnumDisplayName()}");
 
             if (ClassException.Count > 0)
             {
+                StringBuilder builder = new StringBuilder();
                 builder.Append("Ngoại trừ các lớp: ");
                 foreach (var i in ClassNameException)
                 {
                     builder.Append($"{i}, ");
                 }
                 builder.Remove(builder.Length - 2 , 2);
+                
+                result.Add(builder.ToString());
             }
         }
         else
         {
             if (SessionType == SessionType.FullDay)
-                builder.Append($"Toàn trường học cả ngày\n");
+                result.Add($"Toàn trường học cả ngày");
             else
-                builder.Append($"Toàn trường " +
-                               $"học vào buổi {SessionType.GetEnumDisplayName()}\n");
+                result.Add($"Toàn trường " +
+                           $"học vào buổi {SessionType.GetEnumDisplayName()}");
 
             if (ClassException.Count > 0)
             {
+                StringBuilder builder = new StringBuilder();
                 builder.Append("Ngoại trừ các lớp: ");
                 foreach (var i in ClassNameException)
                 {
                     builder.Append($"{i}, ");
                 }
                 builder.Remove(builder.Length - 2 , 2);
+                result.Add(builder.ToString());
             }
         }
-        
-        return builder.ToString();  
+        return result;
     }
 }
 

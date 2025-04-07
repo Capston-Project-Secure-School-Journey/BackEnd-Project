@@ -2,6 +2,7 @@ using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.UploadFileService;
+using Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.UploadFileService;
@@ -21,7 +22,7 @@ public class BaseUploadFileService(Context context)
             RelatedObjectId = data.RelatedObjectId,
             RelatedObjectType = data.RelatedObjectType,
             FileType = data.FileType,
-            UploadDate = DateTime.Now,
+            UploadDate = DateTimeHelper.GetDateTimeUtc7(),
             IsUploaded = !preSign
         };
 
