@@ -159,7 +159,7 @@ public class ScheduleManagementService : IScheduleManagementService
             {
                 schedule.ScheduleGroupId = group.Id;
                 schedule.ScheduleType = group.ScheduleType;
-                
+
                 if (group.ScheduleType is ScheduleType.Grade)
                     schedule.Grade = group.Grade;
             }
@@ -181,19 +181,45 @@ public class ScheduleManagementService : IScheduleManagementService
         return schedule;
     }
 
-    public Task DeleteSchedule(Guid schoolId, Guid id)
+    public async Task DeleteSchedule(Guid schoolId, Guid id)
     {
-        throw new NotImplementedException();
+        var schedule = await _context.ClassSchedules
+            .Include(x => x.ScheduleGroup)
+            .FirstOrDefaultAsync(c => c.Id == id && c.SchoolId == schoolId);
+
+        if (schedule == null)
+            throw new BadRequestException("Không tìm thấy lịch học");
+
+        if (schedule.ScheduleGroupId != null)
+        {
+            schedule.ScheduleGroup!.ClassException.Add(schedule.ClassId);
+
+            int classCountByGrade;
+            if (schedule.ScheduleType is ScheduleType.Grade)
+                classCountByGrade = _context.ClassSchedules
+                    .Count(x => x.SchoolId == schoolId && x.Grade == schedule.Grade);
+            else
+                classCountByGrade = _context.ClassSchedules
+                    .Count(x => x.SchoolId == schoolId);
+
+            if (schedule.ScheduleGroup!.ClassException.Count == classCountByGrade)
+            {
+                _context.ScheduleGroups.Remove(schedule.ScheduleGroup!);
+                _context.Entry(schedule.ScheduleGroup!).State = EntityState.Deleted;
+            }
+        }
+
+        _context.ClassSchedules.Remove(schedule);
+        _context.Entry(schedule).State = EntityState.Deleted;
+        await _context.SaveChangesAsync();
     }
 
-    public Task DeleteSchedule(Guid schoolId, List<Guid> ids)
+    public async Task DeleteSchedule(Guid schoolId, List<Guid> ids)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<ClassSchedule>> GetScheduleByMonth(Guid schoolId, DateOnly date)
-    {
-        throw new NotImplementedException();
+        for (int i = 0; i < ids.Count - 1; i++)
+        {
+            await DeleteSchedule(schoolId, ids[i]);
+        }
     }
 
     public Task<IEnumerable<ClassSchedule>> GetScheduleByWeek(Guid schoolId, DateTime date)
@@ -201,9 +227,18 @@ public class ScheduleManagementService : IScheduleManagementService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ClassSchedule>> GetScheduleByDate(Guid schoolId, DateTime date)
+    public async Task<IEnumerable<ClassSchedule>> GetScheduleByDate(Guid schoolId, DateOnly date)
     {
-        throw new NotImplementedException();
+        var schedules = await _context.ClassSchedules
+            .Include(c => c.Class)
+            .AsNoTracking()
+            .Where(c => c.SchoolId == schoolId &&
+                        c.Date == date)
+            .OrderBy(c => c.Class.Grade)
+            .ThenByDescending(c => c.Class.ClassName)
+            .ToListAsync();
+
+        return schedules;
     }
 
     public async Task<ClassSchedulePaginationResponse> GetScheduleView(Guid schoolId, DateOnly date)
@@ -225,7 +260,7 @@ public class ScheduleManagementService : IScheduleManagementService
             .Where(x => x.SchoolId == schoolId)
             .Select(x => new { x.Id, x.ClassName })
             .ToListAsync();
-        
+
         var response = new ClassSchedulePaginationResponse();
 
         foreach (var group in scheduleGroups)
@@ -308,6 +343,7 @@ public class ScheduleManagementService : IScheduleManagementService
                 .OrderByDescending(c => c.ScheduleType)
                 .ThenByDescending(c => c.SessionType);
         }
+
         return response;
     }
 

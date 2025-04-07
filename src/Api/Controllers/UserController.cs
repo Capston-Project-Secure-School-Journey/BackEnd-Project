@@ -76,6 +76,7 @@ public class UserController : ControllerBase
         [
             ContentTypeEnum.ImagePng.GetDescription(),
             ContentTypeEnum.ImageJpeg.GetDescription(),
+            ContentTypeEnum.ImageJpg.GetDescription(),
             ContentTypeEnum.ImageHeic.GetDescription(),
             ContentTypeEnum.ImageHeics.GetDescription(),
             ContentTypeEnum.ImageHeif.GetDescription()

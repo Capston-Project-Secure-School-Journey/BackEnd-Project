@@ -141,17 +141,17 @@ public class ChildrenManagementService : IChildrenManagementService
         child.PickUpLat = dto.PickUpLat;
         child.PickUpLng = dto.PickUpLng;
         // UTC
-        child.LastTimeUpdatedPickupLocation = DateTime.Now;
+        child.LastTimeUpdatedPickupLocation = DateTimeHelper.GetDateTimeUtc7();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         _context.Entry(child).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         
-        var date = DateTime.Now;
-        if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
+        var date = DateTimeHelper.GetDateTimeUtc7();
+        if (date.DayOfWeek == DayOfWeek.Sunday)
             date = date.AddDays(2);
         
         int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-        DateTime startOfCurrentWeek = DateTime.Now.AddDays(-diff).Date;
+        DateTime startOfCurrentWeek = date.AddDays(-diff).Date;
         DateOnly startOfNextWeek = DateOnly.FromDateTime(startOfCurrentWeek.AddDays(7));
 
         return $"Địa chỉ có hiệu lực từ ngày: {startOfNextWeek.ToShortDateString()}. Vì vậy hãy đón con tại địa chỉ cũ.";

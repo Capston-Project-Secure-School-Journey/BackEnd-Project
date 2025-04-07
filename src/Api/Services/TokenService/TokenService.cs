@@ -34,7 +34,7 @@ public class TokenService : ITokenService
             _tokenSettings.Issuer,
             _tokenSettings.Audience,
             claims,
-            expires: DateTime.Now.AddHours(Convert.ToInt16(_tokenSettings.AccessTokenExpirationHours)),
+            expires: DateTime.UtcNow.AddHours(Convert.ToInt16(_tokenSettings.AccessTokenExpirationHours)),
             signingCredentials: signinCredentials
         );
 
@@ -60,7 +60,7 @@ public class TokenService : ITokenService
             _tokenSettings.Issuer,
             _tokenSettings.Audience,
             claims,
-            expires: DateTime.Now.AddHours(expireHours),
+            expires: DateTime.UtcNow.AddHours(expireHours),
             signingCredentials: signinCredentials
         );
         return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
