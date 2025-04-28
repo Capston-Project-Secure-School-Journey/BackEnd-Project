@@ -18,6 +18,11 @@ public class Context : DbContext
     public DbSet<ScheduleGroup> ScheduleGroups { get; set; }
     public DbSet<UserRequestedLog> UserRequestedLogs { get; set; }
     public DbSet<UserBan> UserBans { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<SystemVariable> SystemVariables { get; set; }
+    public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
+    public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
+    
     public Context(DbContextOptions options) :
         base(options)
     {

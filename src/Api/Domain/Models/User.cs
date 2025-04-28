@@ -20,4 +20,5 @@ public class User : BaseModel
     public Guid? AvatarKey { get; set; }
     public AccountStatus AccountStatus { get; set; }
     public VerificationMethod? VerificationMethod { get; set; }
+    public string[] DeviceTokens { get; set; } = [];
 }

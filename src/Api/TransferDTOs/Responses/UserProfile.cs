@@ -31,7 +31,19 @@ public class UserProfile
     public List<VerifiedBy> VerifiedBy { get; set; } = [];
     public DateTime? LastCheckDrivingLicense { get; set; }
     public List<string> VehicleImages { get; set; } = [];
-    public List<(string, DriverInformationImageType)> DriverInformationImages { get; set; } = [];
+    public List<DriverInformationImageUrl> DriverInformationImages { get; set; } = [];
     public List<Guid> VehicleImageKeys { get; set; } = [];
-    public List<(Guid, DriverInformationImageType)> DriverInformationImageKeys { get; set; } = [];
+    public List<DriverInformationImageKey> DriverInformationImageKeys { get; set; } = [];
+}
+
+public class DriverInformationImageKey
+{
+    public Guid Id { get; set; }
+    public DriverInformationImageType Type { get; set; }
+}
+
+public class DriverInformationImageUrl
+{
+    public string Url { get; set; } = string.Empty;
+    public DriverInformationImageType Type { get; set; }
 }

@@ -1,8 +1,11 @@
 using System.Text.Json;
+using System.Transactions;
 using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api;
 using Api.Pipeline.Middlewares;
+using Hangfire;
+using Hangfire.MySql;
 using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -27,6 +30,27 @@ builder.Services.AddDbContext<Context>(
                 .EnableDetailedErrors();
         }
     });
+
+builder.Services.AddHangfire(config =>
+    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseStorage(
+            new MySqlStorage(
+                builder.Configuration.GetConnectionString("HangfireConnection"),
+                new MySqlStorageOptions
+                {
+                    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                    QueuePollInterval = TimeSpan.FromSeconds(15),
+                    JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                    CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                    PrepareSchemaIfNecessary = true,
+                    DashboardJobListLimit = 50000,
+                    TransactionTimeout = TimeSpan.FromMinutes(1),
+                    TablesPrefix = "Hangfire"
+                }))
+    );
+builder.Services.AddHangfireServer();
 
 DependencyContainer.RegisterServices(builder.Services);
 // Add services to the container.
@@ -87,19 +111,16 @@ builder.Services.AddCors(options =>
 
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
+builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoSettings"));
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .MinimumLevel.Information()
     .WriteTo.Console()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-    // .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://test.tpham.info:9200"))  
-    // {  
-    //     AutoRegisterTemplate = true,  
-    //     IndexFormat = "SSAST-logs-{0:yyyy.MM.   dd}"  
-    // })  
     .CreateLogger();
 builder.Services.AddSerilog();
+MongoMappingConfig.RegisterMappings();
 
 var app = builder.Build();
 
@@ -109,6 +130,7 @@ app.UseOpenApi();
 app.UseSwaggerUI();
 app.UseCors(cors);
 app.MapControllers();
+app.UseHangfireDashboard();
 
 using (var scope = app.Services.CreateScope())
 {
