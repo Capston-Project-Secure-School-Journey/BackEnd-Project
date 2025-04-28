@@ -21,7 +21,7 @@ public class AuthorizeAttribute(params UserType[] userTypeFilter) : Attribute, I
         }
         catch (ForbiddenException)
         {
-            throw;
+            throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
         }
         catch (Exception)
         {
