@@ -95,8 +95,9 @@ public class UserHandler : IUserHandler
             foreach (var i in driver!.DriverInformationImages)
             {
                 var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(i.FileManagementId);
-                profile.DriverInformationImages.Add((url, i.Type));
-                profile.DriverInformationImageKeys.Add((i.FileManagementId, i.Type));
+                profile.DriverInformationImages.Add(new DriverInformationImageUrl() { Type = i.Type, Url = url });
+                profile.DriverInformationImageKeys.Add(new DriverInformationImageKey()
+                    { Type = i.Type, Id = i.FileManagementId });
             }
 
             foreach (var i in driver.VehicleImages)

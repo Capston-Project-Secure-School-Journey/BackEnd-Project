@@ -50,6 +50,12 @@ public class BaseUploadFileService(Context context)
         var file = await CheckIfFileExist(id);
         return file.S3Key;
     }
+    
+    protected async Task<FileManagement> GetFileManagement(Guid id)
+    {
+        var file = await CheckIfFileExist(id);
+        return file;
+    }
 
     public async Task MarkFileAsUploadedAsync(Guid id)
     {
