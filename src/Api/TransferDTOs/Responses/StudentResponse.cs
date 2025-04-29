@@ -12,4 +12,5 @@ public class StudentResponse
     public Gender Gender { get; set; }
     public Guid ClassId { get; set; }
     public string ClassName { get; set; } = string.Empty;
+    public bool NeedsPickup { get; set; }
 }

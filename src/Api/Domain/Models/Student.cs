@@ -20,7 +20,7 @@ public class Student : BaseModel
     public DateTime? LastTimeUpdatedPickupLocation { get; set; }
     public int? LocationGroup { get; set; }
     public List<ManagedBy> ManagedBy { get; set; } = null!;
-
+    public bool NeedsPickup { get; set; } = true;
     public School School { get; set; } = null!;
     public Class Class { get; set; } = null!;
 }
