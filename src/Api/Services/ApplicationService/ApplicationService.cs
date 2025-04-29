@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
@@ -13,7 +14,7 @@ public class ApplicationService(
         var applications = context
             .DriverApprovalRequests
             .AsNoTracking()
-            .Where(x => x.SchoolId == schoolId)
+            .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created)
             .OrderBy(x => x.RequestedDate)
             .ToList();
 
