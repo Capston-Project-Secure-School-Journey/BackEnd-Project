@@ -129,6 +129,106 @@ namespace Api.Migrations
                     b.ToTable("class_schedules", (string)null);
                 });
 
+            modelBuilder.Entity("Api.Domain.Models.DriverApprovalRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("driver_id");
+
+                    b.Property<string>("DriverInformationImages")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("driver_information_images");
+
+                    b.Property<DateTime?>("LastCheckDrivingLicense")
+                        .HasColumnType("datetime")
+                        .HasColumnName("last_check_driving_license");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("license_number");
+
+                    b.Property<string>("MotivationLetter")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<sbyte>("RequestStatus")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("request_status");
+
+                    b.Property<DateTime>("RequestedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("requested_date");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("school_id");
+
+                    b.Property<int>("SeatingCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VehicleImages")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("vehicle_images");
+
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("vehicle_type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("driver_approval_requests", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.DriverRequestStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("changed_by");
+
+                    b.Property<sbyte?>("FromStatus")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("request_id");
+
+                    b.Property<sbyte>("ToStatus")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("driver_request_status_histories", (string)null);
+                });
+
             modelBuilder.Entity("Api.Domain.Models.FileManagement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -189,6 +289,60 @@ namespace Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("file_managements", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("createdAt");
+
+                    b.Property<ulong>("IsRead")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_read");
+
+                    b.Property<string>("Navigation")
+                        .HasColumnType("varchar(300)")
+                        .HasColumnName("navigation");
+
+                    b.Property<sbyte>("Priority")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("priority");
+
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("recipient_id");
+
+                    b.Property<Guid?>("SenderId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("sender_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("title");
+
+                    b.Property<sbyte>("Type")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("notifications", (string)null);
                 });
 
             modelBuilder.Entity("Api.Domain.Models.ScheduleGroup", b =>
@@ -355,6 +509,10 @@ namespace Api.Migrations
                         .HasColumnType("json")
                         .HasColumnName("managed_by");
 
+                    b.Property<sbyte>("NeedsPickup")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("needs_pickup");
+
                     b.Property<decimal>("PickUpLat")
                         .HasColumnType("decimal(10,6)")
                         .HasColumnName("pick_up_lat");
@@ -386,6 +544,26 @@ namespace Api.Migrations
                     b.HasIndex("SchoolId");
 
                     b.ToTable("students", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.SystemVariable", b =>
+                {
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("school_id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("value");
+
+                    b.HasKey("SchoolId", "Name");
+
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("Api.Domain.Models.Teacher", b =>
@@ -483,6 +661,11 @@ namespace Api.Migrations
                     b.Property<string>("DetailAddress")
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("detail_address");
+
+                    b.Property<string>("DeviceTokens")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("device_tokens");
 
                     b.Property<string>("Email")
                         .HasColumnType("varchar(100)")
@@ -706,6 +889,35 @@ namespace Api.Migrations
                     b.Navigation("School");
                 });
 
+            modelBuilder.Entity("Api.Domain.Models.DriverRequestStatusHistory", b =>
+                {
+                    b.HasOne("Api.Domain.Models.DriverApprovalRequest", "Request")
+                        .WithMany("DriverRequestStatusHistories")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.Notification", b =>
+                {
+                    b.HasOne("Api.Domain.Models.User", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Api.Domain.Models.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("Api.Domain.Models.ScheduleGroup", b =>
                 {
                     b.HasOne("Api.Domain.Models.School", "School")
@@ -761,6 +973,11 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Domain.Models.Class", b =>
                 {
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Api.Domain.Models.DriverApprovalRequest", b =>
+                {
+                    b.Navigation("DriverRequestStatusHistories");
                 });
 
             modelBuilder.Entity("Api.Domain.Models.School", b =>

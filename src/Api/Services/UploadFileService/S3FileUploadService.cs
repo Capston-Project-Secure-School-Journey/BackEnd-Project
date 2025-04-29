@@ -13,7 +13,8 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     private readonly IAmazonS3 _s3Client;
     private readonly string _bucketName;
 
-    public S3FileUploadService(IOptions<S3Settings> settings, Context context) : base(context)
+    public S3FileUploadService(IOptions<S3Settings> settings, Context context) : base(
+        context)
     {
         _bucketName = settings.Value.BucketName;
         var s3Config = new AmazonS3Config
@@ -33,7 +34,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         try
         {
-            var fmKey = Guid.Empty;
+            Guid fmKey;
 
             var fileName = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
@@ -65,11 +66,13 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             catch (Exception)
             {
                 await DeleteFileAsync(fileName, null);
+                throw;
             }
 
             return new UploadFileResponse()
             {
                 Key = fmKey,
+                S3Key = fileName,
                 ContentType = file.ContentType,
                 Size = file.Length,
                 S3Url = await GeneratePreSignedDownloadUrlAsync(fileName, 30)
@@ -89,7 +92,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             long streamLength = 0;
             if (stream.CanSeek) streamLength = stream.Length;
 
-            var fmKey = Guid.Empty;
+            Guid fmKey;
             var key = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(fileName)}";
 
             var request = new PutObjectRequest
@@ -121,14 +124,16 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             catch (Exception)
             {
                 await DeleteFileAsync(key, null);
+                throw;
             }
 
             var response = new UploadFileResponse()
             {
                 Key = fmKey,
+                S3Key = key,
                 ContentType = contentType,
                 Size = streamLength,
-                S3Url = await GeneratePreSignedDownloadUrlAsync(fileName, 30)
+                S3Url = await GeneratePreSignedDownloadUrlAsync(key, 30)
             };
 
             return response;
@@ -187,17 +192,10 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
     public async Task DeleteFileAsync(List<Guid> ids)
     {
-        var tasks = new List<Task<bool>>();
-
         foreach (var id in ids)
         {
-            var s3Key = await GetS3Key(id);
-            tasks.Add(FileExist(s3Key, true));
-        }
-
-        await Task.WhenAll(tasks);
-        foreach (var id in ids)
             await DeleteFileAsync(id);
+        }
     }
 
     public async Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request,
@@ -293,6 +291,56 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         catch (AmazonS3Exception)
         {
             throw new Exception($"Error generating pre-signed download URL");
+        }
+    }
+
+    public async Task<UploadFileResponse> CopyObjectAsync(Guid id, string prefix)
+    {
+        try
+        {
+            var fileManagement = await GetFileManagement(id);
+            Guid fmKey;
+            var key = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(fileManagement.S3Key)}";
+
+            await _s3Client.CopyObjectAsync(_bucketName,
+                fileManagement.S3Key,
+                _bucketName,
+                key);
+            try
+            {
+                var dto = new AddFileManagementDto()
+                {
+                    FileName = fileManagement.FileName,
+                    S3Key = key,
+                    FileType = fileManagement.FileType,
+                    FileSize = fileManagement.FileSize,
+                    UploadBy = Guid.Empty,
+                    RelatedObjectId = Guid.Empty,
+                    RelatedObjectType = null
+                };
+                var fileM = await AddFileManagement(dto, false);
+                fmKey = fileM.Id;
+            }
+            catch (Exception)
+            {
+                await DeleteFileAsync(key, null);
+                throw;
+            }
+
+            var response = new UploadFileResponse()
+            {
+                Key = fmKey,
+                S3Key = key,
+                ContentType = fileManagement.FileType,
+                Size = fileManagement.FileSize,
+                S3Url = await GeneratePreSignedDownloadUrlAsync(key, 30)
+            };
+
+            return response;
+        }
+        catch (AmazonS3Exception)
+        {
+            throw new Exception($"Error uploading stream");
         }
     }
 

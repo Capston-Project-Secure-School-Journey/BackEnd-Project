@@ -18,4 +18,5 @@ public class StudentDetailResponse
     public string PickUpLocation { get; set; } = string.Empty;
     public decimal PickUpLat { get; set; }
     public decimal PickUpLng { get; set; }
+    public bool NeedsPickup { get; set; }
 }

@@ -99,6 +99,10 @@ public static class ModelCreating
                 .HasColumnName("verification_method")
                 .IsRequired(false)
                 .HasColumnType("tinyint");
+
+            entity.Property(u => u.DeviceTokens)
+                .HasColumnName("device_tokens")
+                .HasColumnType("json");
         });
 
         builder.Entity<SchoolPerson>(entity =>
@@ -135,12 +139,12 @@ public static class ModelCreating
                 .HasColumnName("driver_information_images")
                 .IsRequired(false)
                 .HasColumnType("json");
-            
+
             entity.Property(u => u.VehicleImages)
                 .HasColumnName("vehicle_images")
                 .IsRequired(false)
                 .HasColumnType("json");
-            
+
             entity.Property(u => u.LastCheckDrivingLicense)
                 .HasColumnName("last_check_driving_license")
                 .IsRequired(false)
@@ -355,12 +359,17 @@ public static class ModelCreating
                     .HasColumnName("managed_by")
                     .IsRequired(false)
                     .HasColumnType("json");
-                
+
                 entity.Property(u => u.LastTimeUpdatedPickupLocation)
                     .HasColumnName("last_time_updated_pickup_location")
                     .IsRequired(false)
                     .HasColumnType("datetime");
-                
+
+                entity.Property(u => u.NeedsPickup)
+                    .HasColumnName("needs_pickup")
+                    .IsRequired()
+                    .HasColumnType("tinyint");
+
                 entity.HasOne(s => s.School)
                     .WithMany()
                     .HasForeignKey(s => s.SchoolId)
@@ -540,28 +549,28 @@ public static class ModelCreating
                 .HasColumnName("schedule_type")
                 .HasColumnType("tinyint")
                 .IsRequired();
-            
+
             entity.HasOne(t => t.School)
                 .WithMany(sc => sc.ClassSchedules)
                 .HasForeignKey(t => t.SchoolId)
                 .OnDelete(DeleteBehavior.NoAction);
-            
+
             entity.HasOne(t => t.Class)
                 .WithMany()
                 .HasForeignKey(t => t.ClassId)
                 .OnDelete(DeleteBehavior.NoAction);
-            
+
             entity.Property(t => t.ScheduleGroupId)
                 .HasColumnName("schedule_group_id")
                 .HasColumnType("char(36)")
                 .IsRequired(false);
-            
+
             entity.HasOne(t => t.ScheduleGroup)
                 .WithMany()
                 .HasForeignKey(t => t.ScheduleGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        
+
         // schedule group
         builder.Entity<ScheduleGroup>(entity =>
         {
@@ -598,13 +607,13 @@ public static class ModelCreating
                 .HasColumnName("schedule_type")
                 .HasColumnType("tinyint")
                 .IsRequired();
-            
+
             entity.HasOne(t => t.School)
                 .WithMany()
                 .HasForeignKey(t => t.SchoolId)
                 .OnDelete(DeleteBehavior.NoAction);
         });
-        
+
         //user requested log
         builder.Entity<UserRequestedLog>(entity =>
         {
@@ -617,23 +626,23 @@ public static class ModelCreating
                 .HasColumnType("int unsigned")
                 .UseMySqlIdentityColumn()
                 .IsRequired();
-            
+
             entity.Property(c => c.UserId)
                 .HasColumnName("user_id")
                 .HasColumnType("char(36)")
                 .IsRequired();
-            
+
             entity.Property(c => c.UserRequestedType)
                 .HasColumnName("user_requested_type")
                 .HasColumnType("tinyint")
                 .IsRequired();
-            
+
             entity.Property(c => c.DatetimeRequested)
                 .HasColumnName("datetime_requested")
                 .HasColumnType("datetime")
                 .IsRequired();
         });
-        
+
         //user ban
         builder.Entity<UserBan>(entity =>
         {
@@ -646,25 +655,206 @@ public static class ModelCreating
                 .HasColumnType("int unsigned")
                 .UseMySqlIdentityColumn()
                 .IsRequired();
-            
+
             entity.Property(c => c.UserId)
                 .HasColumnName("user_id")
                 .HasColumnType("char(36)")
                 .IsRequired();
-            
+
             entity.Property(c => c.BanType)
                 .HasColumnName("ban_type")
                 .HasColumnType("tinyint")
                 .IsRequired();
-            
+
             entity.Property(c => c.BanDate)
                 .HasColumnName("ban_date")
                 .HasColumnType("datetime")
                 .IsRequired();
-            
+
             entity.Property(c => c.BanExpiryDate)
                 .HasColumnName("ban_expiry_date")
                 .HasColumnType("datetime")
+                .IsRequired();
+        });
+
+        // Notification
+        builder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("notifications");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Title)
+                .HasColumnName("title")
+                .HasColumnType("nvarchar(200)")
+                .IsRequired();
+
+            entity.Property(e => e.Content)
+                .HasColumnName("content")
+                .HasColumnType("nvarchar(1000)")
+                .IsRequired();
+
+            entity.Property(e => e.Type)
+                .HasColumnName("type")
+                .HasColumnType("tinyint");
+
+            entity.Property(e => e.RecipientId)
+                .HasColumnName("recipient_id")
+                .IsRequired();
+
+            entity.Property(e => e.SenderId)
+                .HasColumnName("sender_id")
+                .IsRequired(false);
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("createdAt")
+                .HasColumnType("datetime")
+                .IsRequired();
+
+            entity.Property(e => e.IsRead)
+                .HasColumnName("is_read")
+                .HasColumnType("bit")
+                .IsRequired();
+
+            entity.Property(e => e.Navigation)
+                .HasColumnName("navigation")
+                .HasColumnType("varchar(300)")
+                .IsRequired(false);
+
+            entity.Property(e => e.Priority)
+                .HasColumnName("priority")
+                .HasColumnType("tinyint");
+
+            entity.HasOne(e => e.Recipient)
+                .WithMany()
+                .HasForeignKey(e => e.RecipientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // SystemVariable
+        builder.Entity<SystemVariable>(entity =>
+        {
+            entity.ToTable("Notification");
+
+            entity.HasKey(e => new { e.SchoolId, e.Name });
+
+            entity.Property(u => u.SchoolId)
+                .HasColumnName("school_id")
+                .IsRequired();
+
+            entity.Property(u => u.Name)
+                .HasColumnName("name")
+                .HasColumnType("varchar(100)")
+                .IsRequired();
+
+            entity.Property(u => u.Value)
+                .HasColumnName("value")
+                .HasColumnType("nvarchar(1000)")
+                .IsRequired();
+        });
+        
+        // DriverApprovalRequest
+        builder.Entity<DriverApprovalRequest>(entity =>
+        {
+            entity.ToTable("driver_approval_requests");
+
+            entity.HasKey(e => e.Id );
+
+            entity.Property(u => u.SchoolId)
+                .HasColumnName("school_id")
+                .IsRequired();
+    
+            entity.Property(u => u.RequestedDate)
+                .HasColumnName("requested_date")
+                .HasColumnType("datetime")
+                .IsRequired();
+
+            entity.Property(u => u.DriverId)
+                .HasColumnName("driver_id")
+                .IsRequired();
+            
+            entity.Property(u => u.RequestStatus)
+                .HasColumnName("request_status")
+                .HasColumnType("tinyint")
+                .IsRequired();
+            
+            entity.Property(u => u.ApprovedBy)
+                .HasColumnName("approved_by")
+                .IsRequired(false);
+            
+            entity.Property(u => u.VehicleType)
+                .HasColumnName("vehicle_type")
+                .IsRequired()
+                .HasColumnType("nvarchar(200)");
+
+            entity.Property(u => u.LicenseNumber)
+                .HasColumnName("license_number")
+                .IsRequired()
+                .HasColumnType("varchar(50)");
+
+            entity.Property(u => u.DriverInformationImages)
+                .HasColumnName("driver_information_images")
+                .IsRequired()
+                .HasColumnType("json");
+
+            entity.Property(u => u.VehicleImages)
+                .HasColumnName("vehicle_images")
+                .IsRequired()
+                .HasColumnType("json");
+
+            entity.Property(u => u.LastCheckDrivingLicense)
+                .HasColumnName("last_check_driving_license")
+                .IsRequired(false)
+                .HasColumnType("datetime");
+            
+            entity.HasMany(e => e.DriverRequestStatusHistories)
+                .WithOne(x => x.Request)
+                .HasForeignKey(e => e.RequestId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // DriverRequestStatusHistory
+        builder.Entity<DriverRequestStatusHistory>(entity =>
+        {
+            entity.ToTable("driver_request_status_histories");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(u => u.RequestId)
+                .HasColumnName("request_id")
+                .IsRequired();
+            
+            entity.Property(u => u.FromStatus)
+                .HasColumnName("from_status")
+                .HasColumnType("tinyint")
+                .IsRequired(false);
+            
+            entity.Property(u => u.ToStatus)
+                .HasColumnName("to_status")
+                .HasColumnType("tinyint")
+                .IsRequired();
+            
+            entity.Property(u => u.ChangedBy)
+                .HasColumnName("changed_by")
+                .IsRequired();
+            
+            entity.Property(u => u.ChangedAt)
+                .HasColumnName("changed_at")
+                .HasColumnType("datetime")
+                .IsRequired();
+            
+            entity.Property(u => u.Note)
+                .HasColumnName("note")
+                .HasColumnType("nvarchar(1000)")
                 .IsRequired();
         });
         
@@ -675,7 +865,7 @@ public static class ModelCreating
         builder.Entity<Class>().HasQueryFilter(x => x.IsDeleted == false);
         builder.Entity<FileManagement>().HasQueryFilter(x => x.IsDeleted == false);
         builder.Entity<ClassSchedule>().HasQueryFilter(x => x.IsDeleted == false);
-        
+
         return builder;
     }
 }

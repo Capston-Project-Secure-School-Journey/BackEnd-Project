@@ -3,7 +3,10 @@ using Api.Services.SchoolManagement;
 using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
 using Api.Common.Utilities;
+using Api.Domain.ModelSettings;
 using Api.Extensions;
+using Api.Services.ApplicationService;
+using Api.Services.ApprovalProcessor;
 using Api.Services.ChildrenManagementService;
 using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
@@ -13,6 +16,8 @@ using Api.Services.TeacherManagementService;
 using Api.Services.UploadFileService;
 using Api.Services.UserBanService;
 using Api.Services.UserService;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Api;
 
@@ -26,7 +31,19 @@ public static class DependencyContainer
         services.AddSingleton<IAuthorizationChecker, AuthorizationChecker>();
         services.AddSingleton<IVerifiedEmailChecker, VerifiedEmailChecker>();
         services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
+        services.AddSingleton<IMongoClient>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+            return new MongoClient(settings.ConnectionString);
+        });
+        services.AddScoped(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+            var client = sp.GetRequiredService<IMongoClient>();
+            return client.GetDatabase(settings.DatabaseName);
+        });
 
+        
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         services.AddScoped<ISchoolManagement, SchoolManagement>();
@@ -55,6 +72,10 @@ public static class DependencyContainer
 
         services.AddScoped<IUserBanService, UserBanService>();
 
+        services.AddScoped<IApprovalProcessor, ApprovalProcessor>();
+        services.AddScoped<IApplicationService, ApplicationService>();
+        services.AddScoped<IApplicationHandler, ApplicationHandler>();
+        
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
         services.AddSingleton<ValidateModelAttribute>();

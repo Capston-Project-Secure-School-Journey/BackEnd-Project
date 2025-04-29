@@ -42,7 +42,7 @@ public partial class AuthenticationService : IAuthenticationService
                 if (user != null)
                     await _userBanService.AddErrorRequest(user.Id, BanType.Login);
 
-                _logger.LogInformation("User login fail with account {@Account}", request);
+                _logger.LogInformation("User login fail with account {@Account}", request.UserName);
                 throw new UnAuthorizedException(ConstantErrorMessage.INVALID_EMAIL_PASSWORD("vn"));
             }
             
@@ -53,7 +53,7 @@ public partial class AuthenticationService : IAuthenticationService
         }
         catch (Exception ex)
         {
-            _logger.LogInformation("User with account = {@Account} login fail. Error = {Message}", request,
+            _logger.LogInformation("User with account = {@Account} login fail. Error = {Message}", request.UserName,
                 ex.Message);
             throw;
         }
