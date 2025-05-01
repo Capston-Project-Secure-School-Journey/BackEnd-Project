@@ -743,7 +743,7 @@ public static class ModelCreating
         // SystemVariable
         builder.Entity<SystemVariable>(entity =>
         {
-            entity.ToTable("Notification");
+            entity.ToTable("system_variables");
 
             entity.HasKey(e => new { e.SchoolId, e.Name });
 

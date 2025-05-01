@@ -10,5 +10,5 @@ public interface IUserManagement
     Task<User> CreateUser(CreateUserDto request);
     Task DeleteSchoolAdmin(Guid schoolId);
     Task DeleteSchoolAdmin(List<Guid> schoolIds);
-    Task<IEnumerable<SchoolPerson>> GetListOfSchoolAdmins();
+    Task<User> GetSchoolAdmin(Guid schoolId);
 }

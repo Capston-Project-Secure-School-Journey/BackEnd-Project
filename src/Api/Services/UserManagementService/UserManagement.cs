@@ -154,8 +154,14 @@ public class UserManagement : IUserManagement
         }
     }
 
-    public Task<IEnumerable<SchoolPerson>> GetListOfSchoolAdmins()
+    public async Task<User> GetSchoolAdmin(Guid schoolId)
     {
-        throw new NotImplementedException();
+        var schoolAdmin = await _context.SchoolPersons
+            .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
+
+        if (schoolAdmin == null)
+            throw new NotFoundException("Không tồn tại tài khoản");
+
+        return schoolAdmin;
     }
 }

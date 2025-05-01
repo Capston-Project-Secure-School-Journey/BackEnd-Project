@@ -91,6 +91,14 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         await _userManagement.ChangeSchoolAdminPassword(schoolId, newPassword);
     }
 
+    public async Task IsOwner(Guid schoolId, Guid userId)
+    {
+        var schoolAdmin = await _userManagement.GetSchoolAdmin(schoolId);
+        
+        if (schoolAdmin.Id != userId)
+            throw new ForbiddenException("Access Denied");
+    }
+
     public async Task DeleteSchool(Guid schoolId)
     {
         await _schoolManagement.DeleteSchool(schoolId);

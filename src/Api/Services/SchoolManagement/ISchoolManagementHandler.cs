@@ -22,4 +22,5 @@ public interface ISchoolManagementHandler
         string contentType,
         long fileSize);
     Task ChangeSchoolAdminPassword(Guid schoolId, string newPassword);
+    Task IsOwner(Guid schoolId, Guid userId);
 }
