@@ -7,14 +7,9 @@ using MimeKit;
 
 namespace Api.Services.MailService;
 
-public class MailService : IMailService
+public class MailService(IOptions<MailSettings> mailSettings) : IMailService
 {
-    private readonly MailSettings _mailSettings;
-
-    public MailService(IOptions<MailSettings> mailSettings)
-    {
-        _mailSettings = mailSettings.Value;
-    }
+    private readonly MailSettings _mailSettings = mailSettings.Value;
 
     public async Task<bool> SendConfirmEmail(SendMailDto sendMailDto)
     {
