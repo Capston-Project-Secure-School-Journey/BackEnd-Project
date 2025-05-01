@@ -16,7 +16,10 @@ jobs:
 
       - name: Create appsettings.json file from secrets
         run: echo '${{ secrets.APPSETTINGS_JSON }}' > src/Api/appsettings.json
-
+        
+      - name: Create firebase-adminsdk.json file from secrets
+        run: echo '${{ secrets.FIREBASEADMINSDK }}' > src/Api/firebase-adminsdk.json
+        
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -26,8 +29,8 @@ jobs:
       - name: Build Docker Compose
         run: docker compose build
       
-      - name: Remove appsettings.json file after build
-        run: rm -f src/Api/appsettings.json
+      - name: Remove appsettings.json and firebase-adminsdk.json file after build
+        run: rm -f src/Api/appsettings.json && rm -f src/Api/firebase-adminsdk.json
 
       - name: Push Docker Image to Docker Hub
         run: docker compose push
@@ -41,16 +44,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         
+      - name: Create firebase-adminsdk.json file from secrets
+        run: echo '${{ secrets.APPSETTINGS_JSON }}' > appsettings.json
+        
       - name: Copy docker-compose.yml to Production
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "compose.yaml"
+          source: |
+            compose.yaml,
+            appsettings.json
           target: "temp"
           strip_components: 0
-            
+
+      - name: Remove appsettings.json file
+        run: rm -f src/Api/appsettings.json
+
       - name: SSH to Production & Deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
