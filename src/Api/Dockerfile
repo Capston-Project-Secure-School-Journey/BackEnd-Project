@@ -18,6 +18,7 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 COPY firebase-adminsdk.json /app/publish/firebase-adminsdk.json
+COPY /src/Common/MailTemplates /app/publish/Common/MailTemplates
 
 FROM base AS final
 USER root
