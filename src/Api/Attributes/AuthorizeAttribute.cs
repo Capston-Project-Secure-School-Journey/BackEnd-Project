@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Api.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizeAttribute(params UserType[] userTypeFilter) : Attribute, IAuthorizationFilter
+public class AuthorizeAttribute(params UserType[]? userTypeFilter) : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -32,26 +32,19 @@ public class AuthorizeAttribute(params UserType[] userTypeFilter) : Attribute, I
 
 public interface IAuthorizationChecker
 {
-    void Check(AuthorizationFilterContext context, UserType[] userTypeFilter);
+    void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter);
 }
 
-public class AuthorizationChecker : IAuthorizationChecker
+public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationChecker
 {
-    private readonly ITokenService _tokenService;
-
-    public AuthorizationChecker(ITokenService tokenService)
-    {
-        _tokenService = tokenService;
-    }
-
-    public void Check(AuthorizationFilterContext context, UserType[] userTypeFilter)
+    public void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter)
     {
         var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
         if (string.IsNullOrEmpty(token))
             throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
 
-        var userInfo = _tokenService.ValidateToken(token);
+        var userInfo = tokenService.ValidateToken(token);
 
         if (userInfo is { Item1: not null, Item2: not null, Item3: not null })
         {
@@ -61,7 +54,9 @@ public class AuthorizationChecker : IAuthorizationChecker
             if (userInfo.Item3.Value == AccountStatus.Deactive)
                 throw new ForbiddenException("Tài khoản của bạn đã bị khóa");
 
-            if (userTypeFilter != null && !userTypeFilter.Contains((UserType)Convert.ToInt16(userInfo.Item2)))
+            if (userTypeFilter is { Length: > 0 } &&
+                !userTypeFilter.Contains((UserType)Convert.ToInt16(userInfo.Item2))
+               )
                 throw new ForbiddenException("Bạn không có quyền truy cập tài nguyên");
         }
         else

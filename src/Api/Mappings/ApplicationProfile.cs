@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using Api.Domain.Models;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
