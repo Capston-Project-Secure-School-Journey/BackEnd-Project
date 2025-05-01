@@ -8,16 +8,23 @@ public class DashboardAuthorizationFilter(ITokenService tokenService) : IDashboa
 {
     public bool Authorize(DashboardContext context)
     {
-        var httpContext = context.GetHttpContext();
-        var token = httpContext.Request.Headers.Authorization.ToString().Substring("Bearer ".Length).Trim();
+        try
+        {
+            var httpContext = context.GetHttpContext();
+            var token = httpContext.Request.Headers.Authorization.ToString().Substring("Bearer ".Length).Trim();
 
-        if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token))
+                return false;
+
+            var userInfo = tokenService.ValidateToken(token);
+
+            if ((UserType)Convert.ToInt16(userInfo.Item2) == UserType.Admin)
+                return true;
             return false;
-
-        var userInfo = tokenService.ValidateToken(token);
-
-        if ((UserType)Convert.ToInt16(userInfo.Item2) == UserType.Admin)
-            return true;
-        return false;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }
