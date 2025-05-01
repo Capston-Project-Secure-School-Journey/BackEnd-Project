@@ -12,4 +12,5 @@ public interface INotificationService
     Task<Notification> CreateNotification(CreateNotificationDto dto);
     Task MarkNotificationByRecipient(Guid recipientId);
     Task MarkNotification(Guid notificationId);
+    Task IsOwnerOfNotification(Guid notificationId, Guid userId);
 }

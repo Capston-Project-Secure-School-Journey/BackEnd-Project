@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-
 namespace Api.Common.Enums;
 
 public enum RequestStatus

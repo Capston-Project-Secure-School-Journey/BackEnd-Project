@@ -11,14 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Jobs;
 
-public class AlertMissingAddressJob : IJob
+public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
 {
-    private readonly IServiceProvider _serviceProvider;
-    public AlertMissingAddressJob(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-    
     public async Task ExecuteAsync( params object[] args)
     {
         var schoolId = Guid.Parse(args[0].ToString()!);
@@ -26,7 +20,7 @@ public class AlertMissingAddressJob : IJob
         if (schoolId == Guid.Empty)
             throw new InvalidDataException("Please provide a valid school ID.");
 
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Context>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var uploadFileService = scope.ServiceProvider.GetRequiredService<IFileUploadService>();
@@ -77,7 +71,7 @@ public class AlertMissingAddressJob : IJob
                     {
                         Title = $"Địa chỉ đón học sinh: {student.FullName} chưa được cập nhập",
                         Content =
-                            "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\nVui lòng cập nhập trong thời gian sớm!",
+                            "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\nVui lòng cập nhập trong thời gian sớm nhất!",
                         RecipientId = parentId,
                         Navigation = string.Empty,
                     };
@@ -107,7 +101,7 @@ public class AlertMissingAddressJob : IJob
         BackgroundJob.Enqueue<SendNotificationJob>((job) => job.ExecuteAsync(notificationIds));
     }
 
-    private MemoryStream CreateCsvFile(List<Student> students)
+    private static MemoryStream CreateCsvFile(List<Student> students)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream, Encoding.UTF8);

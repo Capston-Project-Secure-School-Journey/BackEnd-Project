@@ -3,6 +3,7 @@ using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Utilities.Exceptions;
 using Api.Domain;
+using Api.Domain.Models;
 using Api.DTOs.UploadFileService;
 using Api.Extensions;
 using Api.Services.SchoolManagement;
@@ -71,9 +72,12 @@ public class SchoolManagementController : ControllerBase
     }
 
     [HttpGet("{schoolId}")]
-    [Authorize(UserType.Admin)]
+    [Authorize(UserType.Admin, UserType.SchoolAdmin)]
     public async Task<SchoolDetailResponse> GetSchool([FromRoute] Guid schoolId)
     {
+        var userType = this.GetUserType();
+        if (userType == UserType.SchoolAdmin && this.GetSchoolId() != schoolId)
+                throw new ForbiddenException("Access Denied");
         return await _schoolManagementHandler.GetSchool(schoolId);
     }
 
@@ -99,6 +103,7 @@ public class SchoolManagementController : ControllerBase
             query = query.Where(sc => sc.SchoolName.Contains(schoolName));
 
         var schools = await query
+            .AsNoTracking()
             .OrderBy(sc => sc.SchoolName)
             .Select(sc => new
             {
@@ -111,6 +116,30 @@ public class SchoolManagementController : ControllerBase
             .ToListAsync();
 
         return Ok(schools);
+    }
+
+    [HttpPut("{schoolId}/start-date")]
+    [Authorize(UserType.SchoolAdmin)]
+    [ValidateModel]
+    public async Task<ActionResult> SetSchoolStartDate([FromRoute] Guid schoolId,
+        [FromForm] DateOnly date)
+    {
+        if (this.GetSchoolId() != schoolId)
+            throw new ForbiddenException("Access Denied");
+
+        var startDate = await _context.SystemVariables
+            .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.Name == "START_DATE");
+
+        if (startDate == null)
+        {
+            await _context.SystemVariables.AddAsync(new SystemVariable()
+                { Name = "START_DATE", SchoolId = schoolId, Value = date.ToString() });
+        }
+        else
+            startDate.Value = date.ToString();
+
+        await _context.SaveChangesAsync();
+        return Ok();
     }
 
     [HttpPost("{schoolId}/pre-signed-upload-url")]
