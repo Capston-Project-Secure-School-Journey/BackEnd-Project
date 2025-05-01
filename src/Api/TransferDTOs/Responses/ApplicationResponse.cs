@@ -1,5 +1,4 @@
 using Api.Common.Enums;
-using Api.Domain.Models;
 
 namespace Api.TransferDTOs.Responses;
 

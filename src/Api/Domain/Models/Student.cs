@@ -19,7 +19,7 @@ public class Student : BaseModel
     public decimal PickUpLng { get; set; }
     public DateTime? LastTimeUpdatedPickupLocation { get; set; }
     public int? LocationGroup { get; set; }
-    public List<ManagedBy> ManagedBy { get; set; } = null!;
+    public List<ManagedBy> ManagedBy { get; set; } = [];
     public bool NeedsPickup { get; set; } = true;
     public School School { get; set; } = null!;
     public Class Class { get; set; } = null!;

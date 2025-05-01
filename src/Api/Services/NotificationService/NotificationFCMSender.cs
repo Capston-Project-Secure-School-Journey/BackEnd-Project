@@ -17,7 +17,7 @@ public class NotificationFcmSender : INotificationSender
         {
             FirebaseApp.Create(new AppOptions()
             {
-                Credential = GoogleCredential.FromFile(config["Fcm:CredentialsPath"]!)
+                Credential = GoogleCredential.FromFile(config["FcmSetting:CredentialsPath"]!)
             });
         }
 
@@ -29,9 +29,12 @@ public class NotificationFcmSender : INotificationSender
         await SendAsync(deviceToken, title, body, null);
     }
 
-    public Task SendAsync(string deviceToken, Guid notificationId)
+    public async Task SendAsync(string deviceToken, Guid notificationId)
     {
-        throw new NotImplementedException();
+        var message = await GetMessageAsync(deviceToken, notificationId, null);
+        var result = await _messaging.SendAsync(message);
+
+        ThrowIfSentFailed(result);
     }
 
     public async Task SendAsync(string deviceToken, string title, string body,
