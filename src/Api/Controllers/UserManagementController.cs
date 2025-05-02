@@ -1,4 +1,4 @@
-using Api.Common.Utilities;
+using Api.Attributes;
 using Api.Services.UserManagementService;
 using Api.TransferDTOs.Requests;
 using Microsoft.AspNetCore.Mvc;

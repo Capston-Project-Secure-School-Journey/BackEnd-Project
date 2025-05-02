@@ -1,6 +1,8 @@
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Api.Common.Exceptions;
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api.DTOs.UploadFileService;
@@ -10,12 +12,17 @@ namespace Api.Services.UploadFileService;
 
 public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 {
-    private readonly IAmazonS3 _s3Client;
+    private readonly AmazonS3Client _s3Client;
     private readonly string _bucketName;
+    private readonly IFileDeleter _fileDeleter;
 
-    public S3FileUploadService(IOptions<S3Settings> settings, Context context) : base(
-        context)
+    public S3FileUploadService(IOptions<S3Settings> settings,
+        Context context,
+        IUploadTransactionManager uploadTransactionManager,
+        IFileDeleter fileDeleter) : base(
+            context, uploadTransactionManager)
     {
+        _fileDeleter = fileDeleter;
         _bucketName = settings.Value.BucketName;
         var s3Config = new AmazonS3Config
         {
@@ -65,10 +72,11 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             }
             catch (Exception)
             {
-                await DeleteFileAsync(fileName, null);
+                await _fileDeleter.DeleteFileAsync(fileName);
                 throw;
             }
 
+            UploadTransactionManager.TrackUploadedFile(fileName);
             return new UploadFileResponse()
             {
                 Key = fmKey,
@@ -80,7 +88,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error uploading file");
+            throw new S3Exception(ErrorMessages.FileUploadError);
         }
     }
 
@@ -123,10 +131,11 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             }
             catch (Exception)
             {
-                await DeleteFileAsync(key, null);
+                await _fileDeleter.DeleteFileAsync(key);
                 throw;
             }
 
+            UploadTransactionManager.TrackUploadedFile(key);
             var response = new UploadFileResponse()
             {
                 Key = fmKey,
@@ -140,62 +149,31 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error uploading stream");
+            throw new S3Exception(ErrorMessages.FileUploadError);
         }
     }
 
-    public async Task<bool> DeleteFileAsync(string key, Guid? id)
+    public async Task<bool> DeleteFileManagementAsync(Guid id)
     {
         try
         {
-            var deleteRequest = new DeleteObjectRequest
-            {
-                BucketName = _bucketName,
-                Key = key
-            };
-
-            await _s3Client.DeleteObjectAsync(deleteRequest);
-            if (id != null)
-                await DeleteFileManagement(id.Value);
-            return true;
-        }
-        catch (AmazonS3Exception)
-        {
-            throw new Exception($"Error deleting file");
-        }
-    }
-
-    public async Task<bool> DeleteFileAsync(Guid id)
-    {
-        try
-        {
-            var s3Key = await GetS3Key(id);
-            var deleteRequest = new DeleteObjectRequest
-            {
-                BucketName = _bucketName,
-                Key = s3Key
-            };
-
             await DeleteFileManagement(id);
-            if (await FileExist(s3Key))
-            {
-                await _s3Client.DeleteObjectAsync(deleteRequest);
-            }
-
             return true;
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error deleting file");
+            throw new S3Exception(ErrorMessages.FileDeleteError);
         }
     }
 
-    public async Task DeleteFileAsync(List<Guid> ids)
+    public async Task<bool> DeleteFileManagementAsync(List<Guid> ids)
     {
         foreach (var id in ids)
         {
-            await DeleteFileAsync(id);
+            await DeleteFileManagementAsync(id);
         }
+
+        return true;
     }
 
     public async Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request,
@@ -238,7 +216,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             }
             catch (Exception)
             {
-                throw new Exception($"Error generating pre-signed upload URL");
+                throw new S3Exception($"Error generating pre-signed upload URL");
             }
 
             return new PreSignedUrlResponse()
@@ -250,7 +228,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error generating pre-signed upload URL");
+            throw new S3Exception(ErrorMessages.GeneratePreSignUploadUrlError);
         }
     }
 
@@ -270,7 +248,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error generating pre-signed download URL");
+            throw new S3Exception(ErrorMessages.GeneratePreSignDownloadUrlError);
         }
     }
 
@@ -290,7 +268,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error generating pre-signed download URL");
+            throw new S3Exception(ErrorMessages.GeneratePreSignDownloadUrlError);
         }
     }
 
@@ -323,10 +301,11 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             }
             catch (Exception)
             {
-                await DeleteFileAsync(key, null);
+                await _fileDeleter.DeleteFileAsync(key);
                 throw;
             }
 
+            UploadTransactionManager.TrackUploadedFile(key);
             var response = new UploadFileResponse()
             {
                 Key = fmKey,
@@ -340,27 +319,12 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         }
         catch (AmazonS3Exception)
         {
-            throw new Exception($"Error uploading stream");
+            throw new S3Exception(ErrorMessages.FileUploadError);
         }
     }
 
-    private async Task<bool> FileExist(string key, bool isThrow = false)
+    public async Task RollBackAsync()
     {
-        try
-        {
-            var metadataRequest = new GetObjectMetadataRequest
-            {
-                BucketName = _bucketName,
-                Key = key
-            };
-            await _s3Client.GetObjectMetadataAsync(metadataRequest);
-            return true;
-        }
-        catch (AmazonS3Exception)
-        {
-            if (isThrow)
-                throw new Exception($"Error checking if the file exists with the key {key}");
-            return false;
-        }
+        await UploadTransactionManager.RollbackAsync();
     }
 }

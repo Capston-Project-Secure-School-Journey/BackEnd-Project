@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Api.Extensions;
 
-public class AesEncryptionUtility
+public static class AesEncryptionUtility
 {
     /// <summary>
     /// Encrypts data using AES encryption with embedded IV
@@ -32,7 +32,6 @@ public class AesEncryptionUtility
             aesAlg.GenerateIV();
             iv = aesAlg.IV;
             aesAlg.Key = key;
-            aesAlg.IV = aesAlg.IV;
             aesAlg.Mode = CipherMode.CBC;
             aesAlg.Padding = PaddingMode.PKCS7;
 
@@ -63,6 +62,12 @@ public class AesEncryptionUtility
         return Convert.ToBase64String(combinedBytes);
     }
 
+    public static string Encrypt(object obj, string base64Key)
+    {
+        var json = JsonSerializer.Serialize(obj);
+        return Encrypt(json, base64Key);
+    }
+    
     /// <summary>
     /// Decrypts AES encrypted data with embedded IV
     /// </summary>
@@ -121,13 +126,7 @@ public class AesEncryptionUtility
             }
         }
     }
-
-    public static string Encrypt(object obj, string base64Key)
-    {
-        var json = JsonSerializer.Serialize(obj);
-        return Encrypt(json, base64Key);
-    }
-
+    
     public static T? Decrypt<T>(string cipherText, string base64Key)
     {
         var data = Decrypt(cipherText, base64Key);

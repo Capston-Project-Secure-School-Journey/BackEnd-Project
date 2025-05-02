@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Exceptions;
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.Extensions;
@@ -55,7 +56,7 @@ public class UserBanService : IUserBanService
                 BanType = type,
                 BanDate = DateTime.UtcNow,
                 BanExpiryDate = DateTime.UtcNow.AddSeconds(timeBan),
-                Reason = GetReason(type)
+                Reason = Constants.GetReason(type)
             };
             _context.UserBans.Add(userBan);
             _context.SaveChanges();
@@ -92,49 +93,5 @@ public class UserBanService : IUserBanService
         _context.UserBans.RemoveRange(bans);
         _context.UserRequestedLogs.RemoveRange(requestLogs);
         return _context.SaveChangesAsync();
-    }
-
-    private string GetReason(BanType type)
-    {
-        var banTime = type.GetBanAttemptBanTime();
-        var limit = type.GetBanAttemptLimit();
-        
-        switch (type)
-        {
-            case BanType.Login:
-                return $"Bạn đã đăng nhập sai quá {limit} lần. Hãy đợi sau {ConvertSecondsToTimeString(banTime)} để đăng nhập lại";
-            case BanType.S3PreSigned:
-                return $"Bạn đã quá giới hạn tải file. Hãy đợi sau {ConvertSecondsToTimeString(banTime)} để thử lại";
-            case BanType.SendVerifyEmail:
-                return $"Bạn đã yêu cầu gửi email quá {limit} lần. Hãy đợi sau {ConvertSecondsToTimeString(banTime)} để thử lại";
-            case BanType.SendSms:
-                return $"Bạn đã yêu cầu gửi tin nhắn quá {limit} lần. Hãy đợi sau {ConvertSecondsToTimeString(banTime)} để thử lại";
-            case BanType.AddChild:
-                return $"Bạn đã sai quá {limit} lần khi xác thực thông tin. Hãy đợi sau {ConvertSecondsToTimeString(banTime)} để thử lại";
-            default:
-                return "Bạn đã bị ban";
-        }
-    }
-    
-    private string ConvertSecondsToTimeString(int totalSeconds)
-    {
-        int days = totalSeconds / 86400;
-        int remainder = totalSeconds % 86400;
-        int hours = remainder / 3600;
-        remainder %= 3600;
-        int minutes = remainder / 60;
-
-        List<string> components = new List<string>();
-    
-        if (days > 0)
-            components.Add($"{days} ngày");
-        if (hours > 0)
-            components.Add($"{hours} giờ");
-        if (minutes > 0)
-            components.Add($"{minutes} phút");
-        
-        if (components.Count == 0)
-            return "0 phút";
-        return string.Join(" ", components);
     }
 }

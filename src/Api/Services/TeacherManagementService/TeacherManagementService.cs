@@ -1,7 +1,9 @@
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.TeacherManagement;
+using Api.DTOs.UploadFileService;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +59,7 @@ public class TeacherManagementService : ITeacherManagementService
         var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
 
         if (teacher == null)
-            throw new NotFoundException("Giáo viên không tồn tại");
+            throw new NotFoundException(ErrorMessages.TeacherNotFound);
         return teacher;
     }
 
@@ -100,9 +102,9 @@ public class TeacherManagementService : ITeacherManagementService
     public async Task DeleteTeacher(Guid id)
     {
         var teacher = await GetTeacherById(id);
-        var managedClasses = _context.Classes
-            .Where(c => c.SchoolId == teacher.SchoolId)
-            .ToList()
+        var managedClasses = (await _context.Classes
+                .Where(c => c.SchoolId == teacher.SchoolId)
+                .ToListAsync())
             .Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
 
         foreach (var i in managedClasses)
@@ -133,26 +135,35 @@ public class TeacherManagementService : ITeacherManagementService
     public async Task CheckExistTeacher(Guid schoolId, Guid teacherId)
     {
         if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
-            throw new NotFoundException("Không tìm thấy giáo viên");
+            throw new NotFoundException(ErrorMessages.TeacherNotFound);
     }
 
     public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)
     {
         if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
-            throw new ForbiddenException("Bạn không có quyền truy cập");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
     public async Task<string> UploadAvatar(Guid teacherId, IFormFile file)
     {
         var teacher = await GetTeacherById(teacherId);
+        UploadFileResponse uploadResponse;
+        try
+        {
+            if (teacher.AvatarKey != null)
+                await _uploadFileService.DeleteFileManagementAsync(teacher.AvatarKey.Value);
+            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
 
-        if (teacher.AvatarKey != null)
-            await _uploadFileService.DeleteFileAsync(teacher.AvatarKey.Value);
-        var response = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
+            teacher.AvatarKey = uploadResponse.Key;
+            _context.Entry(teacher).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            _ = _uploadFileService.RollBackAsync();
+            throw;
+        }
 
-        teacher.AvatarKey = response.Key;
-        _context.Entry(teacher).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return response.S3Url;
+        return uploadResponse.S3Url;
     }
 }

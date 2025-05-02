@@ -26,11 +26,8 @@ public class SchoolJobSubscriber : IJob
 
         foreach (var schoolId in schoolIds)
         {
-            foreach (var runDate in dates)
+            foreach (var delay in dates.Select(runDate => runDate.Date.AddHours(9)).Select(runAt => runAt - DateTimeHelper.GetDateTimeUtc7()))
             {
-                var runAt = runDate.Date.AddHours(9);
-                var delay = runAt - DateTimeHelper.GetDateTimeUtc7();
-
                 BackgroundJob.Schedule<AlertMissingAddressJob>(
                     job => job.ExecuteAsync(schoolId),
                     delay);
@@ -46,7 +43,7 @@ public class SchoolJobSubscriber : IJob
     {
         var today = DateTimeHelper.GetDateTimeUtc7();
 
-        int daysUntilNextMonday = ((int)DayOfWeek.Monday - (int)today.DayOfWeek + 7) % 7;
+        var daysUntilNextMonday = ((int)DayOfWeek.Monday - (int)today.DayOfWeek + 7) % 7;
         var nextMonday = today.AddDays(daysUntilNextMonday + 7);
 
         return

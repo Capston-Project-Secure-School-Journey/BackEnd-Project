@@ -34,7 +34,7 @@ namespace Api.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("class_name");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<sbyte>("Grade")
@@ -58,7 +58,7 @@ namespace Api.Migrations
                     b.Property<Guid?>("TeacherId")
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
@@ -81,7 +81,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("class_id");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateOnly>("Date")
@@ -115,7 +115,7 @@ namespace Api.Migrations
                         .HasColumnType("tinyint")
                         .HasColumnName("session_type");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
@@ -236,7 +236,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("FileName")
@@ -275,7 +275,7 @@ namespace Api.Migrations
                         .HasColumnType("varchar(2000)")
                         .HasColumnName("s3_key");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid?>("UploadBy")
@@ -356,6 +356,9 @@ namespace Api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date")
                         .HasColumnName("date");
@@ -363,6 +366,9 @@ namespace Api.Migrations
                     b.Property<sbyte?>("Grade")
                         .HasColumnType("tinyint")
                         .HasColumnName("grade");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<sbyte>("ScheduleType")
                         .HasColumnType("tinyint")
@@ -375,6 +381,9 @@ namespace Api.Migrations
                     b.Property<sbyte>("SessionType")
                         .HasColumnType("tinyint")
                         .HasColumnName("session_type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -403,7 +412,7 @@ namespace Api.Migrations
                         .HasColumnType("time")
                         .HasColumnName("afternoon_start_time");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
@@ -443,7 +452,7 @@ namespace Api.Migrations
                         .HasColumnType("tinyint")
                         .HasColumnName("school_type");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
@@ -466,7 +475,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("class_id");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateOnly>("DateOfBirth")
@@ -534,7 +543,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("school_id");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
@@ -555,6 +564,15 @@ namespace Api.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -577,7 +595,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("avatar_key");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateOnly>("DateOfBirth")
@@ -622,7 +640,7 @@ namespace Api.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("school_id");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
@@ -649,9 +667,9 @@ namespace Api.Migrations
 
                     b.Property<Guid?>("AvatarKey")
                         .HasColumnType("char(36)")
-                        .HasColumnName("avatar_url");
+                        .HasColumnName("avatar_key");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateOnly?>("DateOfBirth")
@@ -695,7 +713,7 @@ namespace Api.Migrations
                         .HasColumnType("varchar(11)")
                         .HasColumnName("phone_number");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("UserName")

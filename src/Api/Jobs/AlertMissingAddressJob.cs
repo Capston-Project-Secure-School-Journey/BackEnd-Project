@@ -1,5 +1,6 @@
 using System.Text;
 using Api.Common.Enums;
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
@@ -18,7 +19,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
         var schoolId = Guid.Parse(args[0].ToString()!);
 
         if (schoolId == Guid.Empty)
-            throw new InvalidDataException("Please provide a valid school ID.");
+            throw new InvalidDataException(ErrorMessages.InvalidSchoolId);
 
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Context>();
@@ -49,7 +50,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
             .FirstOrDefaultAsync(ad => ad.SchoolId == schoolId && ad.UserType == UserType.SchoolAdmin);
 
         if (admin == null)
-            throw new InvalidDataException("Please provide a valid school ID.");
+            throw new InvalidDataException(ErrorMessages.InvalidSchoolId);
 
         var trans = await db.Database.BeginTransactionAsync();
         var notificationIds = new List<Guid>();
@@ -95,6 +96,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
         catch (Exception)
         {
             await trans.RollbackAsync();
+            _ = uploadFileService.RollBackAsync();
             throw;
         }
 

@@ -1,4 +1,5 @@
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
@@ -44,7 +45,7 @@ public class NotificationService(
             .FirstOrDefaultAsync(n => n.Id == notificationId);
 
         if (notification == null)
-            throw new NotFoundException("Thông báo không tồn tại.");
+            throw new NotFoundException(ErrorMessages.NotificationNotFound);
 
         return notification;
     }
@@ -95,6 +96,6 @@ public class NotificationService(
             .AnyAsync();
 
         if (!fact)
-            throw new BadRequestException("Thông báo không tồn tại.");
+            throw new BadRequestException(ErrorMessages.NotificationNotFound);
     }
 }

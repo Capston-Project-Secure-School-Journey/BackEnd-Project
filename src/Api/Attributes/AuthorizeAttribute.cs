@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Services.TokenService;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -25,7 +26,7 @@ public class AuthorizeAttribute(params UserType[]? userTypeFilter) : Attribute, 
         }
         catch (Exception)
         {
-            throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
+            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
         }
     }
 }
@@ -39,10 +40,10 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
 {
     public void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter)
     {
-        var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
         if (string.IsNullOrEmpty(token))
-            throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
+            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
 
         var userInfo = tokenService.ValidateToken(token);
 
@@ -52,20 +53,20 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
             AddHeader(context.HttpContext, userInfo);
 
             if (userInfo.Item3.Value == AccountStatus.Deactive)
-                throw new ForbiddenException("Tài khoản của bạn đã bị khóa");
+                throw new ForbiddenException(ErrorMessages.AccountLocked);
 
             if (userTypeFilter is { Length: > 0 } &&
                 !userTypeFilter.Contains((UserType)Convert.ToInt16(userInfo.Item2))
                )
-                throw new ForbiddenException("Bạn không có quyền truy cập tài nguyên");
+                throw new ForbiddenException(ErrorMessages.AccessDenied);
         }
         else
         {
-            throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
+            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
         }
     }
 
-    private void RemoveHeader(HttpContext context)
+    private static void RemoveHeader(HttpContext context)
     {
         if (context.Request.Headers.Any(x => x.Key == "Authorization-UserId"))
             context.Request.Headers.Remove("Authorization-UserId");
@@ -80,7 +81,7 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
             context.Request.Headers.Remove("Authorization-SchoolId");
     }
 
-    private void AddHeader(HttpContext context, (Guid?, string?, AccountStatus?, Guid? schoolId) userInfo)
+    private static void AddHeader(HttpContext context, (Guid?, string?, AccountStatus?, Guid? schoolId) userInfo)
     {
         context.Request.Headers.TryAdd("Authorization-UserId", userInfo.Item1?.ToString());
         context.Request.Headers.TryAdd("Authorization-UserType", userInfo.Item2);

@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ public class ApplicationService(
             .FirstOrDefaultAsync(x => x.Id == applicationId);
 
         if (applications == null)
-            throw new NotFoundException("Không tìm thấy hồ sơ");
+            throw new NotFoundException(ErrorMessages.ApplicationNotFound);
         return applications;
     }
 }
