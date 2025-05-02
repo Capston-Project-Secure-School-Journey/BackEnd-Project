@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,6 +12,6 @@ public class ParentConfiguration : IEntityTypeConfiguration<Parent>
         builder.Property(u => u.RelationshipWithStudents)
             .HasColumnName("relationship_with_students")
             .IsRequired(false)
-            .HasColumnType("json");
+            .HasColumnType(Constants.Json);
     }
 }

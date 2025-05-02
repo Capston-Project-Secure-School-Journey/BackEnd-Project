@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,7 +19,7 @@ public class DriverApprovalRequestConfiguration : IEntityTypeConfiguration<Drive
 
         builder.Property(u => u.RequestedDate)
             .HasColumnName("requested_date")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
 
         builder.Property(u => u.DriverId)
@@ -27,7 +28,7 @@ public class DriverApprovalRequestConfiguration : IEntityTypeConfiguration<Drive
 
         builder.Property(u => u.RequestStatus)
             .HasColumnName("request_status")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.Property(u => u.ApprovedBy)
@@ -37,27 +38,27 @@ public class DriverApprovalRequestConfiguration : IEntityTypeConfiguration<Drive
         builder.Property(u => u.VehicleType)
             .HasColumnName("vehicle_type")
             .IsRequired()
-            .HasColumnType("nvarchar(200)");
+            .HasColumnType(Constants.Nvarchar(200));
 
         builder.Property(u => u.LicenseNumber)
             .HasColumnName("license_number")
             .IsRequired()
-            .HasColumnType("varchar(50)");
+            .HasColumnType(Constants.Varchar(50));
 
         builder.Property(u => u.DriverInformationImages)
             .HasColumnName("driver_information_images")
             .IsRequired()
-            .HasColumnType("json");
+            .HasColumnType(Constants.Json);
 
         builder.Property(u => u.VehicleImages)
             .HasColumnName("vehicle_images")
             .IsRequired()
-            .HasColumnType("json");
+            .HasColumnType(Constants.Json);
 
         builder.Property(u => u.LastCheckDrivingLicense)
             .HasColumnName("last_check_driving_license")
             .IsRequired(false)
-            .HasColumnType("datetime");
+            .HasColumnType(Constants.Datetime);
 
         builder.HasMany(e => e.DriverRequestStatusHistories)
             .WithOne(x => x.Request)

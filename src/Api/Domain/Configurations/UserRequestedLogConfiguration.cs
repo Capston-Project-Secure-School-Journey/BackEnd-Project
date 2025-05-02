@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,23 +15,23 @@ public class UserRequestedLogConfiguration : IEntityTypeConfiguration<UserReques
 
         builder.Property(c => c.Id)
             .HasColumnName("id")
-            .HasColumnType("int unsigned")
+            .HasColumnType(Constants.IntUnsigned)
             .UseMySqlIdentityColumn()
             .IsRequired();
 
         builder.Property(c => c.UserId)
             .HasColumnName("user_id")
-            .HasColumnType("char(36)")
+            .HasColumnType(Constants.Char(36))
             .IsRequired();
 
         builder.Property(c => c.UserRequestedType)
             .HasColumnName("user_requested_type")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.Property(c => c.DatetimeRequested)
             .HasColumnName("datetime_requested")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
     }
 }

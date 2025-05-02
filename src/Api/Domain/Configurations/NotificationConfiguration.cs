@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,17 +19,17 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(e => e.Title)
             .HasColumnName("title")
-            .HasColumnType("nvarchar(200)")
+            .HasColumnType(Constants.Nvarchar(200))
             .IsRequired();
 
         builder.Property(e => e.Content)
             .HasColumnName("content")
-            .HasColumnType("nvarchar(1000)")
+            .HasColumnType(Constants.Nvarchar(1000))
             .IsRequired();
 
         builder.Property(e => e.Type)
             .HasColumnName("type")
-            .HasColumnType("tinyint");
+            .HasColumnType(Constants.Tinyint);
 
         builder.Property(e => e.RecipientId)
             .HasColumnName("recipient_id")
@@ -40,22 +41,22 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(e => e.CreatedAt)
             .HasColumnName("createdAt")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
 
         builder.Property(e => e.IsRead)
             .HasColumnName("is_read")
-            .HasColumnType("bit")
+            .HasColumnType(Constants.Bit)
             .IsRequired();
 
         builder.Property(e => e.Navigation)
             .HasColumnName("navigation")
-            .HasColumnType("varchar(300)")
+            .HasColumnType(Constants.Varchar(300))
             .IsRequired(false);
 
         builder.Property(e => e.Priority)
             .HasColumnName("priority")
-            .HasColumnType("tinyint");
+            .HasColumnType(Constants.Tinyint);
 
         builder.HasOne(e => e.Recipient)
             .WithMany()

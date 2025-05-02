@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -12,77 +13,66 @@ public class SchoolConfiguration : IEntityTypeConfiguration<School>
 
         builder.HasKey(e => e.Id);
 
-        builder
-            .Property(j => j.Id)
+        builder.Property(j => j.Id)
             .HasColumnName("id")
             .IsRequired();
 
-        builder
-            .Property(j => j.SchoolType)
+        builder.Property(j => j.SchoolType)
             .HasColumnName("school_type")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
-        builder
-            .Property(j => j.SchoolName)
+        builder.Property(j => j.SchoolName)
             .HasColumnName("school_name")
-            .HasColumnType("nvarchar(100)")
+            .HasColumnType(Constants.Nvarchar(100))
             .IsRequired();
 
-        builder
-            .Property<string?>(j => j.SchoolDescription)
+        builder.Property<string?>(j => j.SchoolDescription)
             .HasColumnName("school_description")
-            .HasColumnType("nvarchar(2000)")
+            .HasColumnType(Constants.Nvarchar(2000))
             .IsRequired(false);
 
-        builder
-            .Property<string>(j => j.Address)
+        builder.Property<string>(j => j.Address)
             .HasColumnName("address")
-            .HasColumnType("nvarchar(1000)")
+            .HasColumnType(Constants.Nvarchar(1000))
             .IsRequired();
 
-        builder
-            .Property(j => j.MorningStartTime)
+        builder.Property(j => j.MorningStartTime)
             .HasColumnName("morning_start_time")
-            .HasColumnType("time")
+            .HasColumnType(Constants.Time)
             .IsRequired();
 
-        builder
-            .Property(j => j.MorningEndTime)
+        builder.Property(j => j.MorningEndTime)
             .HasColumnName("morning_end_time")
-            .HasColumnType("time")
+            .HasColumnType(Constants.Time)
             .IsRequired();
 
-        builder
-            .Property(j => j.AfternoonStartTime)
+        builder.Property(j => j.AfternoonStartTime)
             .HasColumnName("afternoon_start_time")
-            .HasColumnType("time")
+            .HasColumnType(Constants.Time)
             .IsRequired();
-        builder
-            .Property(j => j.AfternoonEndTime)
+
+        builder.Property(j => j.AfternoonEndTime)
             .HasColumnName("afternoon_end_time")
-            .HasColumnType("time")
+            .HasColumnType(Constants.Time)
             .IsRequired();
 
-        builder
-            .Property(j => j.PhoneNumber)
+        builder.Property(j => j.PhoneNumber)
             .HasColumnName("phone_number")
-            .HasColumnType("varchar(11)")
+            .HasColumnType(Constants.Varchar(11))
             .IsRequired();
 
-        builder
-            .Property(j => j.Email)
+        builder.Property(j => j.Email)
             .HasColumnName("email")
-            .HasColumnType("varchar(100)")
+            .HasColumnType(Constants.Varchar(100))
             .IsRequired(false);
 
         builder.Property(u => u.Images)
             .HasColumnName("images")
             .IsRequired(false)
-            .HasColumnType("json");
+            .HasColumnType(Constants.Json);
 
-        builder
-            .HasMany(e => e.SchoolPersons)
+        builder.HasMany(e => e.SchoolPersons)
             .WithOne(p => p.School)
             .HasForeignKey(e => e.SchoolId)
             .OnDelete(DeleteBehavior.NoAction);

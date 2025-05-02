@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,28 +15,28 @@ public class UserBanConfiguration : IEntityTypeConfiguration<UserBan>
 
         builder.Property(c => c.Id)
             .HasColumnName("id")
-            .HasColumnType("int unsigned")
+            .HasColumnType(Constants.IntUnsigned)
             .UseMySqlIdentityColumn()
             .IsRequired();
 
         builder.Property(c => c.UserId)
             .HasColumnName("user_id")
-            .HasColumnType("char(36)")
+            .HasColumnType(Constants.Char(36))
             .IsRequired();
 
         builder.Property(c => c.BanType)
             .HasColumnName("ban_type")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.Property(c => c.BanDate)
             .HasColumnName("ban_date")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
 
         builder.Property(c => c.BanExpiryDate)
             .HasColumnName("ban_expiry_date")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
     }
 }
