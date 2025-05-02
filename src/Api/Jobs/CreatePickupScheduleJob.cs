@@ -1,26 +1,21 @@
 
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Jobs;
 
-public class CreatePickupScheduleJob: IJob
+public class CreatePickupScheduleJob(IServiceProvider serviceProvider) : IJob
 {
-    private readonly IServiceProvider _serviceProvider;
-    public CreatePickupScheduleJob(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-        
-    }
     public async Task ExecuteAsync(params object[] args)
     {
         var schoolId = Guid.Parse(args[0].ToString()!);
 
         if (schoolId == Guid.Empty)
-            throw new InvalidDataException("Please provide a valid school ID.");
+            throw new InvalidDataException(ErrorMessages.InvalidSchoolId);
         
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Context>();
 
         var startDate = await db.SystemVariables

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Api.Common.Utilities.Exceptions;
+namespace Api.Common.Exceptions;
 
 public class DatabaseException : Exception
 {

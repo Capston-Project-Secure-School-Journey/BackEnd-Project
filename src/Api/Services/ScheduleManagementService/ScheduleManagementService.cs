@@ -1,6 +1,7 @@
 using System.Text;
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ScheduleManagement;
@@ -11,29 +12,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ScheduleManagementService;
 
-public class ScheduleManagementService : IScheduleManagementService
+public class ScheduleManagementService(
+    Context context,
+    IClassManagementService classManagementService,
+    IServiceProvider serviceProvider)
+    : IScheduleManagementService
 {
-    private readonly Context _context;
-    private readonly IClassManagementService _classManagementService;
-    private readonly IServiceProvider _serviceProvider;
-
-    public ScheduleManagementService(Context context,
-        IClassManagementService classManagementService,
-        IServiceProvider serviceProvider)
-    {
-        _context = context;
-        _classManagementService = classManagementService;
-        _serviceProvider = serviceProvider;
-    }
-
     public async Task<IEnumerable<ClassSchedule>> CreateSchedule(Guid schoolId, CreateScheduleDto dto)
     {
         CheckScheduleDate(dto.Date);
-
-        if (dto is { ScheduleType: ScheduleType.Class, ClassId: null })
-            throw new BadRequestException("Lớp học bị trống.");
-        if (dto is { ScheduleType: ScheduleType.Grade, Grade: null })
-            throw new BadRequestException("Khối bị trống.");
+        ValidateCreateScheduleDto(dto);
 
         var schedules = new List<ClassSchedule>();
         var checkOverlapTasks = new List<Task>();
@@ -41,7 +29,7 @@ public class ScheduleManagementService : IScheduleManagementService
 
         if (dto.ScheduleType is ScheduleType.Grade or ScheduleType.School)
         {
-            var query = _context.Classes
+            var query = context.Classes
                 .Where(c => c.SchoolId == schoolId);
 
             if (dto.ScheduleType is ScheduleType.Grade)
@@ -64,18 +52,18 @@ public class ScheduleManagementService : IScheduleManagementService
                 };
 
                 // ReSharper disable once MethodSupportsCancellation
-                await _context.ScheduleGroups.AddAsync(scheduleGroup);
-                _context.Entry(scheduleGroup).State = EntityState.Added;
+                await context.ScheduleGroups.AddAsync(scheduleGroup);
+                context.Entry(scheduleGroup).State = EntityState.Added;
                 // ReSharper disable once MethodSupportsCancellation
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
-                foreach (var cl in classes)
+                foreach (var classId in classes.Select(x => x.Id))
                 {
-                    checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, cl.Id, dto.SessionType, cts.Token));
+                    checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, classId, dto.SessionType, cts.Token));
                     var schedule = new ClassSchedule()
                     {
                         SchoolId = schoolId,
-                        ClassId = cl.Id,
+                        ClassId = classId,
                         Date = dto.Date,
                         ScheduleType = dto.ScheduleType,
                         SessionType = dto.SessionType,
@@ -88,17 +76,12 @@ public class ScheduleManagementService : IScheduleManagementService
             }
             else
             {
-                if (dto.ScheduleType is ScheduleType.School)
-                    throw new BadRequestException(
-                        $"Không có lớp nào được tìm thấy trong trường");
-                else
-                    throw new BadRequestException(
-                        $"Không có lớp nào được tìm thấy trong khối {dto.ScheduleType.GetDescription()}");
+                throw new BadRequestException(ErrorMessages.NoClassFound);
             }
         }
         else if (dto.ScheduleType == ScheduleType.Class)
         {
-            await _classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
+            await classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
             var schedule = new ClassSchedule()
             {
                 SchoolId = schoolId,
@@ -125,24 +108,25 @@ public class ScheduleManagementService : IScheduleManagementService
         }
 
         // ReSharper disable once MethodSupportsCancellation
-        await _context.ClassSchedules.AddRangeAsync(schedules);
+        await context.ClassSchedules.AddRangeAsync(schedules);
         foreach (var schedule in schedules)
-            _context.Entry(schedule).State = EntityState.Added;
+            context.Entry(schedule).State = EntityState.Added;
         // ReSharper disable once MethodSupportsCancellation
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
+        cts.Dispose();
         return schedules;
     }
 
     public async Task<ClassSchedule> UpdateSchedule(Guid schoolId, UpdateScheduleDto dto)
     {
         CheckScheduleDate(dto.Date);
-        var schedule = await _context.ClassSchedules
+        var schedule = await context.ClassSchedules
             .Include(c => c.Class)
             .FirstOrDefaultAsync(c => c.Id == dto.Id && c.SchoolId == schoolId);
 
         if (schedule == null)
-            throw new BadRequestException("Không tìm thấy lịch học");
+            throw new BadRequestException(ErrorMessages.ScheduleNotFound);
 
         await CheckOverlap(schoolId, dto.Date, dto.ClassId, dto.SessionType, CancellationToken.None);
         if (dto.ClassId != schedule.ClassId ||
@@ -175,20 +159,20 @@ public class ScheduleManagementService : IScheduleManagementService
         schedule.ClassId = dto.ClassId;
         schedule.Note = dto.Note;
         schedule.Date = dto.Date;
-        _context.Entry(schedule).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(schedule).State = EntityState.Modified;
+        await context.SaveChangesAsync();
 
         return schedule;
     }
 
     public async Task DeleteSchedule(Guid schoolId, Guid id)
     {
-        var schedule = await _context.ClassSchedules
+        var schedule = await context.ClassSchedules
             .Include(x => x.ScheduleGroup)
             .FirstOrDefaultAsync(c => c.Id == id && c.SchoolId == schoolId);
 
         if (schedule == null)
-            throw new BadRequestException("Không tìm thấy lịch học");
+            throw new BadRequestException(ErrorMessages.ScheduleNotFound);
 
         if (schedule.ScheduleGroupId != null)
         {
@@ -196,22 +180,22 @@ public class ScheduleManagementService : IScheduleManagementService
 
             int classCountByGrade;
             if (schedule.ScheduleType is ScheduleType.Grade)
-                classCountByGrade = _context.ClassSchedules
-                    .Count(x => x.SchoolId == schoolId && x.Grade == schedule.Grade);
+                classCountByGrade = await context.ClassSchedules
+                    .CountAsync(x => x.SchoolId == schoolId && x.Grade == schedule.Grade);
             else
-                classCountByGrade = _context.ClassSchedules
-                    .Count(x => x.SchoolId == schoolId);
+                classCountByGrade = await context.ClassSchedules
+                    .CountAsync(x => x.SchoolId == schoolId);
 
             if (schedule.ScheduleGroup!.ClassException.Count == classCountByGrade)
             {
-                _context.ScheduleGroups.Remove(schedule.ScheduleGroup!);
-                _context.Entry(schedule.ScheduleGroup!).State = EntityState.Deleted;
+                context.ScheduleGroups.Remove(schedule.ScheduleGroup!);
+                context.Entry(schedule.ScheduleGroup!).State = EntityState.Deleted;
             }
         }
 
-        _context.ClassSchedules.Remove(schedule);
-        _context.Entry(schedule).State = EntityState.Deleted;
-        await _context.SaveChangesAsync();
+        context.ClassSchedules.Remove(schedule);
+        context.Entry(schedule).State = EntityState.Deleted;
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteSchedule(Guid schoolId, List<Guid> ids)
@@ -229,7 +213,7 @@ public class ScheduleManagementService : IScheduleManagementService
 
     public async Task<IEnumerable<ClassSchedule>> GetScheduleByDate(Guid schoolId, DateOnly date)
     {
-        var schedules = await _context.ClassSchedules
+        var schedules = await context.ClassSchedules
             .Include(c => c.Class)
             .AsNoTracking()
             .Where(c => c.SchoolId == schoolId &&
@@ -243,9 +227,9 @@ public class ScheduleManagementService : IScheduleManagementService
 
     public async Task<ClassSchedulePaginationResponse> GetScheduleView(Guid schoolId, DateOnly date)
     {
-        var monthRange = GetMonthRange(date);
+        var monthRange = DateTimeHelper.GetMonthRange(date);
 
-        var scheduleGroups = await _context.ScheduleGroups
+        var scheduleGroups = await context.ScheduleGroups
             .AsNoTracking()
             .Where(c => c.SchoolId == schoolId &&
                         c.Date >= monthRange.StartOfMonth &&
@@ -255,7 +239,7 @@ public class ScheduleManagementService : IScheduleManagementService
             .ThenBy(c => c.SessionType)
             .ToListAsync();
 
-        var classNames = await _context.Classes
+        var classNames = await context.Classes
             .AsNoTracking()
             .Where(x => x.SchoolId == schoolId)
             .Select(x => new { x.Id, x.ClassName })
@@ -295,7 +279,7 @@ public class ScheduleManagementService : IScheduleManagementService
             }
 
             // ReSharper disable once UnusedVariable
-            if (response.ClassSchedules.TryGetValue(group.Date, out var a))
+            if (response.ClassSchedules.ContainsKey(group.Date))
             {
                 response.ClassSchedules[group.Date] = response.ClassSchedules[group.Date].Append(classResponse);
             }
@@ -303,7 +287,7 @@ public class ScheduleManagementService : IScheduleManagementService
                 response.ClassSchedules.Add(group.Date, new List<ClassScheduleResponseView>() { classResponse });
         }
 
-        var schedules = await _context.ClassSchedules
+        var schedules = await context.ClassSchedules
             .Include(c => c.Class)
             .AsNoTracking()
             .Where(c => c.SchoolId == schoolId &&
@@ -329,7 +313,7 @@ public class ScheduleManagementService : IScheduleManagementService
             };
 
             // ReSharper disable once UnusedVariable
-            if (response.ClassSchedules.TryGetValue(schedule.Date, out var a))
+            if (response.ClassSchedules.ContainsKey(schedule.Date))
             {
                 response.ClassSchedules[schedule.Date] = response.ClassSchedules[schedule.Date].Append(classResponse);
             }
@@ -352,14 +336,14 @@ public class ScheduleManagementService : IScheduleManagementService
         SessionType sessionType,
         Grade grade)
     {
-        var schoolGroup = _context.ScheduleGroups
+        var schoolGroup = context.ScheduleGroups
             .FirstOrDefault(g => g.SchoolId == schoolId
                                  && g.Date == date
                                  && g.SessionType == sessionType);
 
         if (schoolGroup != null) return schoolGroup;
 
-        var gradeGroup = _context.ScheduleGroups
+        var gradeGroup = context.ScheduleGroups
             .FirstOrDefault(g => g.SchoolId == schoolId
                                  && g.Date == date
                                  && g.SessionType == sessionType
@@ -395,10 +379,10 @@ public class ScheduleManagementService : IScheduleManagementService
             return;
 
         StringBuilder builder = new StringBuilder();
-        using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<Context>();
+        using var scope = serviceProvider.CreateScope();
+        var ct = scope.ServiceProvider.GetRequiredService<Context>();
 
-        var query = context.ClassSchedules
+        var query = ct.ClassSchedules
             .Where(c => c.SchoolId == schoolId
                         && c.ClassId == classId
                         && c.Date == date
@@ -407,12 +391,12 @@ public class ScheduleManagementService : IScheduleManagementService
             query = query.Where(c =>
                 (c.SessionType == sessionType ||
                  c.SessionType == SessionType.FullDay));
-        if (query.Any())
+        if (await query.AnyAsync(cancellationToken: token))
         {
             if (token.IsCancellationRequested)
                 return;
 
-            var className = await context.Classes
+            var className = await ct.Classes
                 .Where(cl => cl.SchoolId == schoolId && cl.Id == classId)
                 .Select(c => c.ClassName)
                 // ReSharper disable once MethodSupportsCancellation
@@ -423,10 +407,7 @@ public class ScheduleManagementService : IScheduleManagementService
             builder.Append("Lịch của bạn bị trùng.\n");
             builder.Append($"Lớp: {className}\n");
             builder.Append($"Ngày học bị trùng: {date}\n");
-            if (schedule!.SessionType == SessionType.FullDay)
-                builder.Append($"Đã có lịch học cả ngày\n");
-            else
-                builder.Append($"Đã có lịch học vào buổi {schedule.SessionType.GetEnumDisplayName()}\n");
+            builder.Append($"Đã có lịch học {schedule?.SessionType.GetEnumDisplayName()}\n");
             builder.Append($"Vui lòng kiểm tra lại!");
 
             if (token.IsCancellationRequested)
@@ -435,63 +416,25 @@ public class ScheduleManagementService : IScheduleManagementService
         }
     }
 
-    private void CheckScheduleDate(DateOnly date)
+    private static void CheckScheduleDate(DateOnly date)
     {
         // compare with Datetime +7
         var tzUtcPlus7 = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
         var utcPlus7Time = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tzUtcPlus7);
         var currentDate = DateOnly.FromDateTime(utcPlus7Time);
-        var weekRange = GetWeekRange(date);
+        var weekRange = DateTimeHelper.GetWeekRange(date);
 
         if (currentDate > date)
-            throw new BadRequestException("Bạn không thể thêm lịch trong quá khứ");
+            throw new BadRequestException(ErrorMessages.CannotAddPastSchedule);
         if (weekRange.StartOfWeek.AddDays(-1) <= currentDate)
-            throw new BadRequestException(
-                "Bạn không thể thêm lịch. Lịch các tuần phải được thêm vào trước ngày chủ nhật của tuần trước đó.");
+            throw new BadRequestException(ErrorMessages.InvalidScheduleAddTime);
     }
 
-    // ReSharper disable once UnusedMember.Local
-    private (DateOnly StartOfWeek, DateOnly EndOfWeek) GetWeekRange(DateOnly date)
+    private static void ValidateCreateScheduleDto(CreateScheduleDto dto)
     {
-        return GetWeekRange(new DateTime(date.Year, date.Month, date.Day));
-    }
-
-    // ReSharper disable once UnusedMember.Local
-    private (DateOnly StartOfWeek, DateOnly EndOfWeek) GetNextWeekRange(DateOnly date)
-    {
-        return GetNextWeekRange(new DateTime(date.Year, date.Month, date.Day));
-    }
-
-    private (DateOnly StartOfWeek, DateOnly EndOfWeek) GetWeekRange(DateTime date)
-    {
-        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-
-        DateOnly startOfWeek = DateOnly.FromDateTime(date.AddDays(-diff).Date);
-        DateOnly endOfWeek = startOfWeek.AddDays(6);
-
-        return (startOfWeek, endOfWeek);
-    }
-
-    private (DateOnly StartOfNextWeek, DateOnly EndOfNextWeek) GetNextWeekRange(DateTime date)
-    {
-        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-        DateTime startOfCurrentWeek = date.AddDays(-diff).Date;
-
-        DateOnly startOfNextWeek = DateOnly.FromDateTime(startOfCurrentWeek.AddDays(7));
-        DateOnly endOfNextWeek = startOfNextWeek.AddDays(6);
-
-        return (startOfNextWeek, endOfNextWeek);
-    }
-
-    private (DateOnly StartOfMonth, DateOnly EndOfMonth) GetMonthRange(DateTime date)
-    {
-        DateOnly startOfMonth = DateOnly.FromDateTime(new DateTime(date.Year, date.Month, 1));
-        DateOnly endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
-        return (startOfMonth, endOfMonth);
-    }
-
-    private (DateOnly StartOfMonth, DateOnly EndOfMonth) GetMonthRange(DateOnly date)
-    {
-        return GetMonthRange(new DateTime(date.Year, date.Month, 1));
+        if (dto is { ScheduleType: ScheduleType.Class, ClassId: null })
+            throw new BadRequestException(ErrorMessages.ClassIsEmpty);
+        if (dto is { ScheduleType: ScheduleType.Grade, Grade: null })
+            throw new BadRequestException(ErrorMessages.GradeIsEmpty);
     }
 }

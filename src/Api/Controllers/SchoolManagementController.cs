@@ -1,16 +1,13 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.Common.Utilities.Exceptions;
-using Api.Domain;
-using Api.Domain.Models;
+using Api.Common.Exceptions;
 using Api.DTOs.UploadFileService;
 using Api.Extensions;
 using Api.Services.SchoolManagement;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -19,13 +16,10 @@ namespace Api.Controllers;
 public class SchoolManagementController : ControllerBase
 {
     private readonly ISchoolManagementHandler _schoolManagementHandler;
-    private readonly Context _context;
 
-    public SchoolManagementController(ISchoolManagementHandler schoolManagementHandler,
-        Context context)
+    public SchoolManagementController(ISchoolManagementHandler schoolManagementHandler)
     {
         _schoolManagementHandler = schoolManagementHandler;
-        _context = context;
     }
 
     [HttpPost]
@@ -77,7 +71,7 @@ public class SchoolManagementController : ControllerBase
     {
         var userType = this.GetUserType();
         if (userType == UserType.SchoolAdmin && this.GetSchoolId() != schoolId)
-                throw new ForbiddenException("Access Denied");
+                throw new ForbiddenException(ErrorMessages.AccessDenied);
         return await _schoolManagementHandler.GetSchool(schoolId);
     }
 
@@ -88,57 +82,6 @@ public class SchoolManagementController : ControllerBase
         [FromForm] [PasswordStrength] string newPassword)
     {
         await _schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
-        return Ok();
-    }
-
-    [HttpGet("search-schools")]
-    [Authorize(UserType.Driver, UserType.Parent)]
-    public async Task<ActionResult> SearchSchools([FromQuery] string schoolName)
-    {
-        var query = _context.Schools
-            .AsQueryable()
-            .AsNoTracking();
-
-        if (!string.IsNullOrEmpty(schoolName))
-            query = query.Where(sc => sc.SchoolName.Contains(schoolName));
-
-        var schools = await query
-            .AsNoTracking()
-            .OrderBy(sc => sc.SchoolName)
-            .Select(sc => new
-            {
-                sc.SchoolName,
-                sc.Address,
-                sc.SchoolType,
-                SchoolTypeName = sc.SchoolType.GetEnumDisplayName(),
-                sc.Id,
-            })
-            .ToListAsync();
-
-        return Ok(schools);
-    }
-
-    [HttpPut("{schoolId}/start-date")]
-    [Authorize(UserType.SchoolAdmin)]
-    [ValidateModel]
-    public async Task<ActionResult> SetSchoolStartDate([FromRoute] Guid schoolId,
-        [FromForm] DateOnly date)
-    {
-        if (this.GetSchoolId() != schoolId)
-            throw new ForbiddenException("Access Denied");
-
-        var startDate = await _context.SystemVariables
-            .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.Name == "START_DATE");
-
-        if (startDate == null)
-        {
-            await _context.SystemVariables.AddAsync(new SystemVariable()
-                { Name = "START_DATE", SchoolId = schoolId, Value = date.ToString() });
-        }
-        else
-            startDate.Value = date.ToString();
-
-        await _context.SaveChangesAsync();
         return Ok();
     }
 
@@ -153,22 +96,22 @@ public class SchoolManagementController : ControllerBase
     {
         if ((fileSize / 1024f / 1024f) > 10)
         {
-            throw new BadRequestException($"File quá lớn. Yêu cầu file nhỏ hơn 10Mb");
+            throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
         }
 
         List<string> acceptContentType =
         [
-            ContentTypeEnum.ImagePng.GetDescription(),
-            ContentTypeEnum.ImageJpeg.GetDescription(),
-            ContentTypeEnum.ImageJpg.GetDescription(),
-            ContentTypeEnum.ImageHeic.GetDescription(),
-            ContentTypeEnum.ImageHeics.GetDescription(),
-            ContentTypeEnum.ImageHeif.GetDescription()
+            ContentType.ImagePng.GetDescription(),
+            ContentType.ImageJpeg.GetDescription(),
+            ContentType.ImageJpg.GetDescription(),
+            ContentType.ImageHeic.GetDescription(),
+            ContentType.ImageHeics.GetDescription(),
+            ContentType.ImageHeif.GetDescription()
         ];
 
         if (!acceptContentType.Contains(contentType))
         {
-            throw new BadRequestException("Loại file không được chấp nhận.");
+            throw new BadRequestException(ErrorMessages.InvalidFileType);
         }
 
         return await _schoolManagementHandler.GetPreSignedUploadImage(this.GetUserId(),

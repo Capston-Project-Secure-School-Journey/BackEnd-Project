@@ -49,7 +49,7 @@ builder.Services.AddHangfire(config =>
                     TransactionTimeout = TimeSpan.FromMinutes(1),
                     TablesPrefix = "Hangfire"
                 }))
-    );
+);
 builder.Services.AddHangfireServer();
 
 DependencyContainer.RegisterServices(builder.Services);
@@ -94,7 +94,6 @@ builder
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-        // options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options
@@ -140,12 +139,12 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 
 using (var scope = app.Services.CreateScope())
-{   
+{
     var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-    if (dbContext.Database.GetPendingMigrations().Any()) dbContext.Database.Migrate();
+    if ((await dbContext.Database.GetPendingMigrationsAsync()).Any()) await dbContext.Database.MigrateAsync();
 
-    if (!dbContext.Users.Any()) DbInitializer.SeedData(dbContext);
+    if (!await dbContext.Users.AnyAsync()) DbInitializer.SeedData(dbContext);
 }
 
 await app.RunAsync();
-Log.CloseAndFlush();
+await Log.CloseAndFlushAsync();

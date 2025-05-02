@@ -1,8 +1,9 @@
 using Api.Common.Utilities;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.StudentManagement;
+using Api.DTOs.UploadFileService;
 using Api.Extensions;
 using Api.Services.ClassManagementService;
 using Api.Services.UploadFileService;
@@ -61,7 +62,7 @@ public class StudentManagementService : IStudentManagementService
         var student = await _context.Students
             .FirstOrDefaultAsync(s => s.Id == id);
         if (student == null)
-            throw new NotFoundException("Không tồn tại học sinh");
+            throw new NotFoundException(ErrorMessages.StudentNotExist);
 
         return student;
     }
@@ -69,12 +70,11 @@ public class StudentManagementService : IStudentManagementService
     public async Task<Student> AddStudent(CreateStudentDto request)
     {
         var trans = await _context.Database.BeginTransactionAsync();
-
         try
         {
             var cl = await _classManagementService.GetClassById(request.ClassId);
             if (cl.SchoolId != request.SchoolId)
-                throw new BadRequestException("Lớp không tồn tại");
+                throw new BadRequestException(ErrorMessages.ClassNotExist);
 
             var st = new Student()
             {
@@ -106,6 +106,7 @@ public class StudentManagementService : IStudentManagementService
         catch (Exception)
         {
             await trans.RollbackAsync();
+            _ = _uploadFileService.RollBackAsync();
             throw;
         }
     }
@@ -114,7 +115,7 @@ public class StudentManagementService : IStudentManagementService
     {
         var cl = await _classManagementService.GetClassById(request.ClassId);
         if (cl.SchoolId != request.SchoolId)
-            throw new BadRequestException("Lớp không tồn tại");
+            throw new BadRequestException(ErrorMessages.ClassNotExist);
 
         var st = await GetStudentById(request.Id);
         var oldClass = await _classManagementService.GetClassById(st.ClassId);
@@ -163,26 +164,35 @@ public class StudentManagementService : IStudentManagementService
     public async Task CheckExistStudent(Guid schoolId, Guid studentId)
     {
         if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
-            throw new NotFoundException("Không tồn tại học sinh");
+            throw new NotFoundException(ErrorMessages.StudentNotExist);
     }
 
     public async Task IsOwnerOfStudent(Guid schoolId, Guid studentId)
     {
         if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
-            throw new ForbiddenException("Bạn không có quyền truy cập");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
     public async Task<string> UploadAvatar(Guid studentId, IFormFile file)
     {
         var student = await GetStudentById(studentId);
+        UploadFileResponse uploadResponse;
+        try
+        {
+            if (student.AvatarKey != null)
+                await _uploadFileService.DeleteFileManagementAsync(student.AvatarKey.Value);
+            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/students");
 
-        if (student.AvatarKey != null)
-            await _uploadFileService.DeleteFileAsync(student.AvatarKey.Value);
-        var response = await _uploadFileService.UploadFileAsync(file, "avatar/students");
+            student.AvatarKey = uploadResponse.Key;
+            _context.Entry(student).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            _ = _uploadFileService.RollBackAsync();
+            throw;
+        }
 
-        student.AvatarKey = response.Key;
-        _context.Entry(student).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return response.S3Url;
+        return uploadResponse.S3Url;
     }
 }

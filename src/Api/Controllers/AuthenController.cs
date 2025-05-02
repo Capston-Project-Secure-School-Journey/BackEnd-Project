@@ -1,4 +1,4 @@
-using Api.Common.Utilities;
+using Api.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Api.Services.AuthenticationService;
 using Api.TransferDTOs.Requests;

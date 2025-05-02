@@ -1,9 +1,11 @@
+using System.Linq.Expressions;
 using Api.Domain.Models;
+using Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Domain;
 
-public class Context : DbContext
+public class Context(DbContextOptions options) : DbContext(options)
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Parent> Parents { get; set; }
@@ -22,15 +24,25 @@ public class Context : DbContext
     public DbSet<SystemVariable> SystemVariables { get; set; }
     public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
     public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
-    
-    public Context(DbContextOptions options) :
-        base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        ModelCreating.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(Context).Assembly);
+        // Apply filter for all entities that inherit from BaseEntity
+        foreach (var type in modelBuilder.Model.GetEntityTypes()
+                     .Where(e => typeof(BaseModel).IsAssignableFrom(e.ClrType) && e.BaseType == null)
+                     .Select(x => x.ClrType))
+        {
+            var parameter = Expression.Parameter(type, "e");
+            var isDeletedProp = Expression.Property(parameter, nameof(BaseModel.IsDeleted));
+            var filter = Expression.Lambda(
+                Expression.Not(isDeletedProp),
+                parameter
+            );
+
+            modelBuilder.Entity(type).HasQueryFilter(filter);
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -51,33 +63,31 @@ public class Context : DbContext
     private void AddTimestamps()
     {
         var entities = ChangeTracker.Entries()
-            .Where(x => x.Entity is BaseModel && (x.State == EntityState.Added || x.State == EntityState.Modified));
+            .Where(x => x is { Entity: BaseModel, State: EntityState.Added or EntityState.Modified });
         foreach (var entity in entities)
         {
-            var now = DateTimeOffset.Now;
             if (entity.State == EntityState.Added)
             {
-                ((BaseModel)entity.Entity).CreatedAt = now;
+                ((BaseModel)entity.Entity).CreatedAt = DateTimeHelper.GetDateTimeUtc7();
                 continue;
             }
 
-            ((BaseModel)entity.Entity).UpdatedAt = now;
+            ((BaseModel)entity.Entity).UpdatedAt = DateTimeHelper.GetDateTimeUtc7();
         }
     }
 
     private void UpdateSoftDeleteStatuses()
     {
-        foreach (var entry in ChangeTracker.Entries())
-            if (entry.Entity is BaseModel)
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        entry.CurrentValues["IsDeleted"] = false;
-                        break;
-                    case EntityState.Deleted:
-                        entry.State = EntityState.Modified;
-                        entry.CurrentValues["IsDeleted"] = true;
-                        break;
-                }
+        foreach (var entry in ChangeTracker.Entries().Where(x => x.Entity is BaseModel))
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.CurrentValues["IsDeleted"] = false;
+                    break;
+                case EntityState.Deleted:
+                    entry.State = EntityState.Modified;
+                    entry.CurrentValues["IsDeleted"] = true;
+                    break;
+            }
     }
 }

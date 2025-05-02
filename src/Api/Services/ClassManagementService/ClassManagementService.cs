@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ClassManagement;
@@ -57,7 +58,7 @@ public class ClassManagementService : IClassManagementService
     {
         var cl = await _context.Classes.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (cl == null) throw new NotFoundException("Lớp học không tồn tại");
+        if (cl == null) throw new NotFoundException(ErrorMessages.ClassNotFound);
 
         return cl;
     }
@@ -130,7 +131,7 @@ public class ClassManagementService : IClassManagementService
         }
         catch (Exception)
         {
-            throw new DatabaseException("Không thể xóa dữ liệu");
+            throw new DatabaseException(ErrorMessages.CannotDeleteData);
         }
     }
 
@@ -153,20 +154,20 @@ public class ClassManagementService : IClassManagementService
         }
         catch (Exception)
         {
-            throw new DatabaseException("Không thể xóa dữ liệu");
+            throw new DatabaseException(ErrorMessages.CannotDeleteData);
         }
     }
 
     public async Task IsOwnerOfClass(Guid schoolId, Guid classId)
     {
         if (!await _context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
-            throw new ForbiddenException("Bạn không có quyền truy cập");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
     private async Task CheckExistClassName(Guid schoolId, string className)
     {
         if (await _context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
-            throw new BadRequestException("Tên lớp bị trùng");
+            throw new BadRequestException(ErrorMessages.DuplicateClassName);
     }
 
     private async Task DeleteClassNoTransaction(Guid id)
@@ -184,32 +185,32 @@ public class ClassManagementService : IClassManagementService
         await _context.SaveChangesAsync();
     }
 
-    private void ValidateGrade(SchoolType schoolType, Grade grade)
+    private static void ValidateGrade(SchoolType schoolType, Grade grade)
     {
         switch (schoolType)
         {
             case SchoolType.Preschool:
                 if (grade is not Grade.Daycare and not Grade.JuniorKindergarten and not Grade.SeniorKindergarten)
-                    throw new ValidationException("Lớp không hợp lệ cho trường Mầm non.");
+                    throw new ValidationException(ErrorMessages.InvalidPreschoolClass);
                 break;
 
             case SchoolType.PrimarySchool:
                 if (grade is not (Grade.Grade1 or Grade.Grade2 or Grade.Grade3 or Grade.Grade4 or Grade.Grade5))
-                    throw new ValidationException("Lớp không hợp lệ cho trường Tiểu học.");
+                    throw new ValidationException(ErrorMessages.InvalidPrimaryClass);
                 break;
 
             case SchoolType.MiddleSchool:
                 if (grade is not (Grade.Grade6 or Grade.Grade7 or Grade.Grade8 or Grade.Grade9))
-                    throw new ValidationException("Lớp không hợp lệ cho trường Trung học cơ sở.");
+                    throw new ValidationException(ErrorMessages.InvalidSecondaryClass);
                 break;
 
             case SchoolType.HighSchool:
                 if (grade is not (Grade.Grade10 or Grade.Grade11 or Grade.Grade12))
-                    throw new ValidationException("Lớp không hợp lệ cho trường Trung học phổ thông.");
+                    throw new ValidationException(ErrorMessages.InvalidHighSchoolClass);
                 break;
 
             default:
-                throw new ValidationException("Loại trường không hợp lệ.");
+                throw new ValidationException(ErrorMessages.InvalidSchoolType);
         }
     }
 }

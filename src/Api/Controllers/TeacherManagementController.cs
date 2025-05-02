@@ -1,13 +1,9 @@
 using Api.Attributes;
 using Api.Common.Enums;
-using Api.Common.Utilities;
-using Api.Domain;
-using Api.DTOs;
 using Api.Services.TeacherManagementService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -16,13 +12,10 @@ namespace Api.Controllers;
 public class TeacherManagementController : ControllerBase
 {
     private readonly ITeacherManagementHandler _teacherManagementHandler;
-    private readonly Context _context;
 
-    public TeacherManagementController(ITeacherManagementHandler teacherManagementHandler,
-        Context context)
+    public TeacherManagementController(ITeacherManagementHandler teacherManagementHandler)
     {
         _teacherManagementHandler = teacherManagementHandler;
-        _context = context;
     }
 
     [HttpPost]
@@ -86,29 +79,13 @@ public class TeacherManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid teacherId,
         [AllowedFile([
-            ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
-            ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
+            ContentType.ImagePng,
+            ContentType.ImageJpeg, ContentType.ImageJpg,
+            ContentType.ImageHeic, ContentType.ImageHeics, ContentType.ImageHeif
         ], 10)]
         IFormFile file)
     {
         var schoolId = this.GetSchoolId();
         return Ok(await _teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
-    }
-
-    [HttpGet("teacher-combobox")]
-    [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult<List<ComboBoxItem>>> GetTeacherCombobox([FromQuery] string name)
-    {
-        var schoolId = this.GetSchoolId();
-        var classCombobox = await _context.Teachers
-            .Where(cl => schoolId == cl.SchoolId)
-            .OrderBy(x => x.FullName)
-            .Select(x => new ComboBoxItem() { Id = x.Id, Name = x.FullName })
-            .ToListAsync();
-        if (!string.IsNullOrEmpty(name)) classCombobox = classCombobox
-            .Where(x => x.Name.ToLower().Contains(name.ToLower()))
-            .ToList();
-        return classCombobox;
     }
 }

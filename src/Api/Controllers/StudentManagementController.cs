@@ -1,6 +1,5 @@
 using Api.Attributes;
 using Api.Common.Enums;
-using Api.Common.Utilities;
 using Api.Services.StudentManagementService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
@@ -83,9 +82,9 @@ public class StudentManagementController : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     public async Task<IActionResult> UploadAvatar([FromRoute] Guid studentId,
         [AllowedFile([
-            ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
-            ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
+            ContentType.ImagePng,
+            ContentType.ImageJpeg, ContentType.ImageJpg,
+            ContentType.ImageHeic, ContentType.ImageHeics, ContentType.ImageHeif
         ], 10)]
         IFormFile file)
     {

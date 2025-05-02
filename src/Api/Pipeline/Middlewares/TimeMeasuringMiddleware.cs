@@ -14,13 +14,13 @@ public class TimeMeasuringMiddleware
 
     public async Task Invoke(HttpContext httpContext)
     {
-        Log.Information($"Start Request: {httpContext.Request.Method} {httpContext.Request.Path}");
         var stopWatch = Stopwatch.StartNew();
         await _next(httpContext);
         stopWatch.Stop();
         var timeSpent = stopWatch.ElapsedMilliseconds;
-        Log.Information($"End Request: {httpContext.Request.Method} {httpContext.Request.Path}");
-        Log.Information($"Time Spent: {timeSpent} ms");
-        Log.Information("--------------------------------------------------------------------");
+        Log.Information("Request: {Method} {Path},Time Spent: {TimeSpent} ms",
+            httpContext.Request.Method,
+            httpContext.Request.Path,
+            timeSpent);
     }
 }
