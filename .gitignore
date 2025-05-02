@@ -326,3 +326,4 @@ Desktop.ini
 **/appsettings.Development.json
 **/appsettings.json
 /src/Api/firebase-adminsdk.json
+/src/Api/.sonarqube/

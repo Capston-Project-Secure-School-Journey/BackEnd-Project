@@ -86,7 +86,7 @@ public class TeacherManagementHandler : ITeacherManagementHandler
         return await _teacherManagementService.UploadAvatar(teacherId, file);
     }
 
-    private async Task<TeacherDetailResponse> MapToTeacherResponse(Teacher teacher,
+    private static async Task<TeacherDetailResponse> MapToTeacherResponse(Teacher teacher,
         IMapper mapper,
         IFileUploadService uploadFileService)
     {

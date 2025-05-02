@@ -2,7 +2,7 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class ScheduleGroup
+public class ScheduleGroup: BaseModel
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }

@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.UserManagement;
@@ -18,11 +19,11 @@ public class UserManagement : IUserManagement
 
     public async Task<SchoolPerson> CreateSchoolAdmin(CreateSchoolAdminDto request)
     {
-        if (_context.SchoolPersons.Any(x => x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
-            throw new BadRequestException("Đã tồn tại tài khoản của người quản trị trường học");
+        if (await _context.SchoolPersons.AnyAsync(x => x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
+            throw new BadRequestException(ErrorMessages.AccountExists);
 
-        if (_context.Users.Any(x => x.UserName == request.UserName))
-            throw new BadRequestException("Tên đăng nhập đã tồn tại");
+        if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
+            throw new BadRequestException(ErrorMessages.UsernameExists);
 
         var user = new SchoolPerson
         {
@@ -48,7 +49,7 @@ public class UserManagement : IUserManagement
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)
-            throw new NotFoundException("Không tồn tại tài khoản");
+            throw new NotFoundException(ErrorMessages.AccountNotExist);
 
         schoolAdmin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
         _context.Entry(schoolAdmin).State = EntityState.Modified;
@@ -58,22 +59,24 @@ public class UserManagement : IUserManagement
     public async Task<User> CreateUser(CreateUserDto request)
     {
         if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
-            throw new BadRequestException("Đã tồn tại tài khoản.");
+            throw new BadRequestException(ErrorMessages.AccountExists);
 
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
-            throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
+            throw new BadRequestException(ErrorMessages.EmailOrPhoneRequired);
 
-        if (!string.IsNullOrEmpty(request.Email))
-            if (_context.Users.Any(x => x.Email == request.Email))
-                throw new BadRequestException("Email đã được đăng kí.");
+        if (!string.IsNullOrEmpty(request.Email) &&
+            await _context.Users.AnyAsync(x => x.Email == request.Email)
+           )
+            throw new BadRequestException(ErrorMessages.EmailExists);
 
-        if (!string.IsNullOrEmpty(request.PhoneNumber))
-            if (_context.Users.Any(x => x.PhoneNumber == request.PhoneNumber))
-                throw new BadRequestException("Số điện thoại đã được đăng kí.");
+        if (!string.IsNullOrEmpty(request.PhoneNumber) &&
+            await _context.Users.AnyAsync(x => x.PhoneNumber == request.PhoneNumber)
+           )
+            throw new BadRequestException(ErrorMessages.PhoneExists);
 
 
         if (request.UserType != UserType.Driver && request.UserType != UserType.Parent)
-            throw new BadRequestException("Không thể đăng kí tài khoản.");
+            throw new BadRequestException(ErrorMessages.CannotRegisterAccount);
 
 
         User user;
@@ -116,19 +119,13 @@ public class UserManagement : IUserManagement
         return user;
     }
 
-
-    public Task<SchoolPerson> UpdateSchoolAdmin(UpdateSchoolAdminDto request)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task DeleteSchoolAdmin(Guid schoolId)
     {
         var schoolAdmin = await _context.SchoolPersons
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)
-            throw new NotFoundException("Không tồn tại tài khoản");
+            throw new NotFoundException(ErrorMessages.AccountNotExist);
 
 
         schoolAdmin.AccountStatus = AccountStatus.Deactive;
@@ -160,7 +157,7 @@ public class UserManagement : IUserManagement
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)
-            throw new NotFoundException("Không tồn tại tài khoản");
+            throw new NotFoundException(ErrorMessages.AccountNotExist);
 
         return schoolAdmin;
     }

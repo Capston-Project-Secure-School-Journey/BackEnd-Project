@@ -1,7 +1,7 @@
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Exceptions;
 using Api.DTOs.UploadFileService;
 using Api.Extensions;
 using Api.Services.UserService;
@@ -42,9 +42,9 @@ public class UserController : ControllerBase
     [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<string> UploadAvatar(
         [AllowedFile([
-            ContentTypeEnum.ImagePng,
-            ContentTypeEnum.ImageJpeg, ContentTypeEnum.ImageJpg,
-            ContentTypeEnum.ImageHeic, ContentTypeEnum.ImageHeics, ContentTypeEnum.ImageHeif
+            ContentType.ImagePng,
+            ContentType.ImageJpeg, ContentType.ImageJpg,
+            ContentType.ImageHeic, ContentType.ImageHeics, ContentType.ImageHeif
         ], 10)]
         IFormFile file)
     {
@@ -69,22 +69,22 @@ public class UserController : ControllerBase
     {
         if ((fileSize / 1024f / 1024f) > 10)
         {
-            throw new BadRequestException($"File quá lớn. Yêu cầu file nhỏ hơn 10Mb");
+            throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
         }
 
         List<string> acceptContentType =
         [
-            ContentTypeEnum.ImagePng.GetDescription(),
-            ContentTypeEnum.ImageJpeg.GetDescription(),
-            ContentTypeEnum.ImageJpg.GetDescription(),
-            ContentTypeEnum.ImageHeic.GetDescription(),
-            ContentTypeEnum.ImageHeics.GetDescription(),
-            ContentTypeEnum.ImageHeif.GetDescription()
+            ContentType.ImagePng.GetDescription(),
+            ContentType.ImageJpeg.GetDescription(),
+            ContentType.ImageJpg.GetDescription(),
+            ContentType.ImageHeic.GetDescription(),
+            ContentType.ImageHeics.GetDescription(),
+            ContentType.ImageHeif.GetDescription()
         ];
 
         if (!acceptContentType.Contains(contentType))
         {
-            throw new BadRequestException("Loại file không được chấp nhận.");
+            throw new BadRequestException(ErrorMessages.InvalidFileType);
         }
 
         return await _userHandler.GetPreSignedUploadImage(this.GetUserId(), fileName, contentType, fileSize);

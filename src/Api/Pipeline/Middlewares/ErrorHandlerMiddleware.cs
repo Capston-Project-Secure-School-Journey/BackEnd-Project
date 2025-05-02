@@ -2,25 +2,17 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using Api.Common.Utilities;
-using Api.Common.Utilities.Exceptions;
-using Serilog;
+using Api.Common.Exceptions;
 
 namespace Api.Pipeline.Middlewares;
 
-public class ErrorHandlerMiddleware
+public class ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-
-    public ErrorHandlerMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
     public async Task Invoke(HttpContext httpContext)
     {
         try
         {
-            await _next(httpContext);
+            await next(httpContext);
         }
         catch (Exception ex)
         {
@@ -64,9 +56,9 @@ public class ErrorHandlerMiddleware
                 errorDetail.Message = e.Message;
                 break;
             default:
-                Log.Fatal($"Unhandled exception: {exception}");
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorDetail.Message = exception.Message;
+                logger.LogError(exception,"Unhandled exception");
+                response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                errorDetail.Message = "Internal Server Error";
                 break;
         }
 

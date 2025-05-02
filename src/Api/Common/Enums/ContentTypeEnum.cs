@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Api.Common.Enums;
 
-public enum ContentTypeEnum
+public enum ContentType
 {
     [Description("image/jpeg")] ImageJpeg,
     [Description("image/jpg")] ImageJpg,

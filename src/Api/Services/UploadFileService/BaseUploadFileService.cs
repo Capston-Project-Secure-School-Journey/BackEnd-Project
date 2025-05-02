@@ -1,4 +1,5 @@
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Exceptions;
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.UploadFileService;
@@ -7,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.UploadFileService;
 
-public class BaseUploadFileService(Context context)
+public class BaseUploadFileService(Context context, IUploadTransactionManager uploadTransactionManager)
 {
     private readonly Context _context = context;
-
+    protected IUploadTransactionManager UploadTransactionManager = uploadTransactionManager;
+    
     protected async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
     {
         var file = new FileManagement()
@@ -75,7 +77,7 @@ public class BaseUploadFileService(Context context)
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
 
         if (file == null)
-            throw new NotFoundException($"File with id {id} not found");
+            throw new NotFoundException(ErrorMessages.FileNotFound(id));
 
         return file;
     }

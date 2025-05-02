@@ -5,15 +5,10 @@ namespace Api.TransferDTOs.Responses;
 public class Pagination<T>
 {
     public int CurrentPage { get; private set; }
-    private int _pageSize;
     public int Total { get; set; }
     public int LastPage { get; private set; }
     public IEnumerable<T> Data { get; private set; }
-
-    private int PageSize
-    {
-        set => _pageSize = value;
-    }
+    public int PageSize { get; set; }
 
     public Pagination(IEnumerable<T> data, int pageSize, int currentPage, int total)
     {
@@ -21,6 +16,6 @@ public class Pagination<T>
         PageSize = pageSize;
         CurrentPage = currentPage;
         Total = total;
-        LastPage = (int)Math.Ceiling((double)total / _pageSize);
+        LastPage = (int)Math.Ceiling((double)total / pageSize);
     }
 }

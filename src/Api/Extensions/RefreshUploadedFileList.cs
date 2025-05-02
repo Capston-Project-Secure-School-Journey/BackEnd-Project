@@ -1,4 +1,5 @@
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain.Models;
 using Api.Services.UploadFileService;
 using Api.TransferDTOs.Requests;
@@ -21,23 +22,23 @@ public static class RefreshUploadedFileList
             var fileData = await baseUploadService!.GetFileData(i);
 
             if (fileData == null)
-                throw new BadRequestException("Tải ảnh xe không thành công.");
+                throw new BadRequestException(ErrorMessages.UploadVehiclePhotoFailed);
 
             if (oldFileData.Any(x => x.FileManagementId == fileData.Id))
                 keepList.Add(oldFileData.First(x => x.FileManagementId == fileData.Id));
             else
             {
-                if (fileData.IsUploaded == false)
+                if (!fileData.IsUploaded)
                     newList.Add(new FileMetadata() { Key = fileData.S3Key, FileManagementId = fileData.Id });
                 else
-                    throw new BadRequestException("Tải ảnh xe không thành công.");
+                    throw new BadRequestException(ErrorMessages.UploadVehiclePhotoFailed);
             }
         }
 
         var removeList = oldFileData.Except(keepList).ToList();
         foreach (var i in removeList)
         {
-            await fileUploadService.DeleteFileAsync(i.FileManagementId);
+            await fileUploadService.DeleteFileManagementAsync(i.FileManagementId);
             currentFiles.Remove(i);
         }
 
@@ -63,13 +64,13 @@ public static class RefreshUploadedFileList
             var fileData = await baseUploadService!.GetFileData(i.Id);
 
             if (fileData == null)
-                throw new BadRequestException("Tải ảnh bằng lái không thành công.");
+                throw new BadRequestException(ErrorMessages.UploadLicenseFailed);
 
             if (oldFileData.Any(x => x.FileManagementId == fileData.Id))
                 keepList.Add(oldFileData.First(x => x.FileManagementId == fileData.Id));
             else
             {
-                if (fileData.IsUploaded == false)
+                if (!fileData.IsUploaded)
                     newList.Add(new DriverInformationImage()
                     {
                         Key = fileData.S3Key, 
@@ -77,14 +78,14 @@ public static class RefreshUploadedFileList
                         Type = i.Type
                     });
                 else
-                    throw new BadRequestException("Tải ảnh bằng lái không thành công.");
+                    throw new BadRequestException(ErrorMessages.UploadLicenseFailed);
             }
         }
 
         var removeList = oldFileData.Except(keepList).ToList();
         foreach (var i in removeList)
         {
-            await fileUploadService.DeleteFileAsync(i.FileManagementId);
+            await fileUploadService.DeleteFileManagementAsync(i.FileManagementId);
             currentFiles.Remove(i);
         }
 

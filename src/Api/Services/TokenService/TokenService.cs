@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Api.Domain.Models;
 using Api.Common.Enums;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 
 namespace Api.Services.TokenService;
 
@@ -69,7 +71,7 @@ public class TokenService : ITokenService
     public (Guid?, string?, AccountStatus?, Guid? schoolId) ValidateToken(string token,
         TokenType type = TokenType.Login)
     {
-        if (string.IsNullOrEmpty(token)) throw new Exception("Token is not valid");
+        if (string.IsNullOrEmpty(token)) throw new UnAuthorizedException(ErrorMessages.InvalidToken);
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -97,10 +99,10 @@ public class TokenService : ITokenService
             schoolId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "SchoolId").Value);
         var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
 
-        if (typeInToken == null) throw new Exception("Token is not valid");
+        if (typeInToken == null) throw new UnAuthorizedException(ErrorMessages.InvalidToken);
 
-        if (typeInToken != null && (TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
-            throw new Exception("Token is not valid");
+        if ((TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
+            throw new UnAuthorizedException(ErrorMessages.InvalidToken);
 
         return (userId, userType, accountStatus, schoolId);
     }

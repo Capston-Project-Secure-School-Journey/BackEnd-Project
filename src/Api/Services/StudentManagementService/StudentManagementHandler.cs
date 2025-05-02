@@ -98,27 +98,27 @@ public class StudentManagementHandler : IStudentManagementHandler
         return await _studentManagementService.UploadAvatar(studentId, file);
     }
 
-    private async Task<StudentDetailResponse> MapStudent2StudentResponse(Student student, Context context,
+    private static async Task<StudentDetailResponse> MapStudent2StudentResponse(Student student, Context context,
         IMapper mapper, IFileUploadService uploadService)
     {
         var entry = context.Entry(student);
-        if (entry.Reference(st => st.School).IsLoaded == false)
-            context.Entry(student).Reference(s => s.School).Load();
-        if (entry.Reference(st => st.Class).IsLoaded == false)
-            context.Entry(student).Reference(s => s.Class).Load();
+        if (!entry.Reference(st => st.School).IsLoaded)
+            await context.Entry(student).Reference(s => s.School).LoadAsync();
+        if (!entry.Reference(st => st.Class).IsLoaded)
+            await context.Entry(student).Reference(s => s.Class).LoadAsync();
 
         var response = mapper.Map<StudentDetailResponse>(student);
 
         if (student.QrImageKey != null)
         {
-            var key = context.FileManagements.FirstOrDefault(fm => fm.Id == student.QrImageKey)!.S3Key;
+            var key = (await context.FileManagements.FirstOrDefaultAsync(fm => fm.Id == student.QrImageKey))!.S3Key;
 
             response.QrImageUrl = await uploadService.GeneratePreSignedDownloadUrlAsync(key, 30);
         }
 
         if (student.AvatarKey != null)
         {
-            var key = context.FileManagements.FirstOrDefault(fm => fm.Id == student.AvatarKey)!.S3Key;
+            var key = (await context.FileManagements.FirstOrDefaultAsync(fm => fm.Id == student.AvatarKey))!.S3Key;
 
             response.AvatarUrl = await uploadService.GeneratePreSignedDownloadUrlAsync(key, 30);
         }

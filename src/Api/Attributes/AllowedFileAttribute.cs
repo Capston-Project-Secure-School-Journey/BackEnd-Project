@@ -4,9 +4,10 @@ using Api.Extensions;
 
 namespace Api.Attributes;
 
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public class AllowedFileAttribute : ValidationAttribute
 {
-    private readonly ContentTypeEnum[] _allowedContentTypes;
+    private readonly ContentType[] _allowedContentTypes;
     private readonly long _maxFileSizeInBytes;
 
     /// <summary>
@@ -14,7 +15,7 @@ public class AllowedFileAttribute : ValidationAttribute
     /// </summary>
     /// <param name="allowedContentTypes">Allowed content types (MIME types)</param>
     /// <param name="maxFileSizeInMb">Maximum file size in megabytes</param>
-    public AllowedFileAttribute(ContentTypeEnum[] allowedContentTypes, int maxFileSizeInMb = 1)
+    public AllowedFileAttribute(ContentType[] allowedContentTypes, int maxFileSizeInMb = 1)
     {
         _allowedContentTypes = allowedContentTypes ?? throw new ArgumentNullException(nameof(allowedContentTypes));
         _maxFileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
@@ -66,7 +67,7 @@ public class AllowedFileAttribute : ValidationAttribute
     /// </summary>
     /// <param name="contentType">MIME content type.</param>
     /// <returns>File extension or empty string.</returns>
-    private string GetExtensionFromContentType(string contentType)
+    private static string GetExtensionFromContentType(string contentType)
     {
         return contentType.ToLowerInvariant() switch
         {

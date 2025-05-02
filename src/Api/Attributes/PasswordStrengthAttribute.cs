@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Api.Attributes;
 
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public class PasswordStrengthAttribute : ValidationAttribute
 {
     public int MinimumLength { get; set; } = 8;
