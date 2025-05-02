@@ -40,7 +40,7 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
 {
     public void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter)
     {
-        var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ")[1];
+        var token = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
         if (string.IsNullOrEmpty(token))
             throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);

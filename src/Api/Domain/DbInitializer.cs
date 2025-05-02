@@ -6,9 +6,9 @@ namespace Api.Domain;
 
 public static class DbInitializer
 {
-    public static void SeedData(Context dbContext)
+    public static async Task SeedData(Context dbContext)
     {
-        dbContext.Users.AddAsync(
+        await dbContext.Users.AddAsync(
             new User
             {
                 Id = Guid.NewGuid(),
@@ -27,6 +27,6 @@ public static class DbInitializer
             }
         );
 
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
     }
 }

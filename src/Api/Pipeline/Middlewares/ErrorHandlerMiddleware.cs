@@ -63,11 +63,6 @@ public class ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMi
         }
 
         errorDetail.StatusCode = response.StatusCode;
-        var serializeOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-        await response.WriteAsync(JsonSerializer.Serialize(errorDetail, serializeOptions));
+        await response.WriteAsync(JsonSerializer.Serialize(errorDetail, JsonDefaults.CamelCaseOptions));
     }
 }

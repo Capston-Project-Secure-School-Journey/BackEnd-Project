@@ -71,6 +71,5 @@ public class ClassScheduleResponseView
 
 public class ClassSchedulePaginationResponse
 {
-    public Dictionary<DateOnly, IEnumerable<ClassScheduleResponseView>> ClassSchedules { get; set; } =
-        new Dictionary<DateOnly, IEnumerable<ClassScheduleResponseView>>();
+    public Dictionary<DateOnly, IList<ClassScheduleResponseView>> ClassSchedules { get; set; } = new();
 }
