@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,12 +19,12 @@ public class SystemVariableConfiguration : IEntityTypeConfiguration<SystemVariab
 
         builder.Property(u => u.Name)
             .HasColumnName("name")
-            .HasColumnType("varchar(100)")
+            .HasColumnType(Constants.Varchar(100))
             .IsRequired();
 
         builder.Property(u => u.Value)
             .HasColumnName("value")
-            .HasColumnType("nvarchar(1000)")
+            .HasColumnType(Constants.Nvarchar(1000))
             .IsRequired();
     }
 }

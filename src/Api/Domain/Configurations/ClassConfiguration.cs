@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,12 +22,12 @@ public class ClassConfiguration : IEntityTypeConfiguration<Class>
         builder.Property(c => c.Grade)
             .HasColumnName("grade")
             .IsRequired()
-            .HasColumnType("tinyint");
+            .HasColumnType(Constants.Tinyint);
 
         builder.Property(c => c.ClassName)
             .HasColumnName("class_name")
             .IsRequired()
-            .HasColumnType("nvarchar(200)");
+            .HasColumnType(Constants.Nvarchar(200));
 
         builder.Property(c => c.NumberOfStudent)
             .HasColumnName("number_of_student")
@@ -35,7 +36,7 @@ public class ClassConfiguration : IEntityTypeConfiguration<Class>
         builder.Property(u => u.ManagedTeachers)
             .HasColumnName("managed_teachers")
             .IsRequired(false)
-            .HasColumnType("json");
+            .HasColumnType(Constants.Json);
 
         builder.HasOne(c => c.School)
             .WithMany()

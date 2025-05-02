@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,28 +19,28 @@ public class FileManagementConfiguration : IEntityTypeConfiguration<FileManageme
 
         builder.Property(t => t.FileName)
             .HasColumnName("file_name")
-            .HasColumnType("nvarchar(200)")
+            .HasColumnType(Constants.Nvarchar(200))
             .IsRequired();
 
         builder.Property(t => t.S3Key)
             .HasColumnName("s3_key")
             .IsRequired()
-            .HasColumnType("varchar(2000)");
+            .HasColumnType(Constants.Varchar(2000));
 
         builder.Property(t => t.FileType)
             .HasColumnName("file_type")
             .IsRequired()
-            .HasColumnType("varchar(100)");
+            .HasColumnType(Constants.Varchar(100));
 
         builder.Property(t => t.FileSize)
             .HasColumnName("file_size")
             .IsRequired()
-            .HasColumnType("float");
+            .HasColumnType(Constants.Float);
 
         builder.Property(t => t.UploadDate)
             .HasColumnName("upload_date")
             .IsRequired()
-            .HasColumnType("timestamp");
+            .HasColumnType(Constants.Timestamp);
 
         builder.Property(t => t.UploadBy)
             .HasColumnName("uploaded_by")
@@ -52,12 +53,12 @@ public class FileManagementConfiguration : IEntityTypeConfiguration<FileManageme
         builder.Property(t => t.RelatedObjectType)
             .HasColumnName("related_object_type")
             .IsRequired(false)
-            .HasColumnType("tinyint");
+            .HasColumnType(Constants.Tinyint);
 
         builder.Property(t => t.IsUploaded)
             .HasColumnName("is_uploaded")
             .IsRequired()
             .HasDefaultValue(false)
-            .HasColumnType("bit");
+            .HasColumnType(Constants.Bit);
     }
 }

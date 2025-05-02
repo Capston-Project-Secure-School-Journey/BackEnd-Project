@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,12 +19,12 @@ public class DriverRequestStatusHistoryConfiguration : IEntityTypeConfiguration<
 
         builder.Property(u => u.FromStatus)
             .HasColumnName("from_status")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired(false);
 
         builder.Property(u => u.ToStatus)
             .HasColumnName("to_status")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.Property(u => u.ChangedBy)
@@ -32,12 +33,12 @@ public class DriverRequestStatusHistoryConfiguration : IEntityTypeConfiguration<
 
         builder.Property(u => u.ChangedAt)
             .HasColumnName("changed_at")
-            .HasColumnType("datetime")
+            .HasColumnType(Constants.Datetime)
             .IsRequired();
 
         builder.Property(u => u.Note)
             .HasColumnName("note")
-            .HasColumnType("nvarchar(1000)")
+            .HasColumnType(Constants.Nvarchar(1000))
             .IsRequired();
     }
 }

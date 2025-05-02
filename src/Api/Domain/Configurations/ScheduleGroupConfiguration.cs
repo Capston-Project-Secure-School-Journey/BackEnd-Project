@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -22,22 +23,22 @@ public class ScheduleGroupConfiguration : IEntityTypeConfiguration<ScheduleGroup
 
         builder.Property(t => t.SessionType)
             .HasColumnName("session_type")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.Property(t => t.Date)
             .HasColumnName("date")
-            .HasColumnType("date")
+            .HasColumnType(Constants.Date)
             .IsRequired();
 
         builder.Property(t => t.Grade)
             .HasColumnName("grade")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired(false);
 
         builder.Property(t => t.ScheduleType)
             .HasColumnName("schedule_type")
-            .HasColumnType("tinyint")
+            .HasColumnType(Constants.Tinyint)
             .IsRequired();
 
         builder.HasOne(t => t.School)

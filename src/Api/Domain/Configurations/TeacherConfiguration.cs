@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -23,39 +24,38 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         builder.Property(t => t.FirstName)
             .HasColumnName("first_name")
             .IsRequired()
-            .HasColumnType("nvarchar(200)");
+            .HasColumnType(Constants.Nvarchar(200));
 
         builder.Property(t => t.LastName)
             .HasColumnName("last_name")
             .IsRequired()
-            .HasColumnType("nvarchar(200)");
+            .HasColumnType(Constants.Nvarchar(200));
 
-        builder
-            .Property(p => p.FullName)
+        builder.Property(p => p.FullName)
             .HasColumnName("full_name")
             .IsRequired()
-            .HasColumnType("nvarchar(400)")
+            .HasColumnType(Constants.Nvarchar(400))
             .HasComputedColumnSql("CONCAT(first_name, ' ', last_name)");
 
         builder.Property(t => t.DateOfBirth)
             .HasColumnName("date_of_birth")
             .IsRequired()
-            .HasColumnType("date");
+            .HasColumnType(Constants.Date);
 
         builder.Property(t => t.Gender)
             .HasColumnName("gender")
             .IsRequired()
-            .HasColumnType("tinyint");
+            .HasColumnType(Constants.Tinyint);
 
         builder.Property(t => t.PhoneNumber)
             .HasColumnName("phone_number")
             .IsRequired()
-            .HasColumnType("varchar(11)");
+            .HasColumnType(Constants.Varchar(11));
 
         builder.Property(t => t.Email)
             .HasColumnName("email")
             .IsRequired()
-            .HasColumnType("varchar(100)");
+            .HasColumnType(Constants.Varchar(100));
 
         builder.Property(t => t.AvatarKey)
             .HasColumnName("avatar_key")
