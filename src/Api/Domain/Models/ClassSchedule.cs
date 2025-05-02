@@ -16,6 +16,6 @@ public class ClassSchedule : BaseModel
     public Guid? ScheduleGroupId { get; set; }
     
     public ScheduleGroup? ScheduleGroup { get; set; }
-    public virtual School School { get; set; } = null!;
-    public virtual Class Class { get; set; } = null!;
+    public School School { get; set; } = null!;
+    public Class Class { get; set; } = null!;
 }

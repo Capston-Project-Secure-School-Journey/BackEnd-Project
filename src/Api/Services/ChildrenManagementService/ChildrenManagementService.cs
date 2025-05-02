@@ -1,6 +1,6 @@
 using Api.Common.Enums;
 using Api.Common.Utilities;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ChildrenManagement;
@@ -37,26 +37,26 @@ public class ChildrenManagementService : IChildrenManagementService
         if (parent.RelationshipWithStudents.Count == 0)
             return new List<ChildDto>();
 
-        var childrenId = parent.RelationshipWithStudents
+        var childs = parent.RelationshipWithStudents
             .Select(x => new { x.StudentId, x.Relationship, x.IsFirstAdded })
             .ToList();
 
         IQueryable<Student>? children = null;
-        foreach (var id in childrenId)
+        foreach (var id in childs.Select(x => x.StudentId))
             if (children == null)
-                children = _context.Students.AsQueryable().Where(x => x.Id == id.StudentId);
+                children = _context.Students.AsQueryable().Where(x => x.Id == id);
             else
                 children = children.Union(
-                    _context.Students.AsQueryable().Where(x => x.Id == id.StudentId));
+                    _context.Students.AsQueryable().Where(x => x.Id == id));
 
-        var response = children!
-            .ToList()
+        var response = (await children!
+            .ToListAsync())
             .Select(MapStudentToChildDto)
             .ToList();
         
         foreach (var child in response)
         {
-            child.IsFirstAdded = childrenId.First(x => x.StudentId == child.Id).IsFirstAdded;
+            child.IsFirstAdded = childs.First(x => x.StudentId == child.Id).IsFirstAdded;
         }
         return response;
     }
@@ -66,10 +66,10 @@ public class ChildrenManagementService : IChildrenManagementService
         var parent = await GetParent(parentId);
 
         if (parent.RelationshipWithStudents.Count == 0)
-            throw new BadRequestException("Bạn chưa thêm bất kì học sinh nào.");
+            throw new BadRequestException(ErrorMessages.NoStudentAdded);
 
         if (parent.RelationshipWithStudents.All(x => x.StudentId != childId))
-            throw new BadRequestException("Bạn không có quyền truy cập");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
 
         var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == childId);
 
@@ -90,8 +90,7 @@ public class ChildrenManagementService : IChildrenManagementService
             student.DateOfBirth != dto.DateOfBirth)
         {
             await _userBanService.AddErrorRequest(parent.Id, BanType.AddChild);
-            throw new BadRequestException(
-                "Thông tin học sinh không trùng khớp. Lưu ý nếu sai quá 5 lần bạn sẽ bị cấm trong 24h");
+            throw new BadRequestException(ErrorMessages.StudentInfoMismatch);
         }
         await _userBanService.RemoveUserBan(parentId, BanType.AddChild);
         if (parent.RelationshipWithStudents.Count == 0)
@@ -101,7 +100,7 @@ public class ChildrenManagementService : IChildrenManagementService
         else
         {
             if (parent.RelationshipWithStudents.Any(x => x.StudentId == student.Id))
-                throw new BadRequestException("Học sinh đã được thêm trước đây.");
+                throw new BadRequestException(ErrorMessages.StudentAlreadyAdded);
         }
 
         var isFirstAdded = await _context.Parents
@@ -129,10 +128,10 @@ public class ChildrenManagementService : IChildrenManagementService
     {
         var parent = await GetParent(parentId);
         if (parent.RelationshipWithStudents.All(x => x.StudentId != dto.ChildId))
-            throw new BadRequestException("Bạn không có quyền truy cập");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
         
         if(!parent.RelationshipWithStudents.First(x => x.StudentId == dto.ChildId).IsFirstAdded)
-            throw new BadRequestException("Chỉ có phụ huynh thêm con đầu tiên mới được chỉnh sửa địa chỉ.");
+            throw new BadRequestException(ErrorMessages.OnlyFirstParentCanEditAddress);
         
         var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
         
@@ -165,7 +164,7 @@ public class ChildrenManagementService : IChildrenManagementService
             .FirstOrDefault(id => HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(id)) == hash);
 
         if (studentId == Guid.Empty)
-            throw new BadRequestException("Đã xẩy ra lỗi trong quá trình xử lí");
+            throw new BadRequestException(ErrorMessages.ErrorDuringProcessing);
 
         var studentEntity = _context.Students.FirstOrDefault(st => st.Id == studentId);
         return studentEntity!;
@@ -176,7 +175,7 @@ public class ChildrenManagementService : IChildrenManagementService
         var parent = await _context.Parents.FirstOrDefaultAsync(p => p.Id == parentId);
 
         if (parent == null)
-            throw new NotFoundException("Không tìm thấy người dùng");
+            throw new NotFoundException(ErrorMessages.UserNotFound);
 
         return parent;
     }

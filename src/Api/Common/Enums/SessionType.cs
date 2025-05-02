@@ -4,9 +4,9 @@ namespace Api.Common.Enums;
 
 public enum SessionType
 {
-    [Display(Name = "Sáng")]
+    [Display(Name = "Buổi Sáng")]
     Morning = 0,
-    [Display(Name = "Chiều")]
+    [Display(Name = "Buổi Chiều")]
     Afternoon = 1,
     [Display(Name = "Cả ngày")]
     FullDay = 2

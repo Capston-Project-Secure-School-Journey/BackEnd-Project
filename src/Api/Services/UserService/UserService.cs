@@ -1,7 +1,9 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
+using Api.DTOs.UploadFileService;
 using Api.DTOs.User;
 using Api.Extensions;
 using Api.Services.UploadFileService;
@@ -34,7 +36,7 @@ public class UserService : IUserService
         else if (userType == UserType.Admin) user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
         if (user == null)
-            throw new NotFoundException("Không tìm thấy người dùng.");
+            throw new NotFoundException(ErrorMessages.UserNotFound);
 
         return user;
     }
@@ -44,10 +46,9 @@ public class UserService : IUserService
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
         if (user == null)
-            throw new NotFoundException("Không tìm thấy người dùng.");
+            throw new NotFoundException(ErrorMessages.UserNotFound);
 
-        if (user.AccountStatus == AccountStatus.Verified &&
-            (user.UserType == UserType.Parent || user.UserType == UserType.Driver))
+        if (IsVerified(user))
         {
             if (user.Email != dto.Email && user.VerificationMethod == VerificationMethod.Email)
             {
@@ -63,16 +64,7 @@ public class UserService : IUserService
         }
 
 
-        if (string.IsNullOrEmpty(dto.Email) && string.IsNullOrEmpty(dto.PhoneNumber))
-            throw new BadRequestException("Email và số điện thoại đều trống. Vui lòng điền ít nhất 1.");
-
-        if (!string.IsNullOrEmpty(dto.Email) && user.Email != dto.Email)
-            if (_context.Users.Any(x => x.Email == dto.Email))
-                throw new BadRequestException("Email đã được đăng kí.");
-
-        if (!string.IsNullOrEmpty(dto.PhoneNumber) && user.PhoneNumber != dto.PhoneNumber)
-            if (_context.Users.Any(x => x.PhoneNumber == dto.PhoneNumber))
-                throw new BadRequestException("Số điện thoại đã được đăng kí.");
+        await ValidateUserInput(dto, user);
 
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
@@ -89,53 +81,86 @@ public class UserService : IUserService
 
     public async Task<string> UpdateAvatar(Guid id, IFormFile file)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        UploadFileResponse uploadResponse;
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (user == null)
-            throw new NotFoundException("Không tìm thấy người dùng.");
+            if (user == null)
+                throw new NotFoundException(ErrorMessages.UserNotFound);
 
-        if (user.AvatarKey != null)
-            await _uploadFileService.DeleteFileAsync(user.AvatarKey.Value);
-        var response = await _uploadFileService.UploadFileAsync(file, "avatar");
+            if (user.AvatarKey != null)
+                await _uploadFileService.DeleteFileManagementAsync(user.AvatarKey.Value);
+            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar");
 
-        user.AvatarKey = response.Key;
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+            user.AvatarKey = uploadResponse.Key;
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            _ = _uploadFileService.RollBackAsync();
+            throw;
+        }
 
-        return response.S3Url;
+        return uploadResponse.S3Url;
     }
 
     public async Task<User> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request)
     {
-        
         var user = await _context.Drivers.FirstOrDefaultAsync(x => x.Id == id);
         if (user == null)
-            throw new NotFoundException("Không tìm thấy người dùng.");
+            throw new NotFoundException(ErrorMessages.UserNotFound);
 
 
         user.LicenseNumber = request.LicenseNumber;
         user.SeatingCapacity = request.SeatingCapacity;
         user.VehicleType = request.VehicleType;
-        
+
         if (request.DriverInformationImages.Count == 1)
         {
-            throw new BadRequestException("Bạn cần tải cả mặt trước và mặt sau.");
+            throw new BadRequestException(ErrorMessages.RequireBothSidesUploaded);
         }
-        
-        user.VehicleImages = await RefreshUploadedFileList.RefreshUploadedFiles(user.VehicleImages, 
+
+        user.VehicleImages = await RefreshUploadedFileList.RefreshUploadedFiles(user.VehicleImages,
             request.VehicleImages,
             _uploadFileService);
-        
+
         if (request.DriverInformationImages.Count == 2)
         {
             user.DriverInformationImages = await RefreshUploadedFileList.RefreshUploadedFiles(
                 user.DriverInformationImages,
                 request.DriverInformationImages,
                 _uploadFileService
-                );
+            );
         }
+
         _context.Entry(user).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return user;
+    }
+
+    private static bool IsVerified(User user)
+    {
+        return user.AccountStatus == AccountStatus.Verified &&
+               (user.UserType == UserType.Parent || user.UserType == UserType.Driver);
+    }
+
+    private async Task ValidateUserInput(UpdateUserInfoDto dto, User user)
+    {
+        if (string.IsNullOrEmpty(dto.Email) && string.IsNullOrEmpty(dto.PhoneNumber))
+            throw new BadRequestException(ErrorMessages.EmailOrPhoneRequired);
+
+        if (!string.IsNullOrEmpty(dto.Email) &&
+            user.Email != dto.Email &&
+            await _context.Users.AnyAsync(x => x.Email == dto.Email)
+           )
+            throw new BadRequestException(ErrorMessages.EmailExists);
+
+        if (!string.IsNullOrEmpty(dto.PhoneNumber) &&
+            user.PhoneNumber != dto.PhoneNumber &&
+            await _context.Users.AnyAsync(x => x.PhoneNumber == dto.PhoneNumber)
+           )
+            throw new BadRequestException(ErrorMessages.PhoneExists);
     }
 }

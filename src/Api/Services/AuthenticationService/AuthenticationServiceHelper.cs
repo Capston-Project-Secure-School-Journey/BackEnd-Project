@@ -20,6 +20,6 @@ public partial class AuthenticationService
         claims.Add(new Claim("TokenType", TokenType.Login.ToString()));
         if (user is SchoolPerson schoolPerson) claims.Add(new Claim("SchoolId", schoolPerson.SchoolId.ToString()));
 
-        return _tokenService.GenerateAccessToken(claims);
+        return tokenService.GenerateAccessToken(claims);
     }
 }

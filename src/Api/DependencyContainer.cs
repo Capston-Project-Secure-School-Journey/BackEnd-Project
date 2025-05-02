@@ -2,7 +2,6 @@ using Api.Attributes;
 using Api.Services.SchoolManagement;
 using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
-using Api.Common.Utilities;
 using Api.Domain.ModelSettings;
 using Api.Extensions;
 using Api.Services.ApplicationService;
@@ -54,7 +53,9 @@ public static class DependencyContainer
         services.AddScoped<IUserManagementHandler, UserManagementHandler>();
 
         services.AddScoped<IFileUploadService, S3FileUploadService>();
-
+        services.AddScoped<IUploadTransactionManager, UploadTransactionManager>();
+        services.AddScoped<IFileDeleter, S3FileDeleter>();
+        
         services.AddScoped<ITeacherManagementService, TeacherManagementService>();
         services.AddScoped<ITeacherManagementHandler, TeacherManagementHandler>();
 

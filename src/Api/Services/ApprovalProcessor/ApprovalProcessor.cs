@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ApprovalProcessor;
@@ -26,7 +27,7 @@ public class ApprovalProcessor(
             .AnyAsync();
 
         if (isApplied)
-            throw new BadRequestException("Bạn đã ứng tuyển hồ sơ cho trường.");
+            throw new BadRequestException(ErrorMessages.AlreadyApplied);
 
         var trans = await context.Database.BeginTransactionAsync();
         try
@@ -104,7 +105,7 @@ public class ApprovalProcessor(
         var actionsCanDo = GetActionCanDo(application, isReviewer: false);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Update))
-            throw new BadRequestException("Không thể cập nhập hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotUpdateApplication);
 
         ValidateDriverInfo(driver!);
         var trans = await context.Database.BeginTransactionAsync();
@@ -115,9 +116,9 @@ public class ApprovalProcessor(
             application.SeatingCapacity = driver.SeatingCapacity;
             application.LastCheckDrivingLicense = driver.LastCheckDrivingLicense;
 
-            await fileUploadService.DeleteFileAsync(application.VehicleImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.VehicleImages.Select(x => x.FileManagementId)
                 .ToList());
-            await fileUploadService.DeleteFileAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
                 .ToList());
             application.VehicleImages.Clear();
             application.DriverInformationImages.Clear();
@@ -180,7 +181,7 @@ public class ApprovalProcessor(
         var actionsCanDo = GetActionCanDo(application, isReviewer: false);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Submit))
-            throw new BadRequestException("Không thể nộp hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotSubmitApplication);
 
         var stateHistory = new DriverRequestStatusHistory()
         {
@@ -204,14 +205,14 @@ public class ApprovalProcessor(
         var actionsCanDo = GetActionCanDo(application, isReviewer: true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Approve))
-            throw new BadRequestException("Không thể chấp nhận hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotAcceptApplication);
 
         var driver = await context
             .Drivers
             .FirstOrDefaultAsync(dr => dr.Id == application.DriverId);
 
         if (driver == null)
-            throw new BadRequestException("Lỗi hệ thống.");
+            throw new BadRequestException(ErrorMessages.SystemError);
 
         driver.VerifiedBy.Add(new VerifiedBy()
             { SchoolId = application.SchoolId, VerifiedAt = DateTimeHelper.GetDateTimeUtc7() });
@@ -241,7 +242,7 @@ public class ApprovalProcessor(
         var actionsCanDo = GetActionCanDo(application, isReviewer: true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Reject))
-            throw new BadRequestException("Không thể thực hiện từ chối hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotRejectApplication);
 
         var stateHistory = new DriverRequestStatusHistory()
         {
@@ -266,7 +267,7 @@ public class ApprovalProcessor(
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.RequestMoreInfo))
         {
-            throw new BadRequestException("Lỗi hệ thống.");
+            throw new BadRequestException(ErrorMessages.SystemError);
         }
 
         var stateHistory = new DriverRequestStatusHistory()
@@ -293,7 +294,7 @@ public class ApprovalProcessor(
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
         {
-            throw new BadRequestException("Không thể hủy hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotCancelApplication);
         }
 
         var driver = await context
@@ -301,7 +302,7 @@ public class ApprovalProcessor(
             .FirstOrDefaultAsync(dr => dr.Id == application.DriverId);
 
         if (driver == null)
-            throw new BadRequestException("Lỗi hệ thống.");
+            throw new BadRequestException(ErrorMessages.SystemError);
 
         var count = driver.VerifiedBy.RemoveAll(x => x.SchoolId == application.SchoolId);
         if (count > 0)
@@ -331,7 +332,7 @@ public class ApprovalProcessor(
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
         {
-            throw new BadRequestException("Không thể hủy hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotCancelApplication);
         }
 
         var stateHistory = new DriverRequestStatusHistory()
@@ -358,15 +359,15 @@ public class ApprovalProcessor(
         var actionsCanDo = GetActionCanDo(application, isReviewer: false);
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Delete))
         {
-            throw new BadRequestException("Không thể xóa hồ sơ.");
+            throw new BadRequestException(ErrorMessages.CannotDeleteApplication);
         }
 
         var trans = await context.Database.BeginTransactionAsync();
         try
         {
-            await fileUploadService.DeleteFileAsync(application.VehicleImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.VehicleImages.Select(x => x.FileManagementId)
                 .ToList());
-            await fileUploadService.DeleteFileAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
                 .ToList());
             
             await context
@@ -447,25 +448,13 @@ public class ApprovalProcessor(
         return actions;
     }
 
-    // ReSharper disable once UnusedMember.Local
-    private async Task<DriverApprovalRequest> GetApplication(Guid applicationId)
-    {
-        var application = await context.DriverApprovalRequests
-            .FirstOrDefaultAsync(x => x.Id == applicationId);
-
-        if (application == null)
-            throw new NotFoundException("Không tìm thấy hồ sơ.");
-
-        return application;
-    }
-
     private async Task<DriverApprovalRequest> GetApplicationByDriver(Guid applicationId, Guid driverId)
     {
         var application = await context.DriverApprovalRequests
             .FirstOrDefaultAsync(x => x.Id == applicationId && x.DriverId == driverId);
 
         if (application == null)
-            throw new NotFoundException("Không tìm thấy hồ sơ.");
+            throw new NotFoundException(ErrorMessages.ApplicationNotFound);
 
         return application;
     }
@@ -476,10 +465,10 @@ public class ApprovalProcessor(
             .FirstOrDefaultAsync(x => x.Id == applicationId);
 
         if (application == null)
-            throw new NotFoundException("Không tìm thấy hồ sơ.");
+            throw new NotFoundException(ErrorMessages.ApplicationNotFound);
 
         if (await GetReviewerOfSchool(application.SchoolId) != reviewerId)
-            throw new NotFoundException("Không tìm thấy hồ sơ.");
+            throw new NotFoundException(ErrorMessages.ApplicationNotFound);
         return application;
     }
 
@@ -489,7 +478,7 @@ public class ApprovalProcessor(
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (reviewer == null)
-            throw new BadRequestException("Lỗi hệ thống.");
+            throw new BadRequestException(ErrorMessages.SystemError);
 
         return reviewer.Id;
     }
@@ -497,17 +486,17 @@ public class ApprovalProcessor(
     private static void ValidateDriverInfo(Driver driver)
     {
         if (driver == null)
-            throw new BadRequestException("Lỗi hệ thống.");
+            throw new BadRequestException(ErrorMessages.SystemError);
 
         if (string.IsNullOrEmpty(driver.LicenseNumber))
-            throw new BadRequestException("Bạn vẫn chưa thực hiện nhập thông tin về số bằng lái.");
+            throw new BadRequestException(ErrorMessages.MissingLicenseNumber);
         if (string.IsNullOrEmpty(driver.VehicleType))
-            throw new BadRequestException("Bạn vẫn chưa thực hiện nhập thông tin về loại xe.");
+            throw new BadRequestException(ErrorMessages.MissingVehicleType);
         if (driver.SeatingCapacity <= 0)
-            throw new BadRequestException("Bạn vẫn chưa thực hiện nhập thông tin về số chỗ ngồi của xe.");
+            throw new BadRequestException(ErrorMessages.MissingSeatNumber);
         if (driver.DriverInformationImages.Count != 2)
-            throw new BadRequestException("Bạn vẫn chưa thực hiện nhập thông tin về ảnh 2 mặt của bằng lái.");
+            throw new BadRequestException(ErrorMessages.MissingLicenseImages);
         if (driver.VehicleImages.Count <= 4)
-            throw new BadRequestException("Bạn cần phải chụp ít nhất 5 ảnh về phương tiện.");
+            throw new BadRequestException(ErrorMessages.RequireAtLeast5VehiclePhotos);
     }
 }

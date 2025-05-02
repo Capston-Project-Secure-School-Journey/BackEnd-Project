@@ -1,3 +1,4 @@
+using Api.Common.Utilities;
 using Api.Domain;
 using Api.Services.NotificationService;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ public class SendNotificationJob : IJob
     public async Task ExecuteAsync(params object[] args)
     {
         if (args[0] is not List<Guid> notificationIds || notificationIds.Count == 0)
-            throw new InvalidDataException("Invalid argument type");
+            throw new InvalidDataException(ErrorMessages.InvalidArgumentType);
 
         using var scope = _serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Context>();

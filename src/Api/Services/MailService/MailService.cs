@@ -20,7 +20,7 @@ public class MailService(IOptions<MailSettings> mailSettings) : IMailService
 
         if (!isValid)
         {
-            throw new ValidationException(validationResults.First().ErrorMessage);
+            throw new ValidationException(validationResults[0].ErrorMessage);
         }
 
         var email = new MimeMessage();

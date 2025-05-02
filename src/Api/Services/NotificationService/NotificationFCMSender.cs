@@ -1,3 +1,5 @@
+using Api.Common.Exceptions;
+using Api.Common.Utilities;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
@@ -119,7 +121,7 @@ public class NotificationFcmSender : INotificationSender
         return messages;
     }
 
-    private Message GetMessage(string token, string title, string body,
+    private static Message GetMessage(string token, string title, string body,
         IReadOnlyDictionary<string, string>? data)
     {
         return new Message()
@@ -134,7 +136,7 @@ public class NotificationFcmSender : INotificationSender
         };
     }
 
-    private List<Message> GetMessage(string[] tokens, string title, string body,
+    private static List<Message> GetMessage(string[] tokens, string title, string body,
         IReadOnlyDictionary<string, string>? data)
     {
         var messages = new List<Message>();
@@ -146,17 +148,17 @@ public class NotificationFcmSender : INotificationSender
         return messages;
     }
 
-    private void ThrowIfSentFailed(string? result)
+    private static void ThrowIfSentFailed(string? result)
     {
         if (string.IsNullOrEmpty(result))
-            throw new Exception($"Failed to send notification");
+            throw new NotificationFailedException(ErrorMessages.NotificationSendFailure);
     }
 
-    private void ThrowIfSentFailed(BatchResponse? result)
+    private static void ThrowIfSentFailed(BatchResponse? result)
     {
         if (result == null)
-            throw new Exception($"Failed to send notification");
+            throw new NotificationFailedException(ErrorMessages.NotificationSendFailure);
         if (result.Responses.Any(x => !x.IsSuccess))
-            throw new Exception($"Failed to send notification");
+            throw new NotificationFailedException(ErrorMessages.NotificationSendFailure);
     }
 }

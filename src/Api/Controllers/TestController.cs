@@ -1,5 +1,4 @@
 using Api.Attributes;
-using Api.Common.Utilities;
 using Api.Services.NotificationService;
 using Microsoft.AspNetCore.Mvc;
 

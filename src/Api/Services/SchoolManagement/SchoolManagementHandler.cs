@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.DTOs.SchoolManagement;
 using AutoMapper;
@@ -39,22 +40,22 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         _userBanService = userBanService;
     }
 
-    public async Task<SchoolDetailResponse> CreateSchool(CreateSchoolRequest data)
+    public async Task<SchoolDetailResponse> CreateSchool(CreateSchoolRequest request)
     {
         var trans = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var school = await _schoolManagement.CreateSchool(_mapper.Map<CreateSchoolDto>(data));
+            var school = await _schoolManagement.CreateSchool(_mapper.Map<CreateSchoolDto>(request));
             await _userManagement.CreateSchoolAdmin(new CreateSchoolAdminDto()
             {
-                UserName = data.SchoolAdminUserName,
-                Password = data.SchoolAdminPassword,
+                UserName = request.SchoolAdminUserName,
+                Password = request.SchoolAdminPassword,
                 SchoolId = school.Id
             });
 
             var response = _mapper.Map<SchoolDetailResponse>(school);
-            response.SchoolAdminUserName = data.SchoolAdminUserName;
+            response.SchoolAdminUserName = request.SchoolAdminUserName;
 
             await trans.CommitAsync();
             return response;
@@ -66,17 +67,17 @@ public class SchoolManagementHandler : ISchoolManagementHandler
         }
     }
 
-    public async Task<SchoolDetailResponse> UpdateSchool(Guid schoolId, UpdateSchoolRequest data, Guid userRequested,
+    public async Task<SchoolDetailResponse> UpdateSchool(Guid schoolId, UpdateSchoolRequest request, Guid userRequested,
         UserType userType)
     {
         if (userType == UserType.SchoolAdmin)
         {
-            var user = _context.SchoolPersons.FirstOrDefault(sc => sc.Id == userRequested);
-            if (user == null || (user != null && user.SchoolId != schoolId))
-                throw new ForbiddenException("Access Denied");
+            var user = await _context.SchoolPersons.FirstOrDefaultAsync(sc => sc.Id == userRequested);
+            if (user == null || user.SchoolId != schoolId)
+                throw new ForbiddenException(ErrorMessages.AccessDenied);
         }
 
-        var dto = _mapper.Map<UpdateSchoolDto>(data);
+        var dto = _mapper.Map<UpdateSchoolDto>(request);
         dto.Id = schoolId;
         var school = await _schoolManagement.UpdateSchool(dto);
         var response = _mapper.Map<SchoolDetailResponse>(school);
@@ -94,9 +95,9 @@ public class SchoolManagementHandler : ISchoolManagementHandler
     public async Task IsOwner(Guid schoolId, Guid userId)
     {
         var schoolAdmin = await _userManagement.GetSchoolAdmin(schoolId);
-        
+
         if (schoolAdmin.Id != userId)
-            throw new ForbiddenException("Access Denied");
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
     public async Task DeleteSchool(Guid schoolId)

@@ -1,14 +1,14 @@
 using Api.Common.Enums;
-using Api.Common.Utilities;
 using Api.Domain.Models;
+using Api.Extensions;
 
 namespace Api.Domain;
 
 public static class DbInitializer
 {
-    public static void SeedData(Context dbContext)
+    public static async Task SeedData(Context dbContext)
     {
-        dbContext.Users.AddAsync(
+        await dbContext.Users.AddAsync(
             new User
             {
                 Id = Guid.NewGuid(),
@@ -16,10 +16,10 @@ public static class DbInitializer
                 UserTypeName = "Admin",
                 UserName = "admin",
                 AccountStatus = AccountStatus.Verified,
-                Email = Constants.AdminEmail,
+                Email = "admin@admin.com",
                 Password = BCrypt.Net.BCrypt.HashPassword("123456"),
-                CreatedAt = new DateTime(2022, 01, 01),
-                UpdatedAt = new DateTime(2022, 01, 01),
+                CreatedAt = DateTimeHelper.GetDateTimeUtc7(),
+                UpdatedAt = DateTimeHelper.GetDateTimeUtc7(),
                 Address = "134-0091",
                 PhoneNumber = "123456",
                 FirstName = "",
@@ -27,6 +27,6 @@ public static class DbInitializer
             }
         );
 
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
     }
 }

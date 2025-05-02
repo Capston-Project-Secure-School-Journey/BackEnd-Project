@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Api.Attributes;
@@ -24,7 +25,7 @@ public class CheckVerifiedEmailAttribute : Attribute, IAuthorizationFilter
         }
         catch (Exception)
         {
-            throw new UnAuthorizedException("Bạn Chưa đăng nhập. Hãy đăng nhập để tiếp tục sử dụng");
+            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
         }
     }
 }
@@ -41,10 +42,10 @@ public class VerifiedEmailChecker : IVerifiedEmailChecker
         var accountStatus = GetAccountStatus(context.HttpContext);
 
         if (accountStatus != null && accountStatus.Value != AccountStatus.Verified)
-            throw new ForbiddenException("Tài khoản của bạn chưa được xác thực");
+            throw new ForbiddenException(ErrorMessages.AccountNotVerified);
     }
 
-    private AccountStatus? GetAccountStatus(HttpContext context)
+    private static AccountStatus? GetAccountStatus(HttpContext context)
     {
         var accountStatus = context.Request.Headers["Authorization-AccountStatus"].FirstOrDefault();
         if (Enum.TryParse(accountStatus, out AccountStatus status)) return status;

@@ -1,5 +1,6 @@
 using Api.Common.Enums;
-using Api.Common.Utilities.Exceptions;
+using Api.Common.Utilities;
+using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.SchoolManagement;
@@ -26,7 +27,7 @@ public class SchoolManagement : ISchoolManagement
         var school = await _context.Schools.FirstOrDefaultAsync(s => s.Id == id);
 
         if (school == null)
-            throw new NotFoundException("School is not found");
+            throw new NotFoundException(ErrorMessages.SchoolNotFound);
         return school;
     }
 
@@ -126,9 +127,9 @@ public class SchoolManagement : ISchoolManagement
         return Task.FromResult(query);
     }
 
-    public async Task<School> GetSchool(Guid id)
+    public async Task<School> GetSchool(Guid schoolId)
     {
-        var school = await GetById(id);
+        var school = await GetById(schoolId);
         return school;
     }
 }

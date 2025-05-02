@@ -3,7 +3,9 @@ using System.Transactions;
 using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api;
+using Api.DashboardAuthorizationFilters;
 using Api.Pipeline.Middlewares;
+using Api.Services.TokenService;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +16,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var clientPath = builder.Configuration.GetSection("ClientPath").Value;
 var serverVersion = new MySqlServerVersion(new Version(9, 2, 0));
 var cors = "AllowSpecificOrigin";
 Console.WriteLine($"connectionString: {connectionString}");
@@ -49,7 +52,7 @@ builder.Services.AddHangfire(config =>
                     TransactionTimeout = TimeSpan.FromMinutes(1),
                     TablesPrefix = "Hangfire"
                 }))
-    );
+);
 builder.Services.AddHangfireServer();
 
 DependencyContainer.RegisterServices(builder.Services);
@@ -94,7 +97,6 @@ builder
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-        // options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options
@@ -103,7 +105,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(cors,
-        d => d.AllowAnyOrigin()
+        d => d.WithOrigins(clientPath!)
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -135,17 +137,17 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization =
     [
-        // new DashboardAuthorizationFilter(app.Services.GetRequiredService<ITokenService>())
+        new DashboardAuthorizationFilter(app.Services.GetRequiredService<ITokenService>())
     ]
 });
 
 using (var scope = app.Services.CreateScope())
-{   
+{
     var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-    if (dbContext.Database.GetPendingMigrations().Any()) dbContext.Database.Migrate();
+    if ((await dbContext.Database.GetPendingMigrationsAsync()).Any()) await dbContext.Database.MigrateAsync();
 
-    if (!dbContext.Users.Any()) DbInitializer.SeedData(dbContext);
+    if (!await dbContext.Users.AnyAsync()) await DbInitializer.SeedData(dbContext);
 }
 
 await app.RunAsync();
-Log.CloseAndFlush();
+await Log.CloseAndFlushAsync();

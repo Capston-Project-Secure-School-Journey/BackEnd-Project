@@ -1,6 +1,5 @@
 using Api.Attributes;
 using Api.Common.Enums;
-using Api.Common.Utilities;
 using Api.Services.ScheduleManagementService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;

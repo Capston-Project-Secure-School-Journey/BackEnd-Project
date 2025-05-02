@@ -100,11 +100,11 @@ public class UserHandler : IUserHandler
                     { Type = i.Type, Id = i.FileManagementId });
             }
 
-            foreach (var i in driver.VehicleImages)
+            foreach (var id in driver.VehicleImages.Select(x => x.FileManagementId))
             {
-                var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(i.FileManagementId);
+                var url = await _uploadFileService.GeneratePreSignedDownloadUrlAsync(id);
                 profile.VehicleImages.Add(url);
-                profile.VehicleImageKeys.Add(i.FileManagementId);
+                profile.VehicleImageKeys.Add(id);
             }
         }
         else
