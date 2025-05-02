@@ -121,7 +121,7 @@ public class NotificationFcmSender : INotificationSender
         return messages;
     }
 
-    private Message GetMessage(string token, string title, string body,
+    private static Message GetMessage(string token, string title, string body,
         IReadOnlyDictionary<string, string>? data)
     {
         return new Message()
@@ -136,7 +136,7 @@ public class NotificationFcmSender : INotificationSender
         };
     }
 
-    private List<Message> GetMessage(string[] tokens, string title, string body,
+    private static List<Message> GetMessage(string[] tokens, string title, string body,
         IReadOnlyDictionary<string, string>? data)
     {
         var messages = new List<Message>();

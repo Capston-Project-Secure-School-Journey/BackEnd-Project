@@ -19,10 +19,7 @@ public class SchoolMetadataController(Context context) : ControllerBase
         var query = context.Schools
             .AsQueryable()
             .AsNoTracking();
-
-        if (!string.IsNullOrEmpty(schoolName))
-            query = query.Where(sc => sc.SchoolName.Contains(schoolName));
-
+        
         var schools = await query
             .AsNoTracking()
             .OrderBy(sc => sc.SchoolName)
@@ -35,6 +32,11 @@ public class SchoolMetadataController(Context context) : ControllerBase
                 sc.Id,
             })
             .ToListAsync();
+
+        if (!string.IsNullOrEmpty(schoolName))
+            schools = schools
+                .Where(x => x.SchoolName.Contains(schoolName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
         return Ok(schools);
     }
@@ -79,7 +81,7 @@ public class SchoolMetadataController(Context context) : ControllerBase
             .ToListAsync();
         if (!string.IsNullOrEmpty(name))
             classCombobox = classCombobox
-                .Where(x => x.Name.ToLower().Contains(name.ToLower()))
+                .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         return classCombobox;
     }
@@ -95,7 +97,7 @@ public class SchoolMetadataController(Context context) : ControllerBase
             .ToListAsync();
         if (!string.IsNullOrEmpty(name))
             classCombobox = classCombobox
-                .Where(x => x.Name.ToLower().Contains(name.ToLower()))
+                .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         return classCombobox;
     }

@@ -10,7 +10,7 @@ namespace Api.Services.UploadFileService;
 
 public class S3FileDeleter: IFileDeleter
 {
-    private readonly IAmazonS3 _s3Client;
+    private readonly AmazonS3Client _s3Client;
     private readonly string _bucketName;
 
     public S3FileDeleter(IOptions<S3Settings> settings)

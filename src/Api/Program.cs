@@ -3,7 +3,9 @@ using System.Transactions;
 using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api;
+using Api.DashboardAuthorizationFilters;
 using Api.Pipeline.Middlewares;
+using Api.Services.TokenService;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.AspNetCore.Mvc;
@@ -135,7 +137,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization =
     [
-        // new DashboardAuthorizationFilter(app.Services.GetRequiredService<ITokenService>())
+        new DashboardAuthorizationFilter(app.Services.GetRequiredService<ITokenService>())
     ]
 });
 
@@ -144,7 +146,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
     if ((await dbContext.Database.GetPendingMigrationsAsync()).Any()) await dbContext.Database.MigrateAsync();
 
-    if (!await dbContext.Users.AnyAsync()) DbInitializer.SeedData(dbContext);
+    if (!await dbContext.Users.AnyAsync()) await DbInitializer.SeedData(dbContext);
 }
 
 await app.RunAsync();

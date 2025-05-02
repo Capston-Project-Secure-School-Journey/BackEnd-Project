@@ -20,102 +20,103 @@ public class ScheduleManagementService(
 {
     public async Task<IEnumerable<ClassSchedule>> CreateSchedule(Guid schoolId, CreateScheduleDto dto)
     {
-        CheckScheduleDate(dto.Date);
-        ValidateCreateScheduleDto(dto);
-
-        var schedules = new List<ClassSchedule>();
-        var checkOverlapTasks = new List<Task>();
         var cts = new CancellationTokenSource();
-
-        if (dto.ScheduleType is ScheduleType.Grade or ScheduleType.School)
+        var trans = await context.Database.BeginTransactionAsync(cts.Token);
+        try
         {
-            var query = context.Classes
-                .Where(c => c.SchoolId == schoolId);
+            CheckScheduleDate(dto.Date);
+            ValidateCreateScheduleDto(dto);
 
-            if (dto.ScheduleType is ScheduleType.Grade)
-                query = query.Where(c => c.Grade == dto.Grade!.Value);
+            var schedules = new List<ClassSchedule>();
+            var checkOverlapTasks = new List<Task>();
 
-            // ReSharper disable once MethodSupportsCancellation
-            var classes = await query.ToListAsync();
-            classes = classes.Where(c => !dto.ClassException.Contains(c.Id)).ToList();
-
-            if (classes.Count > 0)
+            switch (dto.ScheduleType)
             {
-                var scheduleGroup = new ScheduleGroup
+                case ScheduleType.Grade or ScheduleType.School:
                 {
-                    SchoolId = schoolId,
-                    ScheduleType = dto.ScheduleType,
-                    Grade = dto.Grade,
-                    SessionType = dto.SessionType,
-                    Date = dto.Date,
-                    ClassException = dto.ClassException
-                };
+                    var query = context.Classes
+                        .Where(c => c.SchoolId == schoolId);
 
-                // ReSharper disable once MethodSupportsCancellation
-                await context.ScheduleGroups.AddAsync(scheduleGroup);
-                context.Entry(scheduleGroup).State = EntityState.Added;
-                // ReSharper disable once MethodSupportsCancellation
-                await context.SaveChangesAsync();
+                    if (dto.ScheduleType is ScheduleType.Grade)
+                        query = query.Where(c => c.Grade == dto.Grade!.Value);
 
-                foreach (var classId in classes.Select(x => x.Id))
+                    var classes = await query.ToListAsync(cancellationToken: cts.Token);
+                    classes = classes.Where(c => !dto.ClassException.Contains(c.Id)).ToList();
+
+                    if (classes.Count > 0)
+                    {
+                        var scheduleGroup = new ScheduleGroup
+                        {
+                            SchoolId = schoolId,
+                            ScheduleType = dto.ScheduleType,
+                            Grade = dto.Grade,
+                            SessionType = dto.SessionType,
+                            Date = dto.Date,
+                            ClassException = dto.ClassException
+                        };
+
+                        await context.ScheduleGroups.AddAsync(scheduleGroup, cts.Token);
+                        await context.SaveChangesAsync(cts.Token);
+
+                        foreach (var classId in classes.Select(x => x.Id))
+                        {
+                            checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, classId, dto.SessionType,
+                                cts.Token));
+                            var schedule = new ClassSchedule()
+                            {
+                                SchoolId = schoolId,
+                                ClassId = classId,
+                                Date = dto.Date,
+                                ScheduleType = dto.ScheduleType,
+                                SessionType = dto.SessionType,
+                                Grade = dto.ScheduleType == ScheduleType.Grade ? dto.Grade : null,
+                                Note = dto.Note,
+                                ScheduleGroupId = scheduleGroup.Id
+                            };
+                            schedules.Add(schedule);
+                        }
+                    }
+                    else
+                        throw new BadRequestException(ErrorMessages.NoClassFound);
+
+                    break;
+                }
+                case ScheduleType.Class:
                 {
-                    checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, classId, dto.SessionType, cts.Token));
+                    await classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
                     var schedule = new ClassSchedule()
                     {
                         SchoolId = schoolId,
-                        ClassId = classId,
+                        ClassId = dto.ClassId!.Value,
                         Date = dto.Date,
                         ScheduleType = dto.ScheduleType,
                         SessionType = dto.SessionType,
-                        Grade = dto.ScheduleType == ScheduleType.Grade ? dto.Grade : null,
+                        Grade = null,
                         Note = dto.Note,
-                        ScheduleGroupId = scheduleGroup.Id
+                        ScheduleGroupId = null
                     };
+                    checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, dto.ClassId.Value, dto.SessionType,
+                        cts.Token));
                     schedules.Add(schedule);
+                    break;
                 }
             }
-            else
-            {
-                throw new BadRequestException(ErrorMessages.NoClassFound);
-            }
-        }
-        else if (dto.ScheduleType == ScheduleType.Class)
-        {
-            await classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
-            var schedule = new ClassSchedule()
-            {
-                SchoolId = schoolId,
-                ClassId = dto.ClassId!.Value,
-                Date = dto.Date,
-                ScheduleType = dto.ScheduleType,
-                SessionType = dto.SessionType,
-                Grade = null,
-                Note = dto.Note,
-                ScheduleGroupId = null
-            };
-            checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, dto.ClassId.Value, dto.SessionType, cts.Token));
-            schedules.Add(schedule);
-        }
 
-        try
-        {
             await Task.WhenAll(checkOverlapTasks);
+
+            await context.ClassSchedules.AddRangeAsync(schedules, cts.Token);
+            await context.SaveChangesAsync(cts.Token);
+
+            await trans.CommitAsync(cts.Token);
+            return schedules;
         }
         catch (Exception)
         {
+            await trans.RollbackAsync(cts.Token);
             await cts.CancelAsync();
+            cts.Dispose();
             throw;
         }
-
-        // ReSharper disable once MethodSupportsCancellation
-        await context.ClassSchedules.AddRangeAsync(schedules);
-        foreach (var schedule in schedules)
-            context.Entry(schedule).State = EntityState.Added;
-        // ReSharper disable once MethodSupportsCancellation
-        await context.SaveChangesAsync();
-
-        cts.Dispose();
-        return schedules;
     }
 
     public async Task<ClassSchedule> UpdateSchedule(Guid schoolId, UpdateScheduleDto dto)
@@ -278,10 +279,9 @@ public class ScheduleManagementService(
                     .ToList();
             }
 
-            // ReSharper disable once UnusedVariable
-            if (response.ClassSchedules.ContainsKey(group.Date))
+            if (response.ClassSchedules.TryGetValue(group.Date, out var value))
             {
-                response.ClassSchedules[group.Date] = response.ClassSchedules[group.Date].Append(classResponse);
+                value.Add(classResponse);
             }
             else
                 response.ClassSchedules.Add(group.Date, new List<ClassScheduleResponseView>() { classResponse });
@@ -312,10 +312,9 @@ public class ScheduleManagementService(
                 Grade = null
             };
 
-            // ReSharper disable once UnusedVariable
-            if (response.ClassSchedules.ContainsKey(schedule.Date))
+            if (response.ClassSchedules.TryGetValue(schedule.Date, out var value))
             {
-                response.ClassSchedules[schedule.Date] = response.ClassSchedules[schedule.Date].Append(classResponse);
+                value.Add(classResponse);
             }
             else
                 response.ClassSchedules.Add(schedule.Date, new List<ClassScheduleResponseView>() { classResponse });
@@ -325,7 +324,8 @@ public class ScheduleManagementService(
         {
             response.ClassSchedules[k] = response.ClassSchedules[k]
                 .OrderByDescending(c => c.ScheduleType)
-                .ThenByDescending(c => c.SessionType);
+                .ThenByDescending(c => c.SessionType)
+                .ToList();
         }
 
         return response;
@@ -349,9 +349,7 @@ public class ScheduleManagementService(
                                  && g.SessionType == sessionType
                                  && g.Grade == grade);
 
-        if (gradeGroup != null) return gradeGroup;
-
-        return null;
+        return gradeGroup;
     }
 
     public Task<IEnumerable<ClassSchedule>> CloneMonthSchedule(Guid schoolId, DateOnly date)
@@ -378,7 +376,7 @@ public class ScheduleManagementService(
         if (token.IsCancellationRequested)
             return;
 
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
         using var scope = serviceProvider.CreateScope();
         var ct = scope.ServiceProvider.GetRequiredService<Context>();
 
@@ -399,10 +397,8 @@ public class ScheduleManagementService(
             var className = await ct.Classes
                 .Where(cl => cl.SchoolId == schoolId && cl.Id == classId)
                 .Select(c => c.ClassName)
-                // ReSharper disable once MethodSupportsCancellation
-                .FirstOrDefaultAsync();
-            // ReSharper disable once MethodSupportsCancellation
-            var schedule = await query.FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken: token);
+            var schedule = await query.FirstOrDefaultAsync(cancellationToken: token);
 
             builder.Append("Lịch của bạn bị trùng.\n");
             builder.Append($"Lớp: {className}\n");
@@ -418,10 +414,7 @@ public class ScheduleManagementService(
 
     private static void CheckScheduleDate(DateOnly date)
     {
-        // compare with Datetime +7
-        var tzUtcPlus7 = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
-        var utcPlus7Time = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tzUtcPlus7);
-        var currentDate = DateOnly.FromDateTime(utcPlus7Time);
+        var currentDate = DateOnly.FromDateTime(DateTimeHelper.GetDateTimeUtc7());
         var weekRange = DateTimeHelper.GetWeekRange(date);
 
         if (currentDate > date)

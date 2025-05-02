@@ -12,7 +12,7 @@ namespace Api.Services.UploadFileService;
 
 public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 {
-    private readonly IAmazonS3 _s3Client;
+    private readonly AmazonS3Client _s3Client;
     private readonly string _bucketName;
     private readonly IFileDeleter _fileDeleter;
 
