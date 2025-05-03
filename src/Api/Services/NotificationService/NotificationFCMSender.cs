@@ -16,12 +16,10 @@ public class NotificationFcmSender : INotificationSender
         _notificationService = notificationService;
 
         if (FirebaseApp.DefaultInstance == null)
-        {
             FirebaseApp.Create(new AppOptions()
             {
                 Credential = GoogleCredential.FromFile(config["FcmSetting:CredentialsPath"]!)
             });
-        }
 
         _messaging = FirebaseMessaging.DefaultInstance;
     }
@@ -113,10 +111,7 @@ public class NotificationFcmSender : INotificationSender
     {
         var messages = new List<Message>();
         var notification = await _notificationService.GetNotificationAsync(notificationId);
-        foreach (var token in tokens)
-        {
-            messages.Add(GetMessage(token, notification.Title, notification.Content, data));
-        }
+        foreach (var token in tokens) messages.Add(GetMessage(token, notification.Title, notification.Content, data));
 
         return messages;
     }
@@ -140,10 +135,7 @@ public class NotificationFcmSender : INotificationSender
         IReadOnlyDictionary<string, string>? data)
     {
         var messages = new List<Message>();
-        foreach (var token in tokens)
-        {
-            messages.Add(GetMessage(token, title, body, data));
-        }
+        foreach (var token in tokens) messages.Add(GetMessage(token, title, body, data));
 
         return messages;
     }

@@ -4,6 +4,7 @@ using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api;
 using Api.DashboardAuthorizationFilters;
+using Api.Jobs;
 using Api.Pipeline.Middlewares;
 using Api.Services.TokenService;
 using Hangfire;
@@ -27,11 +28,9 @@ builder.Services.AddDbContext<Context>(
         // The following three options help with debugging, but should
         // be changed or removed for production.
         if (builder.Environment.IsDevelopment())
-        {
             options.LogTo(Log.Information, LogLevel.Information)
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors();
-        }
     });
 
 builder.Services.AddHangfire(config =>
@@ -106,7 +105,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(cors,
         // d => d.WithOrigins(clientPath!)
-           d => d.AllowAnyOrigin()
+        d => d.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -150,5 +149,6 @@ using (var scope = app.Services.CreateScope())
     if (!await dbContext.Users.AnyAsync()) await DbInitializer.SeedData(dbContext);
 }
 
+JobRegister.Register();
 await app.RunAsync();
 await Log.CloseAndFlushAsync();

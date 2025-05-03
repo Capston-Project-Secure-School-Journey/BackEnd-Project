@@ -6,7 +6,7 @@ using AutoMapper;
 
 namespace Api.Mappings;
 
-public class ScheduleManagementProfile: Profile
+public class ScheduleManagementProfile : Profile
 {
     public ScheduleManagementProfile()
     {

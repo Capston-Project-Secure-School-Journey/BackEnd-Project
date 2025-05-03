@@ -51,12 +51,9 @@ public class ClassScheduleResponseView
                            $" học {SessionType.GetEnumDisplayName()}");
                 if (ClassException.Count > 0)
                 {
-                    StringBuilder builder = new StringBuilder();
+                    var builder = new StringBuilder();
                     builder.Append("Ngoại trừ các lớp: ");
-                    foreach (var i in ClassNameException)
-                    {
-                        builder.Append($"{i}, ");
-                    }
+                    foreach (var i in ClassNameException) builder.Append($"{i}, ");
 
                     builder.Remove(builder.Length - 2, 2);
                     result.Add(builder.ToString());

@@ -79,11 +79,11 @@ public class AllowedFileAttribute : ValidationAttribute
             "image/tiff" => ".tiff",
             "image/webp" => ".webp",
             "image/svg+xml" => ".svg",
-            
+
             "image/heic" => ".heic",
             "image/heics" => ".heics",
             "image/heif" => ".heif",
-            
+
             "application/msword" => ".doc",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document" => ".docx",
 

@@ -39,7 +39,7 @@ public class ScheduleManagementService(
                     if (dto.ScheduleType is ScheduleType.Grade)
                         query = query.Where(c => c.Grade == dto.Grade!.Value);
 
-                    var classes = await query.ToListAsync(cancellationToken: cts.Token);
+                    var classes = await query.ToListAsync(cts.Token);
                     classes = classes.Where(c => !dto.ClassException.Contains(c.Id)).ToList();
 
                     if (classes.Count > 0)
@@ -76,7 +76,9 @@ public class ScheduleManagementService(
                         }
                     }
                     else
+                    {
                         throw new BadRequestException(ErrorMessages.NoClassFound);
+                    }
 
                     break;
                 }
@@ -198,10 +200,7 @@ public class ScheduleManagementService(
 
     public async Task DeleteSchedule(Guid schoolId, List<Guid> ids)
     {
-        for (int i = 0; i < ids.Count - 1; i++)
-        {
-            await DeleteSchedule(schoolId, ids[i]);
-        }
+        for (var i = 0; i < ids.Count - 1; i++) await DeleteSchedule(schoolId, ids[i]);
     }
 
     public Task<IEnumerable<ClassSchedule>> GetScheduleByWeek(Guid schoolId, DateTime date)
@@ -277,9 +276,7 @@ public class ScheduleManagementService(
             }
 
             if (response.ClassSchedules.TryGetValue(group.Date, out var value))
-            {
                 value.Add(classResponse);
-            }
             else
                 response.ClassSchedules.Add(group.Date, new List<ClassScheduleResponseView>() { classResponse });
         }
@@ -310,20 +307,16 @@ public class ScheduleManagementService(
             };
 
             if (response.ClassSchedules.TryGetValue(schedule.Date, out var value))
-            {
                 value.Add(classResponse);
-            }
             else
                 response.ClassSchedules.Add(schedule.Date, new List<ClassScheduleResponseView>() { classResponse });
         }
 
         foreach (var k in response.ClassSchedules.Keys)
-        {
             response.ClassSchedules[k] = response.ClassSchedules[k]
                 .OrderByDescending(c => c.ScheduleType)
                 .ThenByDescending(c => c.SessionType)
                 .ToList();
-        }
 
         return response;
     }
@@ -384,9 +377,9 @@ public class ScheduleManagementService(
             );
         if (sessionType != SessionType.FullDay)
             query = query.Where(c =>
-                (c.SessionType == sessionType ||
-                 c.SessionType == SessionType.FullDay));
-        if (await query.AnyAsync(cancellationToken: token))
+                c.SessionType == sessionType ||
+                c.SessionType == SessionType.FullDay);
+        if (await query.AnyAsync(token))
         {
             if (token.IsCancellationRequested)
                 return;
@@ -394,8 +387,8 @@ public class ScheduleManagementService(
             var className = await ct.Classes
                 .Where(cl => cl.SchoolId == schoolId && cl.Id == classId)
                 .Select(c => c.ClassName)
-                .FirstOrDefaultAsync(cancellationToken: token);
-            var schedule = await query.FirstOrDefaultAsync(cancellationToken: token);
+                .FirstOrDefaultAsync(token);
+            var schedule = await query.FirstOrDefaultAsync(token);
 
             builder.Append("Lịch của bạn bị trùng.\n");
             builder.Append($"Lớp: {className}\n");

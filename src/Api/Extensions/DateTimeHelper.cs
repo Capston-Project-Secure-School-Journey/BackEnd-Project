@@ -9,13 +9,13 @@ public static class DateTimeHelper
 
     public static string ConvertSecondsToTimeString(int totalSeconds)
     {
-        int days = totalSeconds / 86400;
-        int remainder = totalSeconds % 86400;
-        int hours = remainder / 3600;
+        var days = totalSeconds / 86400;
+        var remainder = totalSeconds % 86400;
+        var hours = remainder / 3600;
         remainder %= 3600;
-        int minutes = remainder / 60;
+        var minutes = remainder / 60;
 
-        List<string> components = new List<string>();
+        List<string> components = new();
 
         if (days > 0)
             components.Add($"{days} ngày");
@@ -36,19 +36,19 @@ public static class DateTimeHelper
 
     private static (DateOnly StartOfWeek, DateOnly EndOfWeek) GetWeekRange(DateTime date)
     {
-        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
 
-        DateOnly startOfWeek = DateOnly.FromDateTime(date.AddDays(-diff).Date);
-        DateOnly endOfWeek = startOfWeek.AddDays(6);
+        var startOfWeek = DateOnly.FromDateTime(date.AddDays(-diff).Date);
+        var endOfWeek = startOfWeek.AddDays(6);
 
         return (startOfWeek, endOfWeek);
     }
 
     private static (DateOnly StartOfMonth, DateOnly EndOfMonth) GetMonthRange(DateTime date)
     {
-        DateOnly startOfMonth =
+        var startOfMonth =
             DateOnly.FromDateTime(new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc));
-        DateOnly endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+        var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
         return (startOfMonth, endOfMonth);
     }
 

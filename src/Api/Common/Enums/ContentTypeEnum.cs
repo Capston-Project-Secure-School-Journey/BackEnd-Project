@@ -15,7 +15,7 @@ public enum ContentType
     [Description("image/heic")] ImageHeic,
     [Description("image/heif")] ImageHeif,
     [Description("image/heics")] ImageHeics,
-    
+
     [Description("application/msword")] ApplicationMsWord,
 
     [Description("application/vnd.openxmlformats-officedocument.wordprocessingml.document")]

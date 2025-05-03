@@ -19,7 +19,7 @@ public class SchoolMetadataController(Context context) : ControllerBase
         var query = context.Schools
             .AsQueryable()
             .AsNoTracking();
-        
+
         var schools = await query
             .AsNoTracking()
             .OrderBy(sc => sc.SchoolName)
@@ -29,7 +29,7 @@ public class SchoolMetadataController(Context context) : ControllerBase
                 sc.Address,
                 sc.SchoolType,
                 SchoolTypeName = sc.SchoolType.GetEnumDisplayName(),
-                sc.Id,
+                sc.Id
             })
             .ToListAsync();
 

@@ -48,7 +48,7 @@ public class ApprovalProcessor(
 
             await context.DriverApprovalRequests.AddAsync(application);
             await context.SaveChangesAsync();
-            
+
             foreach (var i in driver.VehicleImages)
             {
                 var response = await fileUploadService.CopyObjectAsync(i.FileManagementId,
@@ -56,10 +56,10 @@ public class ApprovalProcessor(
                 application.VehicleImages.Add(new FileMetadata()
                 {
                     FileManagementId = response.Key,
-                    Key = response.S3Key,
+                    Key = response.S3Key
                 });
             }
-            
+
             foreach (var i in driver.DriverInformationImages)
             {
                 var response = await fileUploadService.CopyObjectAsync(i.FileManagementId,
@@ -68,7 +68,7 @@ public class ApprovalProcessor(
                 {
                     FileManagementId = response.Key,
                     Key = response.S3Key,
-                    Type = i.Type,
+                    Type = i.Type
                 });
             }
 
@@ -79,7 +79,7 @@ public class ApprovalProcessor(
                 ToStatus = RequestStatus.Created,
                 ChangedBy = driverId,
                 ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-                Note = string.Empty,
+                Note = string.Empty
             };
             context.DriverApprovalRequests.Update(application);
             await context.DriverRequestStatusHistories.AddAsync(stateHistory);
@@ -102,7 +102,7 @@ public class ApprovalProcessor(
             .Drivers
             .FirstOrDefaultAsync(dr => dr.Id == application.DriverId);
 
-        var actionsCanDo = GetActionCanDo(application, isReviewer: false);
+        var actionsCanDo = GetActionCanDo(application, false);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Update))
             throw new BadRequestException(ErrorMessages.CannotUpdateApplication);
@@ -118,11 +118,12 @@ public class ApprovalProcessor(
 
             await fileUploadService.DeleteFileManagementAsync(application.VehicleImages.Select(x => x.FileManagementId)
                 .ToList());
-            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages
+                .Select(x => x.FileManagementId)
                 .ToList());
             application.VehicleImages.Clear();
             application.DriverInformationImages.Clear();
-            
+
             foreach (var i in driver.VehicleImages)
             {
                 var response = await fileUploadService.CopyObjectAsync(i.FileManagementId,
@@ -130,7 +131,7 @@ public class ApprovalProcessor(
                 application.VehicleImages.Add(new FileMetadata()
                 {
                     FileManagementId = response.Key,
-                    Key = response.S3Key,
+                    Key = response.S3Key
                 });
             }
 
@@ -142,7 +143,7 @@ public class ApprovalProcessor(
                 {
                     FileManagementId = response.Key,
                     Key = response.S3Key,
-                    Type = i.Type,
+                    Type = i.Type
                 });
             }
 
@@ -155,7 +156,7 @@ public class ApprovalProcessor(
                     ToStatus = RequestStatus.Pending,
                     ChangedBy = driverId,
                     ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-                    Note = string.Empty,
+                    Note = string.Empty
                 };
                 if (application.RequestStatus != RequestStatus.Created)
                     application.RequestStatus = RequestStatus.Pending;
@@ -178,7 +179,7 @@ public class ApprovalProcessor(
     public async Task SubmitApplication(Guid applicationId, Guid driverId)
     {
         var application = await GetApplicationByDriver(applicationId, driverId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: false);
+        var actionsCanDo = GetActionCanDo(application, false);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Submit))
             throw new BadRequestException(ErrorMessages.CannotSubmitApplication);
@@ -190,7 +191,7 @@ public class ApprovalProcessor(
             ToStatus = RequestStatus.Pending,
             ChangedBy = driverId,
             ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-            Note = string.Empty,
+            Note = string.Empty
         };
 
         application.RequestStatus = RequestStatus.Pending;
@@ -202,7 +203,7 @@ public class ApprovalProcessor(
     public async Task ApproveApplication(Guid applicationId, Guid reviewerId)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: true);
+        var actionsCanDo = GetActionCanDo(application, true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Approve))
             throw new BadRequestException(ErrorMessages.CannotAcceptApplication);
@@ -225,7 +226,7 @@ public class ApprovalProcessor(
             ToStatus = RequestStatus.Approved,
             ChangedBy = reviewerId,
             ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-            Note = string.Empty,
+            Note = string.Empty
         };
 
         application.RequestStatus = RequestStatus.Approved;
@@ -239,7 +240,7 @@ public class ApprovalProcessor(
     public async Task RejectApplication(Guid applicationId, Guid reviewerId, string reason)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: true);
+        var actionsCanDo = GetActionCanDo(application, true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Reject))
             throw new BadRequestException(ErrorMessages.CannotRejectApplication);
@@ -263,12 +264,10 @@ public class ApprovalProcessor(
     public async Task RequireAdditionalDetails(Guid applicationId, Guid reviewerId, string reason)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: true);
+        var actionsCanDo = GetActionCanDo(application, true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.RequestMoreInfo))
-        {
             throw new BadRequestException(ErrorMessages.SystemError);
-        }
 
         var stateHistory = new DriverRequestStatusHistory()
         {
@@ -290,12 +289,10 @@ public class ApprovalProcessor(
     public async Task CancelApplicationByReviewer(Guid applicationId, Guid reviewerId, string reason)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: true);
+        var actionsCanDo = GetActionCanDo(application, true);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
-        {
             throw new BadRequestException(ErrorMessages.CannotCancelApplication);
-        }
 
         var driver = await context
             .Drivers
@@ -328,12 +325,10 @@ public class ApprovalProcessor(
     public async Task CancelApplicationByDriver(Guid applicationId, Guid driverId, string reason)
     {
         var application = await GetApplicationByDriver(applicationId, driverId);
-        var actionsCanDo = GetActionCanDo(application, isReviewer: false);
+        var actionsCanDo = GetActionCanDo(application, false);
 
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
-        {
             throw new BadRequestException(ErrorMessages.CannotCancelApplication);
-        }
 
         var stateHistory = new DriverRequestStatusHistory()
         {
@@ -356,25 +351,24 @@ public class ApprovalProcessor(
     {
         var application = await GetApplicationByDriver(applicationId, driverId);
 
-        var actionsCanDo = GetActionCanDo(application, isReviewer: false);
+        var actionsCanDo = GetActionCanDo(application, false);
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Delete))
-        {
             throw new BadRequestException(ErrorMessages.CannotDeleteApplication);
-        }
 
         var trans = await context.Database.BeginTransactionAsync();
         try
         {
             await fileUploadService.DeleteFileManagementAsync(application.VehicleImages.Select(x => x.FileManagementId)
                 .ToList());
-            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages.Select(x => x.FileManagementId)
+            await fileUploadService.DeleteFileManagementAsync(application.DriverInformationImages
+                .Select(x => x.FileManagementId)
                 .ToList());
-            
+
             await context
                 .Entry(application)
                 .Collection<DriverRequestStatusHistory>(x => x.DriverRequestStatusHistories)
                 .LoadAsync();
-            
+
             context.DriverRequestStatusHistories.RemoveRange(application.DriverRequestStatusHistories);
             context.DriverApprovalRequests.Remove(application);
             await context.SaveChangesAsync();
@@ -390,13 +384,13 @@ public class ApprovalProcessor(
     public async Task<List<ApplicationActionDto>> GetActionCanDoByDriver(Guid applicationId, Guid driverId)
     {
         var application = await GetApplicationByDriver(applicationId, driverId);
-        return GetActionCanDo(application, isReviewer: false);
+        return GetActionCanDo(application, false);
     }
 
     public async Task<List<ApplicationActionDto>> GetActionCanDoByReviewer(Guid applicationId, Guid reviewerId)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
-        return GetActionCanDo(application, isReviewer: true);
+        return GetActionCanDo(application, true);
     }
 
     private static List<ApplicationActionDto> GetActionCanDo(DriverApprovalRequest application, bool isReviewer)
@@ -405,11 +399,7 @@ public class ApprovalProcessor(
         switch (application.RequestStatus)
         {
             case RequestStatus.Approved:
-                if (isReviewer)
-                {
-                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
-                }
-
+                if (isReviewer) actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
                 break;
             case RequestStatus.Rejected:
                 break;
@@ -431,7 +421,9 @@ public class ApprovalProcessor(
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.RequestMoreInfo });
                 }
                 else
+                {
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
+                }
 
                 break;
             case RequestStatus.Created:
@@ -472,7 +464,7 @@ public class ApprovalProcessor(
         return application;
     }
 
-    private async Task<Guid> GetReviewerOfSchool(Guid schoolId)
+    public async Task<Guid> GetReviewerOfSchool(Guid schoolId)
     {
         var reviewer = await context.SchoolPersons
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);

@@ -61,11 +61,11 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         builder.HasOne(e => e.Recipient)
             .WithMany()
             .HasForeignKey(e => e.RecipientId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Sender)
             .WithMany()
             .HasForeignKey(e => e.SenderId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

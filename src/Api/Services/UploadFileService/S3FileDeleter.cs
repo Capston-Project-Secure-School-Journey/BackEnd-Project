@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Api.Services.UploadFileService;
 
-public class S3FileDeleter: IFileDeleter
+public class S3FileDeleter : IFileDeleter
 {
     private readonly AmazonS3Client _s3Client;
     private readonly string _bucketName;
@@ -28,6 +28,7 @@ public class S3FileDeleter: IFileDeleter
             s3Config
         );
     }
+
     public async Task<bool> DeleteFileAsync(string key)
     {
         try
@@ -48,7 +49,7 @@ public class S3FileDeleter: IFileDeleter
             throw new S3Exception(ErrorMessages.FileDeleteError);
         }
     }
-    
+
     private async Task<bool> FileExist(string key, bool isThrow = false)
     {
         try

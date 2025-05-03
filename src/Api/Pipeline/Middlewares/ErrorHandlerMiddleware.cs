@@ -56,7 +56,7 @@ public class ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMi
                 errorDetail.Message = e.Message;
                 break;
             default:
-                logger.LogError(exception,"Unhandled exception");
+                logger.LogError(exception, "Unhandled exception");
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 errorDetail.Message = "Internal Server Error";
                 break;
