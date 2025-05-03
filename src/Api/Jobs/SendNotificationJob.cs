@@ -8,11 +8,12 @@ namespace Api.Jobs;
 public class SendNotificationJob : IJob
 {
     private readonly IServiceProvider _serviceProvider;
+
     public SendNotificationJob(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
-    
+
     public async Task ExecuteAsync(params object[] args)
     {
         if (args[0] is not List<Guid> notificationIds || notificationIds.Count == 0)

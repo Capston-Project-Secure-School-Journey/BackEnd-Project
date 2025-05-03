@@ -67,7 +67,7 @@ public static class AesEncryptionUtility
         var json = JsonSerializer.Serialize(obj);
         return Encrypt(json, base64Key);
     }
-    
+
     /// <summary>
     /// Decrypts AES encrypted data with embedded IV
     /// </summary>
@@ -126,7 +126,7 @@ public static class AesEncryptionUtility
             }
         }
     }
-    
+
     public static T? Decrypt<T>(string cipherText, string base64Key)
     {
         var data = Decrypt(cipherText, base64Key);

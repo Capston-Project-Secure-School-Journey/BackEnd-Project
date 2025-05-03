@@ -15,13 +15,10 @@ public class MailService(IOptions<MailSettings> mailSettings) : IMailService
     {
         var validationResults = new List<ValidationResult>();
         var context = new ValidationContext(sendMailDto, null, null);
-        bool isValid =
-            Validator.TryValidateObject(sendMailDto, context, validationResults, validateAllProperties: true);
+        var isValid =
+            Validator.TryValidateObject(sendMailDto, context, validationResults, true);
 
-        if (!isValid)
-        {
-            throw new ValidationException(validationResults[0].ErrorMessage);
-        }
+        if (!isValid) throw new ValidationException(validationResults[0].ErrorMessage);
 
         var email = new MimeMessage();
         email.Sender = new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail);

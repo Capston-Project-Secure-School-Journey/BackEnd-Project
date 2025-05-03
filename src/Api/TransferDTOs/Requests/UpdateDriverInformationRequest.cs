@@ -7,8 +7,10 @@ public class UpdateDriverInformationRequest
 {
     public string VehicleType { get; set; } = string.Empty;
     public string LicenseNumber { get; set; } = string.Empty;
+
     [Range(4, 200, ErrorMessage = "Số ghế ngồi phải lớn hơn 3")]
     public int SeatingCapacity { get; set; }
+
     public List<DriverInformationImageDto> DriverInformationImages { get; set; } = [];
     public List<Guid> VehicleImages { get; set; } = [];
 }

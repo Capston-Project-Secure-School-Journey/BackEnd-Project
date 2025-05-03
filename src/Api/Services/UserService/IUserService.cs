@@ -11,4 +11,5 @@ public interface IUserService
     Task<User> UpdateUserInfo(Guid id, UpdateUserInfoDto dto);
     Task<string> UpdateAvatar(Guid id, IFormFile file);
     Task<User> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request);
+    Task AddDeviceToken(Guid userId, string deviceToken);
 }

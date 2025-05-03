@@ -9,7 +9,7 @@ namespace Api.Extensions;
 public static class RefreshUploadedFileList
 {
     public static async Task<List<FileMetadata>> RefreshUploadedFiles(List<FileMetadata> currentFiles,
-        List<Guid> newFiles, 
+        List<Guid> newFiles,
         IFileUploadService fileUploadService)
     {
         var baseUploadService = fileUploadService as BaseUploadFileService;
@@ -25,7 +25,9 @@ public static class RefreshUploadedFileList
                 throw new BadRequestException(ErrorMessages.UploadVehiclePhotoFailed);
 
             if (oldFileData.Any(x => x.FileManagementId == fileData.Id))
+            {
                 keepList.Add(oldFileData.First(x => x.FileManagementId == fileData.Id));
+            }
             else
             {
                 if (!fileData.IsUploaded)
@@ -47,10 +49,12 @@ public static class RefreshUploadedFileList
             await baseUploadService!.MarkFileAsUploadedAsync(t.FileManagementId);
             currentFiles.Add(t);
         }
+
         return currentFiles;
     }
-    
-    public static async Task<List<DriverInformationImage>> RefreshUploadedFiles(List<DriverInformationImage> currentFiles, 
+
+    public static async Task<List<DriverInformationImage>> RefreshUploadedFiles(
+        List<DriverInformationImage> currentFiles,
         List<DriverInformationImageDto> newFiles,
         IFileUploadService fileUploadService)
     {
@@ -67,14 +71,16 @@ public static class RefreshUploadedFileList
                 throw new BadRequestException(ErrorMessages.UploadLicenseFailed);
 
             if (oldFileData.Any(x => x.FileManagementId == fileData.Id))
+            {
                 keepList.Add(oldFileData.First(x => x.FileManagementId == fileData.Id));
+            }
             else
             {
                 if (!fileData.IsUploaded)
                     newList.Add(new DriverInformationImage()
                     {
-                        Key = fileData.S3Key, 
-                        FileManagementId = fileData.Id ,
+                        Key = fileData.S3Key,
+                        FileManagementId = fileData.Id,
                         Type = i.Type
                     });
                 else
@@ -94,7 +100,7 @@ public static class RefreshUploadedFileList
             await baseUploadService!.MarkFileAsUploadedAsync(t.FileManagementId);
             currentFiles.Add(t);
         }
-        
+
         return currentFiles;
     }
 }

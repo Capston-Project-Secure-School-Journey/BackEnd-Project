@@ -43,7 +43,7 @@ public static class DependencyContainer
             return client.GetDatabase(settings.DatabaseName);
         });
 
-        
+
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         services.AddScoped<ISchoolManagement, SchoolManagement>();
@@ -55,7 +55,7 @@ public static class DependencyContainer
         services.AddScoped<IFileUploadService, S3FileUploadService>();
         services.AddScoped<IUploadTransactionManager, UploadTransactionManager>();
         services.AddScoped<IFileDeleter, S3FileDeleter>();
-        
+
         services.AddScoped<ITeacherManagementService, TeacherManagementService>();
         services.AddScoped<ITeacherManagementHandler, TeacherManagementHandler>();
 
@@ -80,7 +80,7 @@ public static class DependencyContainer
 
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<INotificationSender, NotificationFcmSender>();
-        
+
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
         services.AddSingleton<ValidateModelAttribute>();

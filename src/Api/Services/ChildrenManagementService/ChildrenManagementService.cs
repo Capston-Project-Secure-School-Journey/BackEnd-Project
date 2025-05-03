@@ -50,14 +50,11 @@ public class ChildrenManagementService : IChildrenManagementService
                     _context.Students.AsQueryable().Where(x => x.Id == id));
 
         var response = (await children!
-            .ToListAsync())
+                .ToListAsync())
             .Select(MapStudentToChildDto)
             .ToList();
-        
-        foreach (var child in response)
-        {
-            child.IsFirstAdded = childs.First(x => x.StudentId == child.Id).IsFirstAdded;
-        }
+
+        foreach (var child in response) child.IsFirstAdded = childs.First(x => x.StudentId == child.Id).IsFirstAdded;
         return response;
     }
 
@@ -81,7 +78,7 @@ public class ChildrenManagementService : IChildrenManagementService
     public async Task RegisterChild(Guid parentId, RegisterChildDto dto)
     {
         await _userBanService.CheckUserBaned(parentId, BanType.AddChild, true);
-        
+
         var student = FindStudentWithHash(dto.SecretCode);
         var parent = await GetParent(parentId);
 
@@ -92,6 +89,7 @@ public class ChildrenManagementService : IChildrenManagementService
             await _userBanService.AddErrorRequest(parent.Id, BanType.AddChild);
             throw new BadRequestException(ErrorMessages.StudentInfoMismatch);
         }
+
         await _userBanService.RemoveUserBan(parentId, BanType.AddChild);
         if (parent.RelationshipWithStudents.Count == 0)
         {
@@ -111,13 +109,13 @@ public class ChildrenManagementService : IChildrenManagementService
                     and  JSON_CONTAINS(RelationshipWithStudents, JSON_OBJECT('StudentId', {0}))",
                 student.Id)
             .AnyAsync();
-        
+
         parent.RelationshipWithStudents.Add(
             new RelationshipWithStudent()
             {
                 StudentId = student.Id,
                 Relationship = dto.Relationship,
-                IsFirstAdded = !isFirstAdded,
+                IsFirstAdded = !isFirstAdded
             });
 
         _context.Entry(parent).State = EntityState.Modified;
@@ -129,12 +127,12 @@ public class ChildrenManagementService : IChildrenManagementService
         var parent = await GetParent(parentId);
         if (parent.RelationshipWithStudents.All(x => x.StudentId != dto.ChildId))
             throw new ForbiddenException(ErrorMessages.AccessDenied);
-        
-        if(!parent.RelationshipWithStudents.First(x => x.StudentId == dto.ChildId).IsFirstAdded)
+
+        if (!parent.RelationshipWithStudents.First(x => x.StudentId == dto.ChildId).IsFirstAdded)
             throw new BadRequestException(ErrorMessages.OnlyFirstParentCanEditAddress);
-        
+
         var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
-        
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         child.PickUpLocation = dto.PickUpLocation;
         child.PickUpLat = dto.PickUpLat;
@@ -144,16 +142,17 @@ public class ChildrenManagementService : IChildrenManagementService
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         _context.Entry(child).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-        
+
         var date = DateTimeHelper.GetDateTimeUtc7();
         if (date.DayOfWeek == DayOfWeek.Sunday)
             date = date.AddDays(2);
-        
-        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-        DateTime startOfCurrentWeek = date.AddDays(-diff).Date;
-        DateOnly startOfNextWeek = DateOnly.FromDateTime(startOfCurrentWeek.AddDays(7));
 
-        return $"Địa chỉ có hiệu lực từ ngày: {startOfNextWeek.ToShortDateString()}. Vì vậy hãy đón con tại địa chỉ cũ.";
+        var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var startOfCurrentWeek = date.AddDays(-diff).Date;
+        var startOfNextWeek = DateOnly.FromDateTime(startOfCurrentWeek.AddDays(7));
+
+        return
+            $"Địa chỉ có hiệu lực từ ngày: {startOfNextWeek.ToShortDateString()}. Vì vậy hãy đón con tại địa chỉ cũ.";
     }
 
     private Student FindStudentWithHash(string hash)

@@ -10,14 +10,12 @@ namespace Api.Controllers;
 [Route("notifications")]
 public class NotificationController(INotificationService notificationService) : ControllerBase
 {
-    private readonly INotificationService _notificationService = notificationService;
-
     [HttpGet]
     [Authorize()]
     public async Task<Pagination<Notification>> GetMyNotifications([FromQuery] int currentPage)
     {
         var userId = this.GetUserId();
-        return await _notificationService.GetNotifications(userId, currentPage);
+        return await notificationService.GetNotifications(userId, currentPage);
     }
 
     [HttpGet("unread-count")]
@@ -25,7 +23,7 @@ public class NotificationController(INotificationService notificationService) : 
     public async Task<int> GetUnreadNotificationCount()
     {
         var userId = this.GetUserId();
-        return await _notificationService.NumberOfNotReadNotification(userId);
+        return await notificationService.NumberOfNotReadNotification(userId);
     }
 
     [HttpGet("{notificationId}")]
@@ -33,7 +31,26 @@ public class NotificationController(INotificationService notificationService) : 
     public async Task<Notification> GetNotification([FromRoute] Guid notificationId)
     {
         var userId = this.GetUserId();
-        await _notificationService.IsOwnerOfNotification(notificationId, userId);
-        return await _notificationService.GetNotificationAsync(notificationId);
+        await notificationService.IsOwnerOfNotification(notificationId, userId);
+        return await notificationService.GetNotificationAsync(notificationId);
+    }
+
+    [HttpPut("mark-read")]
+    [Authorize()]
+    public async Task<ActionResult> MarkNotificationByRecipient()
+    {
+        var userId = this.GetUserId();
+        await notificationService.MarkNotificationByRecipient(userId);
+        return Ok();
+    }
+
+    [HttpPut("{notificationId}/mark-read")]
+    [Authorize()]
+    public async Task<ActionResult> MarkNotification([FromRoute] Guid notificationId)
+    {
+        var userId = this.GetUserId();
+        await notificationService.IsOwnerOfNotification(notificationId, userId);
+        await notificationService.MarkNotification(notificationId);
+        return Ok();
     }
 }

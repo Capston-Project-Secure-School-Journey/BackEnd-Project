@@ -65,7 +65,8 @@ public class SchoolManagement : ISchoolManagement
         school.AfternoonStartTime = data.AfternoonStartTime;
         school.Email = data.Email;
         school.PhoneNumber = data.PhoneNumber;
-        school.Images = await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, _fileUploadService);
+        school.Images =
+            await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, _fileUploadService);
         _context.Entry(school).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return school;

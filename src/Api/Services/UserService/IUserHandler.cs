@@ -12,4 +12,5 @@ public interface IUserHandler
     Task<string> UpdateAvatar(Guid id, IFormFile file);
     Task<UserProfile> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request);
     Task<PreSignedUrlResponse> GetPreSignedUploadImage(Guid userId, string fileName, string contentType, long fileSize);
+    Task AddDeviceToken(Guid userId, string deviceToken);
 }

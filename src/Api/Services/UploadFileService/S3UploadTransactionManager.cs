@@ -11,12 +11,10 @@ public class UploadTransactionManager(IFileDeleter fileDeleter, ILogger<UploadTr
     public void TrackUploadedFile(string key)
     {
         if (!string.IsNullOrWhiteSpace(key))
-        {
             lock (_lock)
             {
                 _uploadedKeys.Add(key);
             }
-        }
     }
 
     public async Task RollbackAsync()
@@ -28,7 +26,6 @@ public class UploadTransactionManager(IFileDeleter fileDeleter, ILogger<UploadTr
                 return;
 
             foreach (var key in _uploadedKeys)
-            {
                 tasks.Add(Task.Run(async () =>
                 {
                     try
@@ -40,7 +37,6 @@ public class UploadTransactionManager(IFileDeleter fileDeleter, ILogger<UploadTr
                         logger.LogError(ex, ErrorMessages.FileDeleteError);
                     }
                 }));
-            }
         }
 
         await Task.WhenAll(tasks);

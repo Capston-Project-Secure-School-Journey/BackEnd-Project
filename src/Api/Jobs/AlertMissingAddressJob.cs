@@ -14,7 +14,7 @@ namespace Api.Jobs;
 
 public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
 {
-    public async Task ExecuteAsync( params object[] args)
+    public async Task ExecuteAsync(params object[] args)
     {
         var schoolId = Guid.Parse(args[0].ToString()!);
 
@@ -74,7 +74,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
                         Content =
                             "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\nVui lòng cập nhập trong thời gian sớm nhất!",
                         RecipientId = parentId,
-                        Navigation = string.Empty,
+                        Navigation = string.Empty
                     };
                     notificationIds.Add((await notificationService.CreateNotification(dto)).Id);
                 }
@@ -87,7 +87,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
                           $"Hãy yêu cầu học sinh cập nhập trước ngày bắt đầu chạy.<br>" +
                           $"Danh sách chi tiết: <a href=\"{fileLink}\" target=\"_blank\">Link</a>",
                 RecipientId = admin.Id,
-                Navigation = string.Empty,
+                Navigation = string.Empty
             };
 
             notificationIds.Add((await notificationService.CreateNotification(d)).Id);
@@ -111,9 +111,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
         writer.WriteLine("Id,FullName,ClassId,ClassName");
 
         foreach (var s in students)
-        {
             writer.WriteLine($"{s.Id},{EscapeCsv(s.FullName)},{s.ClassId},{EscapeCsv(s.Class.ClassName)}");
-        }
 
         writer.Flush();
         stream.Position = 0;
@@ -124,9 +122,7 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider) : IJob
     {
         if (string.IsNullOrEmpty(input)) return "";
         if (input.Contains(',') || input.Contains('"') || input.Contains('\n'))
-        {
             return $"\"{input.Replace("\"", "\"\"")}\"";
-        }
 
         return input;
     }

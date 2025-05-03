@@ -21,7 +21,9 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         var userType = this.GetUserType();
 
         if (userType == UserType.Driver)
+        {
             await _applicationHandler.IsDriverOwnerOfApplication(applicationId, userId);
+        }
         else
         {
             var schoolId = this.GetSchoolId();
@@ -39,7 +41,9 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         var userType = this.GetUserType();
 
         if (userType == UserType.Driver)
+        {
             return await _applicationHandler.GetApplicationsByDriver(userId, currentPage, pageSize);
+        }
         else
         {
             var schoolId = this.GetSchoolId();
@@ -57,9 +61,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         if (userType == UserType.Driver)
             return await _applicationHandler.GetActionCanDoByDriver(applicationId, userId);
         else
-        {
             return await _applicationHandler.GetActionCanDoByReviewer(applicationId, userId);
-        }
     }
 
     [HttpPost]
@@ -89,7 +91,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         await _applicationHandler.SubmitApplication(applicationId, userId);
         return Ok();
     }
-    
+
     [HttpDelete("{applicationId}")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]

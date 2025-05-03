@@ -10,8 +10,8 @@ public class UserProfile : Profile
     public UserProfile()
     {
         CreateMap<Driver, TransferDTOs.Responses.UserProfile>().ForMember(x => x.DriverInformationImages,
-            opt =>
-                opt.Ignore())
+                opt =>
+                    opt.Ignore())
             .ForMember(x => x.VehicleImages,
                 opt =>
                     opt.Ignore());

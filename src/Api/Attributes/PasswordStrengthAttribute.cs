@@ -22,16 +22,17 @@ public class PasswordStrengthAttribute : ValidationAttribute
         if (password!.Length < MinimumLength)
             return new ValidationResult($"Mật khẩu phải có ít nhất {MinimumLength} ký tự.");
 
-        if (RequireUppercase && !Regex.IsMatch(password, @"[A-Z]", RegexOptions.None,TimeSpan.FromMilliseconds(500)))
+        if (RequireUppercase && !Regex.IsMatch(password, @"[A-Z]", RegexOptions.None, TimeSpan.FromMilliseconds(500)))
             return new ValidationResult("Mật khẩu phải chứa ít nhất một chữ hoa.");
 
-        if (RequireLowercase && !Regex.IsMatch(password, @"[a-z]", RegexOptions.None,TimeSpan.FromMilliseconds(500)))
+        if (RequireLowercase && !Regex.IsMatch(password, @"[a-z]", RegexOptions.None, TimeSpan.FromMilliseconds(500)))
             return new ValidationResult("Mật khẩu phải chứa ít nhất một chữ thường.");
 
-        if (RequireDigit && !Regex.IsMatch(password, @"\d", RegexOptions.None,TimeSpan.FromMilliseconds(500)))
+        if (RequireDigit && !Regex.IsMatch(password, @"\d", RegexOptions.None, TimeSpan.FromMilliseconds(500)))
             return new ValidationResult("Mật khẩu phải chứa ít nhất một chữ số.");
 
-        if (RequireSpecialCharacter && !Regex.IsMatch(password, @"[\W_]", RegexOptions.None,TimeSpan.FromMilliseconds(500)))
+        if (RequireSpecialCharacter &&
+            !Regex.IsMatch(password, @"[\W_]", RegexOptions.None, TimeSpan.FromMilliseconds(500)))
             return new ValidationResult("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.");
 
         return ValidationResult.Success;

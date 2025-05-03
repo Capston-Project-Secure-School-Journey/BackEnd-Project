@@ -5,6 +5,7 @@ namespace Api.Domain.Models;
 public class Parent : User
 {
     public List<RelationshipWithStudent> RelationshipWithStudents { get; set; }
+
     public Parent()
     {
         RelationshipWithStudents = [];

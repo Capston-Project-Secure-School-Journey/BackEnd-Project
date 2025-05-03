@@ -16,4 +16,5 @@ public interface IApprovalProcessor
     Task DeleteApplicationByDriver(Guid applicationId, Guid driverId);
     Task<List<ApplicationActionDto>> GetActionCanDoByReviewer(Guid applicationId, Guid reviewerId);
     Task<List<ApplicationActionDto>> GetActionCanDoByDriver(Guid applicationId, Guid driverId);
+    Task<Guid> GetReviewerOfSchool(Guid schoolId);
 }

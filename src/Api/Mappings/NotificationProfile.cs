@@ -4,7 +4,7 @@ using AutoMapper;
 
 namespace Api.Mappings;
 
-public class NotificationProfile: Profile
+public class NotificationProfile : Profile
 {
     public NotificationProfile()
     {

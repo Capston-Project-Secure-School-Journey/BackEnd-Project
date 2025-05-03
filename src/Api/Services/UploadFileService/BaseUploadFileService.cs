@@ -12,7 +12,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
 {
     private readonly Context _context = context;
     protected IUploadTransactionManager UploadTransactionManager = uploadTransactionManager;
-    
+
     protected async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
     {
         var file = new FileManagement()
@@ -52,7 +52,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
         var file = await CheckIfFileExist(id);
         return file.S3Key;
     }
-    
+
     protected async Task<FileManagement> GetFileManagement(Guid id)
     {
         var file = await CheckIfFileExist(id);
@@ -71,7 +71,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
     {
         return await CheckIfFileExist(id);
     }
-    
+
     private async Task<FileManagement> CheckIfFileExist(Guid id)
     {
         var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);

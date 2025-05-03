@@ -4,10 +4,12 @@ using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ApprovalProcessor;
 using Api.Extensions;
+using Api.Jobs;
 using Api.Services.ApprovalProcessor;
 using Api.Services.UploadFileService;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ApplicationService;
@@ -55,37 +57,44 @@ public class ApplicationHandler(
     public async Task<ApplicationResponse> UpdateApplication(Guid applicationId, Guid driverId)
     {
         var application = await approvalProcessor.UpdateApplication(applicationId, driverId);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
         return mapper.Map<ApplicationResponse>(application);
     }
 
     public async Task SubmitApplication(Guid applicationId, Guid driverId)
     {
         await approvalProcessor.SubmitApplication(applicationId, driverId);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task ApproveApplication(Guid applicationId, Guid reviewerId)
     {
         await approvalProcessor.ApproveApplication(applicationId, reviewerId);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task RejectApplication(Guid applicationId, Guid reviewerId, string reason)
     {
         await approvalProcessor.RejectApplication(applicationId, reviewerId, reason);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task RequireAdditionalDetails(Guid applicationId, Guid reviewerId, string reason)
     {
         await approvalProcessor.RequireAdditionalDetails(applicationId, reviewerId, reason);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task CancelApplicationByReviewer(Guid applicationId, Guid reviewerId, string reason)
     {
         await approvalProcessor.CancelApplicationByReviewer(applicationId, reviewerId, reason);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task CancelApplicationByDriver(Guid applicationId, Guid driverId, string reason)
     {
         await approvalProcessor.CancelApplicationByDriver(applicationId, driverId, reason);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
     public async Task DeleteApplicationByDriver(Guid applicationId, Guid driverId)
@@ -147,9 +156,7 @@ public class ApplicationHandler(
         }
 
         foreach (var history in request.DriverRequestStatusHistories)
-        {
             response.DriverRequestStatusHistoryResponse.Add(mapper.Map<DriverRequestStatusHistoryResponse>(history));
-        }
 
         return response;
     }

@@ -20,7 +20,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         Context context,
         IUploadTransactionManager uploadTransactionManager,
         IFileDeleter fileDeleter) : base(
-            context, uploadTransactionManager)
+        context, uploadTransactionManager)
     {
         _fileDeleter = fileDeleter;
         _bucketName = settings.Value.BucketName;
@@ -168,10 +168,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
 
     public async Task<bool> DeleteFileManagementAsync(List<Guid> ids)
     {
-        foreach (var id in ids)
-        {
-            await DeleteFileManagementAsync(id);
-        }
+        foreach (var id in ids) await DeleteFileManagementAsync(id);
 
         return true;
     }
