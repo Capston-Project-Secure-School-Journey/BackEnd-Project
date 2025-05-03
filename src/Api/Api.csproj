@@ -8,36 +8,36 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper" Version="14.0.0" />
-        <PackageReference Include="AWSSDK.S3" Version="3.7.415.4" />
-        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-        <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
-        <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
-        <PackageReference Include="Hangfire" Version="1.8.18" />
-        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.18" />
-        <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3" />
-        <PackageReference Include="MailKit" Version="4.11.0" />
-        <PackageReference Include="MediatR" Version="12.4.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+        <PackageReference Include="AutoMapper" Version="14.0.0"/>
+        <PackageReference Include="AWSSDK.S3" Version="3.7.415.4"/>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
+        <PackageReference Include="FirebaseAdmin" Version="3.1.0"/>
+        <PackageReference Include="Google.Apis.Auth" Version="1.69.0"/>
+        <PackageReference Include="Hangfire" Version="1.8.18"/>
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.18"/>
+        <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3"/>
+        <PackageReference Include="MailKit" Version="4.11.0"/>
+        <PackageReference Include="MediatR" Version="12.4.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2" />
-        <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
-        <PackageReference Include="NSwag.AspNetCore" Version="14.2.0" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.2" />
-        <PackageReference Include="Serilog" Version="4.2.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-        <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
-        <PackageReference Include="SkiaSharp" Version="3.116.1" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-        <PackageReference Include="System.Drawing.Common" Version="9.0.2" />
-        <PackageReference Include="ZXing.Net" Version="0.16.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2"/>
+        <PackageReference Include="MongoDB.Driver" Version="3.3.0"/>
+        <PackageReference Include="NSwag.AspNetCore" Version="14.2.0"/>
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2"/>
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.2"/>
+        <PackageReference Include="Serilog" Version="4.2.0"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0"/>
+        <PackageReference Include="SkiaSharp" Version="3.116.1"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0"/>
+        <PackageReference Include="System.Drawing.Common" Version="9.0.2"/>
+        <PackageReference Include="ZXing.Net" Version="0.16.10"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -47,8 +47,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="DTOs\Jobs\" />
-        <Folder Include="TransferDTOs\" />
+        <Folder Include="DTOs\Jobs\"/>
+        <Folder Include="TransferDTOs\"/>
     </ItemGroup>
 
 </Project>

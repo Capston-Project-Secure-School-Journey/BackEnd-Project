@@ -71,7 +71,7 @@ public class SchoolManagementController : ControllerBase
     {
         var userType = this.GetUserType();
         if (userType == UserType.SchoolAdmin && this.GetSchoolId() != schoolId)
-                throw new ForbiddenException(ErrorMessages.AccessDenied);
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
         return await _schoolManagementHandler.GetSchool(schoolId);
     }
 
@@ -94,10 +94,7 @@ public class SchoolManagementController : ControllerBase
         long fileSize,
         string contentType)
     {
-        if ((fileSize / 1024f / 1024f) > 10)
-        {
-            throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
-        }
+        if (fileSize / 1024f / 1024f > 10) throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
 
         List<string> acceptContentType =
         [
@@ -109,10 +106,7 @@ public class SchoolManagementController : ControllerBase
             ContentType.ImageHeif.GetDescription()
         ];
 
-        if (!acceptContentType.Contains(contentType))
-        {
-            throw new BadRequestException(ErrorMessages.InvalidFileType);
-        }
+        if (!acceptContentType.Contains(contentType)) throw new BadRequestException(ErrorMessages.InvalidFileType);
 
         return await _schoolManagementHandler.GetPreSignedUploadImage(this.GetUserId(),
             schoolId,

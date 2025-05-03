@@ -9,6 +9,7 @@ public sealed class BanAttemptLimitAttribute : Attribute
     /// Ban time, unit is second
     /// </summary>
     public int BanTime { get; set; }
+
     /// <summary>
     /// ObservationWindow, unit is hour
     /// </summary>

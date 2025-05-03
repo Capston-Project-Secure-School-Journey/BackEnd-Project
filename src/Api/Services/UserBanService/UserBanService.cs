@@ -21,7 +21,7 @@ public class UserBanService : IUserBanService
         var now = DateTime.UtcNow;
         var userBan = _context.UserBans
             .FirstOrDefault(x => x.UserId == userId && x.BanExpiryDate > now
-                                        && x.BanType == type);
+                                                    && x.BanType == type);
 
         if (userBan != null)
         {
@@ -39,7 +39,7 @@ public class UserBanService : IUserBanService
         var limit = type.GetBanAttemptLimit();
         var timeBan = type.GetBanAttemptBanTime();
         var observationWindow = type.GetBanAttemptObservationWindow();
-        
+
         var errorRequest = _context.UserRequestedLogs
             .Where(x => x.UserId == userId
                         && x.UserRequestedType == type
@@ -62,6 +62,7 @@ public class UserBanService : IUserBanService
             _context.SaveChanges();
             return Task.FromResult<UserBan?>(userBan);
         }
+
         return Task.FromResult<UserBan?>(null);
     }
 

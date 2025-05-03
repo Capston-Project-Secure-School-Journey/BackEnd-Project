@@ -23,7 +23,7 @@ public class UserProfile
     public VerificationMethod? VerificationMethod { get; set; }
     public Guid? SchoolId { get; set; }
     public string SchoolName { get; set; } = string.Empty;
-    
+
     // driver
     public string VehicleType { get; set; } = string.Empty;
     public string LicenseNumber { get; set; } = string.Empty;

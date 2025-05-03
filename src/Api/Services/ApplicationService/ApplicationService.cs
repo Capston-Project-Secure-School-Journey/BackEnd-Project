@@ -45,4 +45,9 @@ public class ApplicationService(
             throw new NotFoundException(ErrorMessages.ApplicationNotFound);
         return applications;
     }
+
+    public static string GetApplicationNotificationMessage(DriverApprovalRequest application)
+    {
+        return $"Đơn #{application.Id} có thay đổi.";
+    }
 }

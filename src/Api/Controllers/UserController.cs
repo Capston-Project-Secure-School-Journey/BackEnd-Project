@@ -59,6 +59,15 @@ public class UserController : ControllerBase
         return await _userHandler.UpdateDriverInformation(this.GetUserId(), request);
     }
 
+    [HttpPut("add-device-tokens")]
+    [ValidateModel]
+    [Authorize()]
+    public async Task<ActionResult> AddDeviceToken([FromBody] string deviceToken)
+    {
+        await _userHandler.AddDeviceToken(this.GetUserId(), deviceToken);
+        return Ok();
+    }
+
     [HttpPost("pre-signed-upload-url")]
     [ValidateModel]
     [Authorize(UserType.Driver)]
@@ -67,10 +76,7 @@ public class UserController : ControllerBase
         long fileSize,
         string contentType)
     {
-        if ((fileSize / 1024f / 1024f) > 10)
-        {
-            throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
-        }
+        if (fileSize / 1024f / 1024f > 10) throw new BadRequestException(ErrorMessages.FileTooLargeLimit(10));
 
         List<string> acceptContentType =
         [
@@ -82,10 +88,7 @@ public class UserController : ControllerBase
             ContentType.ImageHeif.GetDescription()
         ];
 
-        if (!acceptContentType.Contains(contentType))
-        {
-            throw new BadRequestException(ErrorMessages.InvalidFileType);
-        }
+        if (!acceptContentType.Contains(contentType)) throw new BadRequestException(ErrorMessages.InvalidFileType);
 
         return await _userHandler.GetPreSignedUploadImage(this.GetUserId(), fileName, contentType, fileSize);
     }

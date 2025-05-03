@@ -14,7 +14,7 @@ public class ClassSchedule : BaseModel
     public Grade? Grade { get; set; }
 
     public Guid? ScheduleGroupId { get; set; }
-    
+
     public ScheduleGroup? ScheduleGroup { get; set; }
     public School School { get; set; } = null!;
     public Class Class { get; set; } = null!;

@@ -12,28 +12,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.UserService;
 
-public class UserService : IUserService
+public class UserService(Context context, IFileUploadService uploadFileService) : IUserService
 {
-    private readonly Context _context;
-    private readonly IFileUploadService _uploadFileService;
-
-    public UserService(Context context, IFileUploadService uploadFileService)
-    {
-        _context = context;
-        _uploadFileService = uploadFileService;
-    }
-
     public async Task<User> GetUser(Guid id, UserType userType)
     {
         User? user = null;
 
         if (userType is UserType.SchoolAdmin or UserType.SchoolSuperVisor)
-            user = await _context.SchoolPersons.FirstOrDefaultAsync(x => x.Id == id);
+            user = await context.SchoolPersons.FirstOrDefaultAsync(x => x.Id == id);
         else if (userType == UserType.Parent)
-            user = await _context.Parents.FirstOrDefaultAsync(x => x.Id == id);
+            user = await context.Parents.FirstOrDefaultAsync(x => x.Id == id);
         else if (userType == UserType.Driver)
-            user = await _context.Drivers.FirstOrDefaultAsync(x => x.Id == id);
-        else if (userType == UserType.Admin) user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            user = await context.Drivers.FirstOrDefaultAsync(x => x.Id == id);
+        else if (userType == UserType.Admin) user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
         if (user == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
@@ -43,7 +34,7 @@ public class UserService : IUserService
 
     public async Task<User> UpdateUserInfo(Guid id, UpdateUserInfoDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
         if (user == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
@@ -74,8 +65,8 @@ public class UserService : IUserService
         user.Email = dto.Email;
         user.Address = dto.Address;
         user.DetailAddress = dto.DetailAddress;
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(user).State = EntityState.Modified;
+        await context.SaveChangesAsync();
         return user;
     }
 
@@ -84,22 +75,22 @@ public class UserService : IUserService
         UploadFileResponse uploadResponse;
         try
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (user == null)
                 throw new NotFoundException(ErrorMessages.UserNotFound);
 
             if (user.AvatarKey != null)
-                await _uploadFileService.DeleteFileManagementAsync(user.AvatarKey.Value);
-            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar");
+                await uploadFileService.DeleteFileManagementAsync(user.AvatarKey.Value);
+            uploadResponse = await uploadFileService.UploadFileAsync(file, "avatar");
 
             user.AvatarKey = uploadResponse.Key;
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            context.Entry(user).State = EntityState.Modified;
+            await context.SaveChangesAsync();
         }
         catch (Exception)
         {
-            _ = _uploadFileService.RollBackAsync();
+            _ = uploadFileService.RollBackAsync();
             throw;
         }
 
@@ -108,7 +99,7 @@ public class UserService : IUserService
 
     public async Task<User> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request)
     {
-        var user = await _context.Drivers.FirstOrDefaultAsync(x => x.Id == id);
+        var user = await context.Drivers.FirstOrDefaultAsync(x => x.Id == id);
         if (user == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
 
@@ -118,32 +109,42 @@ public class UserService : IUserService
         user.VehicleType = request.VehicleType;
 
         if (request.DriverInformationImages.Count == 1)
-        {
             throw new BadRequestException(ErrorMessages.RequireBothSidesUploaded);
-        }
 
         user.VehicleImages = await RefreshUploadedFileList.RefreshUploadedFiles(user.VehicleImages,
             request.VehicleImages,
-            _uploadFileService);
+            uploadFileService);
 
         if (request.DriverInformationImages.Count == 2)
-        {
             user.DriverInformationImages = await RefreshUploadedFileList.RefreshUploadedFiles(
                 user.DriverInformationImages,
                 request.DriverInformationImages,
-                _uploadFileService
+                uploadFileService
             );
-        }
 
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(user).State = EntityState.Modified;
+        await context.SaveChangesAsync();
         return user;
+    }
+
+    public async Task AddDeviceToken(Guid userId, string deviceToken)
+    {
+        var user = await context.Drivers.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null)
+            throw new NotFoundException(ErrorMessages.UserNotFound);
+
+        if (!user.DeviceTokens.Contains(deviceToken))
+        {
+            user.DeviceTokens = user.DeviceTokens.Append(deviceToken).ToArray();
+            context.Entry(user).State = EntityState.Modified;
+            await context.SaveChangesAsync();
+        }
     }
 
     private static bool IsVerified(User user)
     {
         return user.AccountStatus == AccountStatus.Verified &&
-               (user.UserType == UserType.Parent || user.UserType == UserType.Driver);
+               user.UserType is UserType.Parent or UserType.Driver;
     }
 
     private async Task ValidateUserInput(UpdateUserInfoDto dto, User user)
@@ -153,13 +154,13 @@ public class UserService : IUserService
 
         if (!string.IsNullOrEmpty(dto.Email) &&
             user.Email != dto.Email &&
-            await _context.Users.AnyAsync(x => x.Email == dto.Email)
+            await context.Users.AnyAsync(x => x.Email == dto.Email)
            )
             throw new BadRequestException(ErrorMessages.EmailExists);
 
         if (!string.IsNullOrEmpty(dto.PhoneNumber) &&
             user.PhoneNumber != dto.PhoneNumber &&
-            await _context.Users.AnyAsync(x => x.PhoneNumber == dto.PhoneNumber)
+            await context.Users.AnyAsync(x => x.PhoneNumber == dto.PhoneNumber)
            )
             throw new BadRequestException(ErrorMessages.PhoneExists);
     }

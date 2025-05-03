@@ -10,12 +10,18 @@ public static class JobRegister
         var options = new RecurringJobOptions()
         {
             TimeZone = TimeZoneHelper.VietnamTimeZone
-        } ;
-        
+        };
+
         RecurringJob.AddOrUpdate<SchoolJobSubscriber>(
-            recurringJobId: "school-subscribe-job",
-            methodCall: job => job.ExecuteAsync(),
-            cronExpression: "0 2 * * 6",
-            options: options);
+            "school-subscribe-job",
+            job => job.ExecuteAsync(),
+            "0 2 * * 6",
+            options);
+
+        RecurringJob.AddOrUpdate<CleanFileJob>(
+            "daily-cleanup-job",
+            job => job.ExecuteAsync(),
+            "35 2 * * *",
+            options);
     }
 }

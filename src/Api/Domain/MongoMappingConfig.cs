@@ -87,7 +87,6 @@ public static class MongoMappingConfig
             });
 
             if (!BsonClassMap.IsClassMapRegistered(typeof(StudentOnBus)))
-            {
                 BsonClassMap.RegisterClassMap<StudentOnBus>(cm =>
                 {
                     cm.AutoMap();
@@ -141,7 +140,6 @@ public static class MongoMappingConfig
                     cm.MapMember(x => x.SkipPickup)
                         .SetElementName("skipPickup");
                 });
-            }
         }
     }
 }

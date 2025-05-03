@@ -19,7 +19,7 @@ public static class EnumExtension
             })
             .ToList();
     }
-    
+
     public static string GetEnumDisplayName<T>(this T value) where T : Enum
     {
         return value.GetType()
@@ -27,7 +27,7 @@ public static class EnumExtension
             ?.GetCustomAttribute<DisplayAttribute>()?
             .Name ?? value.ToString();
     }
-    
+
     public static string GetDescription(this Enum value)
     {
         var field = value.GetType().GetField(value.ToString());
@@ -54,7 +54,7 @@ public static class EnumExtension
         else
             return 24 * 60 * 60;
     }
-    
+
     public static int GetBanAttemptObservationWindow(this Enum value)
     {
         var field = value.GetType().GetField(value.ToString());
