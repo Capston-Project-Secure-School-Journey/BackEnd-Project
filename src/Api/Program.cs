@@ -16,7 +16,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var clientPath = builder.Configuration.GetSection("ClientPath").Value;
+// var clientPath = builder.Configuration.GetSection("ClientPath").Value;
 var serverVersion = new MySqlServerVersion(new Version(9, 2, 0));
 var cors = "AllowSpecificOrigin";
 Console.WriteLine($"connectionString: {connectionString}");
