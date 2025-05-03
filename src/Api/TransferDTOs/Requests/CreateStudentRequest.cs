@@ -23,5 +23,6 @@ public class CreateStudentRequest
     [Required(ErrorMessage = "Giới tính không được để trống.")]
     [EnumDataType(typeof(Gender), ErrorMessage = "Loại giới tính không hợp lệ.")]
     public Gender Gender { get; set; }
+
     public bool NeedsPickup { get; set; } = true;
 }

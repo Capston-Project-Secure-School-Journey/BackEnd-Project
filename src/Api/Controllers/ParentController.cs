@@ -45,7 +45,7 @@ public class ParentController : ControllerBase
         await _childrenManagementService.RegisterChild(userId, request);
         return Ok();
     }
-    
+
     [HttpPut("child-pick-up-location")]
     [Authorize(UserType.Parent)]
     [CheckVerifiedEmail]

@@ -11,7 +11,7 @@ public class Driver : User
     public List<VerifiedBy> VerifiedBy { get; set; }
     public DateTime? LastCheckDrivingLicense { get; set; }
     public List<DriverInformationImage> DriverInformationImages { get; set; }
-    public List<FileMetadata>  VehicleImages { get; set; }
+    public List<FileMetadata> VehicleImages { get; set; }
 
     public Driver()
     {

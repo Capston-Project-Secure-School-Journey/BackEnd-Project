@@ -7,6 +7,7 @@ namespace Api.Domain;
 
 public class Context(DbContextOptions options) : DbContext(options)
 {
+    public bool BypassSoftDelete { get; set; } = false;
     public DbSet<User> Users { get; set; }
     public DbSet<Parent> Parents { get; set; }
     public DbSet<Driver> Drivers { get; set; }
@@ -49,14 +50,16 @@ public class Context(DbContextOptions options) : DbContext(options)
     public override int SaveChanges()
     {
         AddTimestamps();
-        UpdateSoftDeleteStatuses();
+        if (!BypassSoftDelete)
+            UpdateSoftDeleteStatuses();
         return base.SaveChanges();
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
         AddTimestamps();
-        UpdateSoftDeleteStatuses();
+        if (!BypassSoftDelete)
+            UpdateSoftDeleteStatuses();
         return base.SaveChangesAsync(cancellationToken);
     }
 

@@ -19,7 +19,8 @@ public class UserManagement : IUserManagement
 
     public async Task<SchoolPerson> CreateSchoolAdmin(CreateSchoolAdminDto request)
     {
-        if (await _context.SchoolPersons.AnyAsync(x => x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
+        if (await _context.SchoolPersons.AnyAsync(x =>
+                x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
             throw new BadRequestException(ErrorMessages.AccountExists);
 
         if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))

@@ -11,7 +11,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("school-settings")]
-public class SchoolSettingsController(Context context): ControllerBase
+public class SchoolSettingsController(Context context) : ControllerBase
 {
     [HttpPut("{schoolId}/start-date")]
     [Authorize(UserType.SchoolAdmin)]
@@ -26,10 +26,8 @@ public class SchoolSettingsController(Context context): ControllerBase
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.Name == "START_DATE");
 
         if (startDate == null)
-        {
             await context.SystemVariables.AddAsync(new SystemVariable()
                 { Name = "START_DATE", SchoolId = schoolId, Value = date.ToString() });
-        }
         else
             startDate.Value = date.ToString();
 

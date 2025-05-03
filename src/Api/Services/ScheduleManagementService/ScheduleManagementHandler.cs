@@ -84,11 +84,11 @@ public class ScheduleManagementHandler : IScheduleManagementHandler
 
     private ClassScheduleResponse MapToClassScheduleResponse(ClassSchedule schedule)
     {
-        var response =  _mapper.Map<ClassScheduleResponse>(schedule);
+        var response = _mapper.Map<ClassScheduleResponse>(schedule);
         response.ClassName = schedule.Class.ClassName;
         response.Grade = schedule.Class.Grade;
         response.GradeName = schedule.Class.Grade.GetEnumDisplayName();
-        
+
         return response;
     }
 }

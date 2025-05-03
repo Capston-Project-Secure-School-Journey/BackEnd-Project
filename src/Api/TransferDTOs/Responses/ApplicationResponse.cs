@@ -5,11 +5,11 @@ namespace Api.TransferDTOs.Responses;
 public class ApplicationResponse
 {
     public Guid Id { get; set; }
-    public Guid SchoolId { get; set; }          
+    public Guid SchoolId { get; set; }
     public DateTime RequestedDate { get; set; }
     public string MotivationLetter { get; set; } = string.Empty;
     public Guid DriverId { get; set; }
-    public RequestStatus RequestStatus { get; set; } 
+    public RequestStatus RequestStatus { get; set; }
     public Guid? ApprovedBy { get; set; }
     public string VehicleType { get; set; } = string.Empty;
     public string LicenseNumber { get; set; } = string.Empty;

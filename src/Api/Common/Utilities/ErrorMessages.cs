@@ -66,15 +66,30 @@ public static class ErrorMessages
     public const string AccountExists = "Đã tồn tại tài khoản";
     public const string ErrorDuringProcessing = "Đã xẩy ra lỗi trong quá trình xử lí";
     private const string FileCheckErrorByKeyFormat = "Error checking if the file exists with the key {0}";
-    public static string FileCheckErrorByKey(string key) => string.Format(FileCheckErrorByKeyFormat, key);
+
+    public static string FileCheckErrorByKey(string key)
+    {
+        return string.Format(FileCheckErrorByKeyFormat, key);
+    }
+
     public const string FileDeleteError = "Error deleting file";
     public const string GeneratePreSignDownloadUrlError = "Error generating pre-signed download URL";
     public const string GeneratePreSignUploadUrlError = "Error generating pre-signed upload URL";
     public const string FileUploadError = "Error uploading file";
     public const string NotificationSendFailure = "Failed to send notification";
     private const string FileTooLargeLimitFormat = "File quá lớn. Yêu cầu file nhỏ hơn {0}Mb";
-    public static string FileTooLargeLimit(int size) => string.Format(FileTooLargeLimitFormat, size);
+
+    public static string FileTooLargeLimit(int size)
+    {
+        return string.Format(FileTooLargeLimitFormat, size);
+    }
+
     private const string FileNotFoundByIdFormat = "File with id {0} not found";
-    public static string FileNotFound(Guid id) => string.Format(FileNotFoundByIdFormat, id);
+
+    public static string FileNotFound(Guid id)
+    {
+        return string.Format(FileNotFoundByIdFormat, id);
+    }
+
     public const string NoClassFound = "Không có lớp nào được tìm thấy";
 }
