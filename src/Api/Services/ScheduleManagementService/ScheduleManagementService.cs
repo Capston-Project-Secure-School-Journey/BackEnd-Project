@@ -21,7 +21,6 @@ public class ScheduleManagementService(
     public async Task<IEnumerable<ClassSchedule>> CreateSchedule(Guid schoolId, CreateScheduleDto dto)
     {
         var cts = new CancellationTokenSource();
-        var trans = await context.Database.BeginTransactionAsync(cts.Token);
         try
         {
             CheckScheduleDate(dto.Date);
@@ -107,12 +106,10 @@ public class ScheduleManagementService(
             await context.ClassSchedules.AddRangeAsync(schedules, cts.Token);
             await context.SaveChangesAsync(cts.Token);
 
-            await trans.CommitAsync(cts.Token);
             return schedules;
         }
         catch (Exception)
         {
-            await trans.RollbackAsync(cts.Token);
             await cts.CancelAsync();
             cts.Dispose();
             throw;

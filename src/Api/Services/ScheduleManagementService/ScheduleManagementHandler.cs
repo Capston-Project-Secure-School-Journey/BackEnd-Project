@@ -37,7 +37,7 @@ public class ScheduleManagementHandler : IScheduleManagementHandler
         }
         catch (Exception)
         {
-            await trans.RollbackAsync();
+            await trans.DisposeAsync();
             throw;
         }
     }
