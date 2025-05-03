@@ -105,7 +105,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(cors,
-        d => d.WithOrigins(clientPath!)
+        // d => d.WithOrigins(clientPath!)
+           d => d.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
