@@ -80,6 +80,7 @@ public class ScheduleManagementService(
                 {
                     throw new BadRequestException(ErrorMessages.NoClassFound);
                 }
+
                 break;
             }
             case ScheduleType.Class:
@@ -224,6 +225,7 @@ public class ScheduleManagementService(
             .ToListAsync();
 
         var response = new ClassSchedulePaginationResponse();
+        var grades = await GetGrades(schoolId);
 
         foreach (var group in scheduleGroups)
         {
@@ -249,9 +251,10 @@ public class ScheduleManagementService(
                 classResponse.SessionType = group.SessionType;
                 classResponse.ScheduleType = group.ScheduleType;
                 classResponse.Grade = null;
-                classResponse.ClassException = group.ClassException;
-                classResponse.ClassException = group.ClassException;
-                classResponse.ClassNameException = group.ClassException
+                var classException = group.ClassException;
+                classResponse.GradeException = GetGradeException(ref classException, grades);
+                classResponse.ClassException = classException;
+                classResponse.ClassNameException = classException
                     .Select(x => classNames.First(k => k.Id == x).ClassName)
                     .ToList();
             }
@@ -420,6 +423,49 @@ public class ScheduleManagementService(
 
             throw new BadRequestException(BuildOverlapErrorMessage(overlapSchedule!));
         }
+    }
+
+    private async Task<Dictionary<Grade, List<Guid>>> GetGrades(Guid schoolId)
+    {
+        var grades = new Dictionary<Grade, List<Guid>>();
+
+        var classes = await context.Classes
+            .AsNoTracking()
+            .Where(c => c.SchoolId == schoolId)
+            .Select(c => new { c.Id, c.Grade })
+            .ToListAsync();
+
+        foreach (var cl in classes)
+        {
+            if (grades.TryGetValue(cl.Grade, out var value))
+                value.Add(cl.Id);
+            else
+                grades.Add(cl.Grade, [cl.Id]);
+        }
+
+        return grades;
+    }
+
+    private static List<Grade> GetGradeException(ref List<Guid> classException, Dictionary<Grade, List<Guid>> grades)
+    {
+        var gradeException = new List<Grade>();
+        foreach (var grade in grades)
+        {
+            var flag = true;
+            foreach (var classId in grade.Value)
+            {
+                if (!classException.Contains(classId))
+                    flag = false;
+            }
+
+            if (flag)
+            {
+                classException = classException.Except(grade.Value).ToList();
+                gradeException.Add(grade.Key);
+            }
+        }
+
+        return gradeException;
     }
 
     private static string BuildOverlapErrorMessage(ClassSchedule overlapSchedule)
