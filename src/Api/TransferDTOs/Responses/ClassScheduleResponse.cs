@@ -30,6 +30,7 @@ public class ClassScheduleResponseView
     public Grade? Grade { get; set; }
     public List<Guid> ClassException { get; set; } = [];
     public List<string> ClassNameException { get; set; } = [];
+    public List<Grade> GradeException { get; set; } = [];
 
     public List<string> TextDisplay => GetDisplayText();
 
@@ -49,6 +50,16 @@ public class ClassScheduleResponseView
 
                 result.Add(text +
                            $" học {SessionType.GetEnumDisplayName()}");
+
+                if (GradeException.Count > 0)
+                {
+                    var builder = new StringBuilder();
+                    builder.Append("Ngoại trừ các khối: ");
+                    foreach (var i in GradeException) builder.Append($"{i.GetEnumDisplayName()}, ");
+                    builder.Remove(builder.Length - 2, 2);
+                    result.Add(builder.ToString());
+                }
+                
                 if (ClassException.Count > 0)
                 {
                     var builder = new StringBuilder();
