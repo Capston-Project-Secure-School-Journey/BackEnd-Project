@@ -93,7 +93,7 @@ public class TeacherManagementService : ITeacherManagementService
         teacher.DateOfBirth = request.DateOfBirth;
         teacher.Gender = request.Gender;
 
-        _context.Entry(teacher).State = EntityState.Modified;
+        _context.Teachers.Update(teacher);
         await _context.SaveChangesAsync();
 
         return teacher;
@@ -110,10 +110,10 @@ public class TeacherManagementService : ITeacherManagementService
         foreach (var i in managedClasses)
         {
             i.ManagedTeachers.Remove(i.ManagedTeachers.First(t => t.ManagedTeacherId == id));
-            _context.Entry(i).State = EntityState.Modified;
+            _context.Classes.Update(i);
         }
 
-        _context.Entry(teacher).State = EntityState.Deleted;
+        _context.Teachers.Remove(teacher);
         await _context.SaveChangesAsync();
     }
 
@@ -155,7 +155,7 @@ public class TeacherManagementService : ITeacherManagementService
             uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
 
             teacher.AvatarKey = uploadResponse.Key;
-            _context.Entry(teacher).State = EntityState.Modified;
+            _context.Teachers.Update(teacher);
             await _context.SaveChangesAsync();
         }
         catch (Exception)

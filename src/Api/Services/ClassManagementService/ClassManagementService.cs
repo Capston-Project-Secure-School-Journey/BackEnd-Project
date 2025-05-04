@@ -106,7 +106,7 @@ public class ClassManagementService : IClassManagementService
         cl.Grade = request.Grade;
         cl.ManagedTeachers = request.ManagedTeachers;
 
-        _context.Entry(cl).State = EntityState.Modified;
+        _context.Classes.Update(cl);
         await _context.SaveChangesAsync();
 
         return cl;
@@ -179,9 +179,9 @@ public class ClassManagementService : IClassManagementService
             .LoadAsync();
 
         // Delete students
-        foreach (var clStudent in cl.Students) _context.Entry(clStudent).State = EntityState.Deleted;
+        _context.Students.RemoveRange(cl.Students);
 
-        _context.Entry(cl).State = EntityState.Deleted;
+        _context.Classes.Remove(cl);
         await _context.SaveChangesAsync();
     }
 

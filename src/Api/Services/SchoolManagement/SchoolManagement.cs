@@ -67,7 +67,7 @@ public class SchoolManagement : ISchoolManagement
         school.PhoneNumber = data.PhoneNumber;
         school.Images =
             await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, _fileUploadService);
-        _context.Entry(school).State = EntityState.Modified;
+        _context.Schools.Update(school);
         await _context.SaveChangesAsync();
         return school;
     }
@@ -76,7 +76,7 @@ public class SchoolManagement : ISchoolManagement
     {
         var school = await GetById(schoolId);
 
-        _context.Entry(school).State = EntityState.Deleted;
+        _context.Schools.Remove(school);
         await _context.SaveChangesAsync();
     }
 

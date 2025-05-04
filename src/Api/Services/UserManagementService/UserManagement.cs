@@ -53,7 +53,7 @@ public class UserManagement : IUserManagement
             throw new NotFoundException(ErrorMessages.AccountNotExist);
 
         schoolAdmin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-        _context.Entry(schoolAdmin).State = EntityState.Modified;
+        _context.SchoolPersons.Update(schoolAdmin);
         await _context.SaveChangesAsync();
     }
 
@@ -131,8 +131,7 @@ public class UserManagement : IUserManagement
 
         schoolAdmin.AccountStatus = AccountStatus.Deactive;
 
-        _context.Entry(schoolAdmin).State = EntityState.Deleted;
-
+        _context.SchoolPersons.Remove(schoolAdmin);
         await _context.SaveChangesAsync();
     }
 
