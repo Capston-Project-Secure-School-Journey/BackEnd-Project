@@ -40,7 +40,7 @@ public class ClassScheduleResponseView
         switch (ScheduleType)
         {
             case ScheduleType.Class:
-                result.Add($"{ClassName} học {SessionType.GetEnumDisplayName()}");
+                result.Add($"Lớp {ClassName} học {SessionType.GetEnumDisplayName()}");
                 break;
             case ScheduleType.Grade:
             case ScheduleType.School:
