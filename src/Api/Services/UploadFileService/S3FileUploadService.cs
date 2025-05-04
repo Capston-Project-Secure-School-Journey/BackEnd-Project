@@ -122,8 +122,8 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                     S3Key = key,
                     FileType = contentType,
                     FileSize = streamLength / 1024f / 1024f,
-                    UploadBy = Guid.Empty,
-                    RelatedObjectId = Guid.Empty,
+                    UploadBy = null,
+                    RelatedObjectId = null,
                     RelatedObjectType = null
                 };
                 var fileM = await AddFileManagement(dto, false);
