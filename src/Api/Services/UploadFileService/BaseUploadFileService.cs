@@ -11,7 +11,7 @@ namespace Api.Services.UploadFileService;
 public class BaseUploadFileService(Context context, IUploadTransactionManager uploadTransactionManager)
 {
     private readonly Context _context = context;
-    protected IUploadTransactionManager UploadTransactionManager = uploadTransactionManager;
+    protected readonly IUploadTransactionManager UploadTransactionManager = uploadTransactionManager;
 
     protected async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
     {
