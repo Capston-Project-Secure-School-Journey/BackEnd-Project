@@ -41,8 +41,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
 
         if (file != null)
         {
-            _context.Entry(file).State = EntityState.Deleted;
-
+            _context.FileManagements.Remove(file);
             await _context.SaveChangesAsync();
         }
     }
@@ -63,7 +62,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
     {
         var file = await CheckIfFileExist(id);
         file.IsUploaded = true;
-        _context.Entry(file).State = EntityState.Modified;
+        _context.FileManagements.Update(file);
         await _context.SaveChangesAsync();
     }
 

@@ -28,27 +28,14 @@ public class ScheduleManagementService(
         {
             case ScheduleType.Grade or ScheduleType.School:
             {
-                var query = context.Classes
-                    .Where(c => c.SchoolId == schoolId);
-
-                if (dto.ScheduleType is ScheduleType.Grade)
-                    query = query.Where(c => c.Grade == dto.Grade!.Value);
-
-                var classes = await query
-                    .Select(x => x.Id)
-                    .ToListAsync();
-
-                classes = classes.Where(id => !dto.ClassException.Contains(id)).ToList();
-
-                if (classes.Count == 0)
-                    throw new BadRequestException(ErrorMessages.NoClassFound);
-
+                var classes = await GetTargetClasses(schoolId, dto.ScheduleType, dto.Grade, dto.ClassException);
                 await CheckOverlap(schoolId,
                     dto.Date,
                     classes,
                     dto.SessionType);
 
-                var destinationGroup = await FindTargetGroupToMergeInto(schoolId, dto.Date, dto.SessionType, classes);
+                var searchResult = await FindTargetGroupToMergeInto(schoolId, dto.Date, dto.SessionType, classes);
+                var destinationGroup = searchResult.Item1;
                 if (destinationGroup == null)
                 {
                     destinationGroup = new ScheduleGroup
@@ -65,8 +52,15 @@ public class ScheduleManagementService(
                 }
                 else
                 {
-                    destinationGroup.ClassException = destinationGroup.ClassException.Except(classes).ToList();
-                    context.Entry(destinationGroup).State = EntityState.Modified;
+                    if (searchResult.isFullDay)
+                    {
+                        destinationGroup.SessionType = SessionType.FullDay;
+                        context.ClassSchedules.RemoveRange(destinationGroup.ClassSchedules);
+                    }
+                    else
+                        destinationGroup.ClassException = destinationGroup.ClassException.Except(classes).ToList();
+
+                    context.ScheduleGroups.Update(destinationGroup);
                 }
 
                 await context.SaveChangesAsync();
@@ -78,9 +72,9 @@ public class ScheduleManagementService(
                         SchoolId = schoolId,
                         ClassId = classId,
                         Date = dto.Date,
-                        ScheduleType = dto.ScheduleType,
-                        SessionType = dto.SessionType,
-                        Grade = dto.Grade,
+                        ScheduleType = destinationGroup.ScheduleType,
+                        SessionType = destinationGroup.SessionType,
+                        Grade = destinationGroup.Grade,
                         Note = dto.Note,
                         ScheduleGroupId = destinationGroup.Id
                     };
@@ -106,7 +100,7 @@ public class ScheduleManagementService(
                 if (matchGroup != null)
                 {
                     matchGroup.ClassException.Remove(dto.ClassId.Value);
-                    context.Entry(matchGroup).State = EntityState.Modified;
+                    context.ScheduleGroups.Update(matchGroup);
                 }
 
                 var schedule = new ClassSchedule()
@@ -114,7 +108,7 @@ public class ScheduleManagementService(
                     SchoolId = schoolId,
                     ClassId = dto.ClassId!.Value,
                     Date = dto.Date,
-                    ScheduleType = dto.ScheduleType,
+                    ScheduleType = matchGroup?.ScheduleType ?? dto.ScheduleType,
                     SessionType = dto.SessionType,
                     Grade = matchGroup?.Grade,
                     Note = dto.Note,
@@ -167,7 +161,7 @@ public class ScheduleManagementService(
 
                 // remove schedule from match group
                 matchGroup.ClassException.Remove(schedule.ClassId);
-                context.Entry(schedule).State = EntityState.Modified;
+                context.ScheduleGroups.Update(matchGroup);
             }
             else
             {
@@ -181,7 +175,7 @@ public class ScheduleManagementService(
         schedule.ClassId = dto.ClassId;
         schedule.Note = dto.Note;
         schedule.Date = dto.Date;
-        context.Entry(schedule).State = EntityState.Modified;
+        context.ClassSchedules.Update(schedule);
         await context.SaveChangesAsync();
 
         return schedule;
@@ -197,7 +191,7 @@ public class ScheduleManagementService(
             throw new BadRequestException(ErrorMessages.ScheduleNotFound);
         await DetachScheduleFromGroup(schedule);
 
-        context.Entry(schedule).State = EntityState.Deleted;
+        context.ClassSchedules.Remove(schedule);
         await context.SaveChangesAsync();
     }
 
@@ -387,6 +381,27 @@ public class ScheduleManagementService(
         throw new NotImplementedException();
     }
 
+    private async Task<List<Guid>> GetTargetClasses(Guid schoolId, ScheduleType scheduleType, Grade? grade,
+        List<Guid> classException)
+    {
+        var query = context.Classes
+            .Where(c => c.SchoolId == schoolId);
+
+        if (scheduleType is ScheduleType.Grade)
+            query = query.Where(c => c.Grade == grade!.Value);
+
+        var classes = await query
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        classes = classes.Where(id => !classException.Contains(id)).ToList();
+
+        if (classes.Count == 0)
+            throw new BadRequestException(ErrorMessages.NoClassFound);
+
+        return classes;
+    }
+
     private Task<IQueryable<ClassSchedule>> GetOverlapQueryable(Guid schoolId,
         DateOnly date,
         Guid classId,
@@ -505,12 +520,13 @@ public class ScheduleManagementService(
         return builder.ToString();
     }
 
-    private Task<ScheduleGroup?> FindTargetGroupToMergeInto(Guid schoolId,
+    private Task<(ScheduleGroup?, bool isFullDay)> FindTargetGroupToMergeInto(Guid schoolId,
         DateOnly date,
         SessionType sessionType,
         List<Guid> classes
     )
     {
+        var isFullDay = false;
         var group = context.ScheduleGroups
             .Include(g => g.ClassSchedules)
             .Where(sc => sc.SchoolId == schoolId
@@ -520,7 +536,22 @@ public class ScheduleManagementService(
             .AsEnumerable()
             .FirstOrDefault(g => classes.All(x => g.ClassException.Contains(x)));
 
-        return Task.FromResult(group);
+        if (group == null && sessionType != SessionType.FullDay)
+        {
+            group = context.ScheduleGroups
+                .Include(g => g.ClassSchedules)
+                .Where(sc => sc.SchoolId == schoolId
+                             && sc.Date == date
+                             && sc.SessionType != SessionType.FullDay
+                             && sc.SessionType != sessionType)
+                .AsEnumerable()
+                .FirstOrDefault(x => x.ClassSchedules.Select(cs => cs.ClassId).Order().SequenceEqual(classes.Order()));
+
+            if (group != null)
+                isFullDay = true;
+        }
+
+        return Task.FromResult((group, isFullDay));
     }
 
     private static void CheckScheduleDate(DateOnly date)
