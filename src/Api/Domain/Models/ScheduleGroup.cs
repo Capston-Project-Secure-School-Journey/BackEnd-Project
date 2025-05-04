@@ -12,10 +12,12 @@ public class ScheduleGroup : BaseModel
     public Grade? Grade { get; set; }
     public List<Guid> ClassException { get; set; }
 
-    public virtual School School { get; set; } = null!;
+    public School School { get; set; } = null!;
+    public HashSet<ClassSchedule> ClassSchedules { get; set; }
 
     public ScheduleGroup()
     {
         ClassException = new List<Guid>();
+        ClassSchedules =  new HashSet<ClassSchedule>();
     }
 }

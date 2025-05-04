@@ -65,7 +65,7 @@ public class ClassScheduleConfiguration : IEntityTypeConfiguration<ClassSchedule
             .IsRequired(false);
 
         builder.HasOne(t => t.ScheduleGroup)
-            .WithMany()
+            .WithMany(sc => sc.ClassSchedules)
             .HasForeignKey(t => t.ScheduleGroupId)
             .OnDelete(DeleteBehavior.Cascade);
     }
