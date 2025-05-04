@@ -14,108 +14,99 @@ namespace Api.Services.ScheduleManagementService;
 
 public class ScheduleManagementService(
     Context context,
-    IClassManagementService classManagementService,
-    IServiceProvider serviceProvider)
+    IClassManagementService classManagementService)
     : IScheduleManagementService
 {
     public async Task<IEnumerable<ClassSchedule>> CreateSchedule(Guid schoolId, CreateScheduleDto dto)
     {
-        var cts = new CancellationTokenSource();
-        try
+        CheckScheduleDate(dto.Date);
+        ValidateCreateScheduleDto(dto);
+
+        var schedules = new List<ClassSchedule>();
+
+        switch (dto.ScheduleType)
         {
-            CheckScheduleDate(dto.Date);
-            ValidateCreateScheduleDto(dto);
-
-            var schedules = new List<ClassSchedule>();
-            var checkOverlapTasks = new List<Task>();
-
-            switch (dto.ScheduleType)
+            case ScheduleType.Grade or ScheduleType.School:
             {
-                case ScheduleType.Grade or ScheduleType.School:
+                var query = context.Classes
+                    .Where(c => c.SchoolId == schoolId);
+
+                if (dto.ScheduleType is ScheduleType.Grade)
+                    query = query.Where(c => c.Grade == dto.Grade!.Value);
+
+                var classes = await query
+                    .Select(x => x.Id)
+                    .ToListAsync();
+
+                classes = classes.Where(id => !dto.ClassException.Contains(id)).ToList();
+
+                if (classes.Count > 0)
                 {
-                    var query = context.Classes
-                        .Where(c => c.SchoolId == schoolId);
+                    await CheckOverlap(schoolId,
+                        dto.Date,
+                        classes,
+                        dto.SessionType);
 
-                    if (dto.ScheduleType is ScheduleType.Grade)
-                        query = query.Where(c => c.Grade == dto.Grade!.Value);
-
-                    var classes = await query.ToListAsync(cts.Token);
-                    classes = classes.Where(c => !dto.ClassException.Contains(c.Id)).ToList();
-
-                    if (classes.Count > 0)
-                    {
-                        var scheduleGroup = new ScheduleGroup
-                        {
-                            SchoolId = schoolId,
-                            ScheduleType = dto.ScheduleType,
-                            Grade = dto.Grade,
-                            SessionType = dto.SessionType,
-                            Date = dto.Date,
-                            ClassException = dto.ClassException
-                        };
-
-                        await context.ScheduleGroups.AddAsync(scheduleGroup, cts.Token);
-                        await context.SaveChangesAsync(cts.Token);
-
-                        foreach (var classId in classes.Select(x => x.Id))
-                        {
-                            checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, classId, dto.SessionType,
-                                cts.Token));
-                            var schedule = new ClassSchedule()
-                            {
-                                SchoolId = schoolId,
-                                ClassId = classId,
-                                Date = dto.Date,
-                                ScheduleType = dto.ScheduleType,
-                                SessionType = dto.SessionType,
-                                Grade = dto.ScheduleType == ScheduleType.Grade ? dto.Grade : null,
-                                Note = dto.Note,
-                                ScheduleGroupId = scheduleGroup.Id
-                            };
-                            schedules.Add(schedule);
-                        }
-                    }
-                    else
-                    {
-                        throw new BadRequestException(ErrorMessages.NoClassFound);
-                    }
-
-                    break;
-                }
-                case ScheduleType.Class:
-                {
-                    await classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
-                    var schedule = new ClassSchedule()
+                    var scheduleGroup = new ScheduleGroup
                     {
                         SchoolId = schoolId,
-                        ClassId = dto.ClassId!.Value,
-                        Date = dto.Date,
                         ScheduleType = dto.ScheduleType,
+                        Grade = dto.Grade,
                         SessionType = dto.SessionType,
-                        Grade = null,
-                        Note = dto.Note,
-                        ScheduleGroupId = null
+                        Date = dto.Date,
+                        ClassException = dto.ClassException
                     };
-                    checkOverlapTasks.Add(CheckOverlap(schoolId, dto.Date, dto.ClassId.Value, dto.SessionType,
-                        cts.Token));
-                    schedules.Add(schedule);
-                    break;
+
+                    await context.ScheduleGroups.AddAsync(scheduleGroup);
+                    await context.SaveChangesAsync();
+
+                    foreach (var classId in classes)
+                    {
+                        var schedule = new ClassSchedule()
+                        {
+                            SchoolId = schoolId,
+                            ClassId = classId,
+                            Date = dto.Date,
+                            ScheduleType = dto.ScheduleType,
+                            SessionType = dto.SessionType,
+                            Grade = dto.ScheduleType == ScheduleType.Grade ? dto.Grade : null,
+                            Note = dto.Note,
+                            ScheduleGroupId = scheduleGroup.Id
+                        };
+                        schedules.Add(schedule);
+                    }
                 }
+                else
+                {
+                    throw new BadRequestException(ErrorMessages.NoClassFound);
+                }
+                break;
             }
+            case ScheduleType.Class:
+            {
+                await classManagementService.IsOwnerOfClass(schoolId, dto.ClassId!.Value);
+                await CheckOverlap(schoolId, dto.Date, dto.ClassId.Value, dto.SessionType);
 
-            await Task.WhenAll(checkOverlapTasks);
-
-            await context.ClassSchedules.AddRangeAsync(schedules, cts.Token);
-            await context.SaveChangesAsync(cts.Token);
-
-            return schedules;
+                var schedule = new ClassSchedule()
+                {
+                    SchoolId = schoolId,
+                    ClassId = dto.ClassId!.Value,
+                    Date = dto.Date,
+                    ScheduleType = dto.ScheduleType,
+                    SessionType = dto.SessionType,
+                    Grade = null,
+                    Note = dto.Note,
+                    ScheduleGroupId = null
+                };
+                schedules.Add(schedule);
+                break;
+            }
         }
-        catch (Exception)
-        {
-            await cts.CancelAsync();
-            cts.Dispose();
-            throw;
-        }
+
+        await context.ClassSchedules.AddRangeAsync(schedules);
+        await context.SaveChangesAsync();
+
+        return schedules;
     }
 
     public async Task<ClassSchedule> UpdateSchedule(Guid schoolId, UpdateScheduleDto dto)
@@ -123,29 +114,38 @@ public class ScheduleManagementService(
         CheckScheduleDate(dto.Date);
         var schedule = await context.ClassSchedules
             .Include(c => c.Class)
+            .Include(c => c.ScheduleGroup)
             .FirstOrDefaultAsync(c => c.Id == dto.Id && c.SchoolId == schoolId);
 
         if (schedule == null)
             throw new BadRequestException(ErrorMessages.ScheduleNotFound);
 
-        await CheckOverlap(schoolId, dto.Date, dto.ClassId, dto.SessionType, CancellationToken.None);
-        if (dto.ClassId != schedule.ClassId ||
-            dto.Date != schedule.Date ||
-            dto.SessionType != schedule.SessionType)
+        var isUnchanged =
+            (dto.Date, dto.ClassId, dto.SessionType) ==
+            (schedule.Date, schedule.ClassId, schedule.SessionType);
+
+        if (!isUnchanged)
         {
-            var group = FindScheduleGroupMatchWithSchedule(
+            await CheckOverlap(schoolId, dto.Date, dto.ClassId, dto.SessionType);
+            await DetachScheduleFromGroup(schedule);
+
+            var matchGroup = FindScheduleGroupMatchWithSchedule(
                 schedule.SchoolId,
                 dto.Date,
                 dto.SessionType,
                 schedule.Class.Grade);
 
-            if (group != null)
+            if (matchGroup != null)
             {
-                schedule.ScheduleGroupId = group.Id;
-                schedule.ScheduleType = group.ScheduleType;
+                schedule.ScheduleGroupId = matchGroup.Id;
+                schedule.ScheduleType = matchGroup.ScheduleType;
 
-                if (group.ScheduleType is ScheduleType.Grade)
-                    schedule.Grade = group.Grade;
+                if (matchGroup.ScheduleType is ScheduleType.Grade)
+                    schedule.Grade = matchGroup.Grade;
+
+                // remove schedule from match group
+                matchGroup.ClassException.Remove(schedule.ClassId);
+                context.Entry(schedule).State = EntityState.Modified;
             }
             else
             {
@@ -173,27 +173,8 @@ public class ScheduleManagementService(
 
         if (schedule == null)
             throw new BadRequestException(ErrorMessages.ScheduleNotFound);
+        await DetachScheduleFromGroup(schedule);
 
-        if (schedule.ScheduleGroupId != null)
-        {
-            schedule.ScheduleGroup!.ClassException.Add(schedule.ClassId);
-
-            int classCountByGrade;
-            if (schedule.ScheduleType is ScheduleType.Grade)
-                classCountByGrade = await context.ClassSchedules
-                    .CountAsync(x => x.SchoolId == schoolId && x.Grade == schedule.Grade);
-            else
-                classCountByGrade = await context.ClassSchedules
-                    .CountAsync(x => x.SchoolId == schoolId);
-
-            if (schedule.ScheduleGroup!.ClassException.Count == classCountByGrade)
-            {
-                context.ScheduleGroups.Remove(schedule.ScheduleGroup!);
-                context.Entry(schedule.ScheduleGroup!).State = EntityState.Deleted;
-            }
-        }
-
-        context.ClassSchedules.Remove(schedule);
         context.Entry(schedule).State = EntityState.Deleted;
         await context.SaveChangesAsync();
     }
@@ -321,6 +302,31 @@ public class ScheduleManagementService(
         return response;
     }
 
+    private async Task DetachScheduleFromGroup(ClassSchedule schedule)
+    {
+        var entity = context.Entry(schedule);
+        if (!entity.Reference(x => x.ScheduleGroup).IsLoaded)
+            await entity.Reference(x => x.ScheduleGroup).LoadAsync();
+
+        if (schedule.ScheduleGroup != null)
+        {
+            schedule.ScheduleGroup.ClassException.Add(schedule.ClassId);
+
+            int classCountByGrade;
+            if (schedule.ScheduleType is ScheduleType.Grade)
+                classCountByGrade = await context.ClassSchedules
+                    .CountAsync(x => x.SchoolId == schedule.SchoolId && x.Grade == schedule.Grade);
+            else
+                classCountByGrade = await context.ClassSchedules
+                    .CountAsync(x => x.SchoolId == schedule.SchoolId);
+
+            context.Entry(schedule.ScheduleGroup).State =
+                schedule.ScheduleGroup.ClassException.Count == classCountByGrade
+                    ? EntityState.Deleted
+                    : EntityState.Modified;
+        }
+    }
+
     private ScheduleGroup? FindScheduleGroupMatchWithSchedule(Guid schoolId,
         DateOnly date,
         SessionType sessionType,
@@ -357,49 +363,76 @@ public class ScheduleManagementService(
         throw new NotImplementedException();
     }
 
-    private async Task CheckOverlap(Guid schoolId,
+    private Task<IQueryable<ClassSchedule>> GetOverlapQueryable(Guid schoolId,
         DateOnly date,
         Guid classId,
-        SessionType sessionType,
-        CancellationToken token)
+        SessionType sessionType
+    )
     {
-        if (token.IsCancellationRequested)
-            return;
-
-        var builder = new StringBuilder();
-        using var scope = serviceProvider.CreateScope();
-        var ct = scope.ServiceProvider.GetRequiredService<Context>();
-
-        var query = ct.ClassSchedules
+        var query = context.ClassSchedules
+            .AsNoTracking()
+            .AsQueryable()
             .Where(c => c.SchoolId == schoolId
                         && c.ClassId == classId
                         && c.Date == date
             );
+
         if (sessionType != SessionType.FullDay)
             query = query.Where(c =>
                 c.SessionType == sessionType ||
                 c.SessionType == SessionType.FullDay);
-        if (await query.AnyAsync(token))
+
+        return Task.FromResult(query);
+    }
+
+    private async Task CheckOverlap(Guid schoolId,
+        DateOnly date,
+        Guid classId,
+        SessionType sessionType
+    )
+    {
+        await CheckOverlap(schoolId, date, [classId], sessionType);
+    }
+
+    private async Task CheckOverlap(Guid schoolId,
+        DateOnly date,
+        List<Guid> classIds,
+        SessionType sessionType
+    )
+    {
+        if (classIds.Count == 0)
+            return;
+
+        IQueryable<ClassSchedule> query = null!;
+        foreach (var classId in classIds)
         {
-            if (token.IsCancellationRequested)
-                return;
-
-            var className = await ct.Classes
-                .Where(cl => cl.SchoolId == schoolId && cl.Id == classId)
-                .Select(c => c.ClassName)
-                .FirstOrDefaultAsync(token);
-            var schedule = await query.FirstOrDefaultAsync(token);
-
-            builder.Append("Lịch của bạn bị trùng.\n");
-            builder.Append($"Lớp: {className}\n");
-            builder.Append($"Ngày học bị trùng: {date}\n");
-            builder.Append($"Đã có lịch học {schedule?.SessionType.GetEnumDisplayName()}\n");
-            builder.Append($"Vui lòng kiểm tra lại!");
-
-            if (token.IsCancellationRequested)
-                return;
-            throw new BadRequestException(builder.ToString());
+            if (query == null)
+                query = await GetOverlapQueryable(schoolId, date, classId, sessionType);
+            else
+                query = query.Union(await GetOverlapQueryable(schoolId, date, classId, sessionType));
         }
+
+        if (await query.AnyAsync())
+        {
+            var overlapSchedule = await query
+                .Include(x => x.Class)
+                .FirstOrDefaultAsync();
+
+            throw new BadRequestException(BuildOverlapErrorMessage(overlapSchedule!));
+        }
+    }
+
+    private static string BuildOverlapErrorMessage(ClassSchedule overlapSchedule)
+    {
+        var builder = new StringBuilder();
+
+        builder.Append("Lịch của bạn bị trùng.\n");
+        builder.Append($"Lớp: {overlapSchedule.Class.ClassName}\n");
+        builder.Append($"Ngày học bị trùng: {overlapSchedule.Date}\n");
+        builder.Append($"Đã có lịch học {overlapSchedule.SessionType.GetEnumDisplayName()}\n");
+        builder.Append($"Vui lòng kiểm tra lại!");
+
+        return builder.ToString();
     }
 
     private static void CheckScheduleDate(DateOnly date)
