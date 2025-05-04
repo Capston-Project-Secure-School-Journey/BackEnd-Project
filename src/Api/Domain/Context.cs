@@ -88,8 +88,8 @@ public class Context(DbContextOptions options) : DbContext(options)
                     entry.CurrentValues["IsDeleted"] = false;
                     break;
                 case EntityState.Deleted:
-                    entry.State = EntityState.Modified;
-                    entry.CurrentValues["IsDeleted"] = true;
+                    ((entry.Entity as BaseModel)!).IsDeleted = true;
+                    Update(entry.Entity);
                     break;
             }
     }

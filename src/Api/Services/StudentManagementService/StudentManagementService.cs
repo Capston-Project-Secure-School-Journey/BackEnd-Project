@@ -89,8 +89,7 @@ public class StudentManagementService : IStudentManagementService
             cl.NumberOfStudent += 1;
 
             _context.Students.Add(st);
-            _context.Entry(st).State = EntityState.Added;
-            _context.Entry(cl).State = EntityState.Modified;
+            _context.Classes.Update(cl);
             await _context.SaveChangesAsync();
             var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(st.Id));
             var stream = _qrCodeGenerator.GenerateQrCodeStream(hash);
@@ -128,9 +127,9 @@ public class StudentManagementService : IStudentManagementService
         st.Gender = request.Gender;
         st.ClassId = request.ClassId;
 
-        _context.Entry(st).State = EntityState.Modified;
-        _context.Entry(oldClass).State = EntityState.Modified;
-        _context.Entry(cl).State = EntityState.Modified;
+        _context.Students.Update(st);
+        _context.Classes.Update(cl);
+        _context.Classes.Update(oldClass);
         await _context.SaveChangesAsync();
         return st;
     }
@@ -140,8 +139,8 @@ public class StudentManagementService : IStudentManagementService
         var student = await GetStudentById(id);
         await _context.Entry(student).Reference(x => x.Class).LoadAsync();
         student.Class.NumberOfStudent -= 1;
-        _context.Entry(student.Class).State = EntityState.Modified;
-        _context.Entry(student).State = EntityState.Deleted;
+        _context.Students.Remove(student);
+        _context.Classes.Update(student.Class);
 
         await _context.SaveChangesAsync();
     }
@@ -184,7 +183,7 @@ public class StudentManagementService : IStudentManagementService
             uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/students");
 
             student.AvatarKey = uploadResponse.Key;
-            _context.Entry(student).State = EntityState.Modified;
+            _context.Students.Update(student);
             await _context.SaveChangesAsync();
         }
         catch (Exception)

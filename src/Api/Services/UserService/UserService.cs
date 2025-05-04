@@ -65,7 +65,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
         user.Email = dto.Email;
         user.Address = dto.Address;
         user.DetailAddress = dto.DetailAddress;
-        context.Entry(user).State = EntityState.Modified;
+        context.Users.Update(user);
         await context.SaveChangesAsync();
         return user;
     }
@@ -85,7 +85,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
             uploadResponse = await uploadFileService.UploadFileAsync(file, "avatar");
 
             user.AvatarKey = uploadResponse.Key;
-            context.Entry(user).State = EntityState.Modified;
+            context.Users.Update(user);
             await context.SaveChangesAsync();
         }
         catch (Exception)
@@ -122,7 +122,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
                 uploadFileService
             );
 
-        context.Entry(user).State = EntityState.Modified;
+        context.Users.Update(user);
         await context.SaveChangesAsync();
         return user;
     }
@@ -136,7 +136,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
         if (!user.DeviceTokens.Contains(deviceToken))
         {
             user.DeviceTokens = user.DeviceTokens.Append(deviceToken).ToArray();
-            context.Entry(user).State = EntityState.Modified;
+            context.Users.Update(user);
             await context.SaveChangesAsync();
         }
     }

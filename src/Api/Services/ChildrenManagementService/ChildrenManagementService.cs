@@ -118,7 +118,7 @@ public class ChildrenManagementService : IChildrenManagementService
                 IsFirstAdded = !isFirstAdded
             });
 
-        _context.Entry(parent).State = EntityState.Modified;
+        _context.Parents.Update(parent);
         await _context.SaveChangesAsync();
     }
 
@@ -140,7 +140,7 @@ public class ChildrenManagementService : IChildrenManagementService
         // UTC
         child.LastTimeUpdatedPickupLocation = DateTimeHelper.GetDateTimeUtc7();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
-        _context.Entry(child).State = EntityState.Modified;
+        _context.Students.Update(child);
         await _context.SaveChangesAsync();
 
         var date = DateTimeHelper.GetDateTimeUtc7();
