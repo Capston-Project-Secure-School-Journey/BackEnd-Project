@@ -9,21 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.TeacherManagementService;
 
-public class TeacherManagementService : ITeacherManagementService
+public class TeacherManagementService(
+    Context context,
+    IFileUploadService uploadService) : ITeacherManagementService
 {
-    private readonly Context _context;
-    private readonly IFileUploadService _uploadFileService;
-
-    public TeacherManagementService(Context context,
-        IFileUploadService uploadService)
-    {
-        _context = context;
-        _uploadFileService = uploadService;
-    }
-
     public async Task<IEnumerable<Teacher>> GetTeachers(Guid schoolId)
     {
-        return await _context.Teachers
+        return await context.Teachers
             .Where(s => s.SchoolId == schoolId)
             .ToListAsync();
     }
@@ -39,7 +31,7 @@ public class TeacherManagementService : ITeacherManagementService
     public Task<IQueryable<Teacher>> GetTeachersByFilterQueryAble(Guid schoolId, string? name, string? email,
         string? phoneNumber)
     {
-        var query = _context.Teachers.AsQueryable()
+        var query = context.Teachers.AsQueryable()
             .AsNoTracking();
 
         query = query.Where(x => x.SchoolId == schoolId);
@@ -56,7 +48,7 @@ public class TeacherManagementService : ITeacherManagementService
 
     public async Task<Teacher> GetTeacherById(Guid id)
     {
-        var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
+        var teacher = await context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
 
         if (teacher == null)
             throw new NotFoundException(ErrorMessages.TeacherNotFound);
@@ -76,9 +68,9 @@ public class TeacherManagementService : ITeacherManagementService
             SchoolId = request.SchoolId
         };
 
-        _context.Teachers.Add(teacher);
-        _context.Entry(teacher).State = EntityState.Added;
-        await _context.SaveChangesAsync();
+        context.Teachers.Add(teacher);
+        context.Entry(teacher).State = EntityState.Added;
+        await context.SaveChangesAsync();
 
         return teacher;
     }
@@ -93,8 +85,8 @@ public class TeacherManagementService : ITeacherManagementService
         teacher.DateOfBirth = request.DateOfBirth;
         teacher.Gender = request.Gender;
 
-        _context.Teachers.Update(teacher);
-        await _context.SaveChangesAsync();
+        context.Teachers.Update(teacher);
+        await context.SaveChangesAsync();
 
         return teacher;
     }
@@ -102,7 +94,7 @@ public class TeacherManagementService : ITeacherManagementService
     public async Task DeleteTeacher(Guid id)
     {
         var teacher = await GetTeacherById(id);
-        var managedClasses = (await _context.Classes
+        var managedClasses = (await context.Classes
                 .Where(c => c.SchoolId == teacher.SchoolId)
                 .ToListAsync())
             .Where(c => c.ManagedTeachers.Any(t => t.ManagedTeacherId == id));
@@ -110,16 +102,16 @@ public class TeacherManagementService : ITeacherManagementService
         foreach (var i in managedClasses)
         {
             i.ManagedTeachers.Remove(i.ManagedTeachers.First(t => t.ManagedTeacherId == id));
-            _context.Classes.Update(i);
+            context.Classes.Update(i);
         }
 
-        _context.Teachers.Remove(teacher);
-        await _context.SaveChangesAsync();
+        context.Teachers.Remove(teacher);
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteTeacher(List<Guid> ids)
     {
-        var trans = await _context.Database.BeginTransactionAsync();
+        var trans = await context.Database.BeginTransactionAsync();
         try
         {
             foreach (var id in ids)
@@ -134,13 +126,13 @@ public class TeacherManagementService : ITeacherManagementService
 
     public async Task CheckExistTeacher(Guid schoolId, Guid teacherId)
     {
-        if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
+        if (!await context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
             throw new NotFoundException(ErrorMessages.TeacherNotFound);
     }
 
     public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)
     {
-        if (!await _context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
+        if (!await context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
             throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
@@ -151,16 +143,16 @@ public class TeacherManagementService : ITeacherManagementService
         try
         {
             if (teacher.AvatarKey != null)
-                await _uploadFileService.DeleteFileManagementAsync(teacher.AvatarKey.Value);
-            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/teachers");
+                await uploadService.DeleteFileManagementAsync(teacher.AvatarKey.Value);
+            uploadResponse = await uploadService.UploadFileAsync(file, "avatar/teachers");
 
             teacher.AvatarKey = uploadResponse.Key;
-            _context.Teachers.Update(teacher);
-            await _context.SaveChangesAsync();
+            context.Teachers.Update(teacher);
+            await context.SaveChangesAsync();
         }
         catch (Exception)
         {
-            _ = _uploadFileService.RollBackAsync();
+            _ = uploadService.RollBackAsync();
             throw;
         }
 

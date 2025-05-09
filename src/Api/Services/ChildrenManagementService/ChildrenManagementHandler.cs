@@ -2,32 +2,26 @@ using Api.DTOs.ChildrenManagement;
 
 namespace Api.Services.ChildrenManagementService;
 
-public class ChildrenManagementHandler : IChildrenManagementHandler
+public class ChildrenManagementHandler(IChildrenManagementService childrenManagementService)
+    : IChildrenManagementHandler
 {
-    private readonly IChildrenManagementService _childrenManagementService;
-
-    public ChildrenManagementHandler(IChildrenManagementService childrenManagementService)
-    {
-        _childrenManagementService = childrenManagementService;
-    }
-
     public async Task<IEnumerable<ChildDto>> GetMyChildren(Guid parentId)
     {
-        return await _childrenManagementService.GetMyChildren(parentId);
+        return await childrenManagementService.GetMyChildren(parentId);
     }
 
     public async Task<ChildDetailDto> GetChildById(Guid parentId, Guid childId)
     {
-        return await _childrenManagementService.GetChildById(parentId, childId);
+        return await childrenManagementService.GetChildById(parentId, childId);
     }
 
     public async Task RegisterChild(Guid parentId, RegisterChildDto dto)
     {
-        await _childrenManagementService.RegisterChild(parentId, dto);
+        await childrenManagementService.RegisterChild(parentId, dto);
     }
 
     public async Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto)
     {
-        return await _childrenManagementService.UpdateChildPickupLocation(parentId, dto);
+        return await childrenManagementService.UpdateChildPickupLocation(parentId, dto);
     }
 }
