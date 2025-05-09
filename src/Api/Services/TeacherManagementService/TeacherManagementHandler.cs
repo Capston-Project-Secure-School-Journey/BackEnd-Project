@@ -9,31 +9,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.TeacherManagementService;
 
-public class TeacherManagementHandler : ITeacherManagementHandler
+public class TeacherManagementHandler(
+    IMapper mapper,
+    ITeacherManagementService teacherManagementService,
+    IFileUploadService uploadFileService)
+    : ITeacherManagementHandler
 {
-    private readonly IMapper _mapper;
-    private readonly ITeacherManagementService _teacherManagementService;
-    private readonly IFileUploadService _uploadFileService;
-
-    public TeacherManagementHandler(IMapper mapper,
-        ITeacherManagementService teacherManagementService,
-        IFileUploadService uploadFileService)
-    {
-        _mapper = mapper;
-        _teacherManagementService = teacherManagementService;
-        _uploadFileService = uploadFileService;
-    }
-
-
     public async Task<Pagination<TeacherResponse>> GetTeachers(Guid schoolId, GetTeacherRequest request)
     {
-        var query = await _teacherManagementService.GetTeachersByFilterQueryAble(schoolId, request.Name, request.Email,
+        var query = await teacherManagementService.GetTeachersByFilterQueryAble(schoolId, request.Name, request.Email,
             request.Phone);
         var total = await query.CountAsync();
 
         var data = await query
             .Pagination(request.Page, request.Limit)
-            .Select(x => _mapper.Map<TeacherResponse>(x))
+            .OrderBy(t => t.FullName)
+            .Select(x => mapper.Map<TeacherResponse>(x))
             .ToListAsync();
         var response = new Pagination<TeacherResponse>(data, request.Limit, request.Page, total);
 
@@ -42,48 +33,48 @@ public class TeacherManagementHandler : ITeacherManagementHandler
 
     public async Task<TeacherDetailResponse> GetTeacherById(Guid schoolId, Guid id)
     {
-        await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
-        var teacher = await _teacherManagementService.GetTeacherById(id);
+        await teacherManagementService.IsOwnerOfTeacher(schoolId, id);
+        var teacher = await teacherManagementService.GetTeacherById(id);
 
-        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, mapper, uploadFileService);
     }
 
     public async Task<TeacherDetailResponse> AddTeacher(Guid schoolId, CreateTeacherRequest request)
     {
-        var dto = _mapper.Map<CreateTeacherDto>(request);
+        var dto = mapper.Map<CreateTeacherDto>(request);
         dto.SchoolId = schoolId;
-        var teacher = await _teacherManagementService.AddTeacher(dto);
+        var teacher = await teacherManagementService.AddTeacher(dto);
 
-        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, mapper, uploadFileService);
     }
 
     public async Task<TeacherDetailResponse> UpdateTeacher(Guid schoolId, UpdateTeacherRequest request)
     {
-        await _teacherManagementService.IsOwnerOfTeacher(schoolId, request.Id);
+        await teacherManagementService.IsOwnerOfTeacher(schoolId, request.Id);
 
-        var dto = _mapper.Map<UpdateTeacherDto>(request);
-        var teacher = await _teacherManagementService.UpdateTeacher(dto);
+        var dto = mapper.Map<UpdateTeacherDto>(request);
+        var teacher = await teacherManagementService.UpdateTeacher(dto);
 
-        return await MapToTeacherResponse(teacher, _mapper, _uploadFileService);
+        return await MapToTeacherResponse(teacher, mapper, uploadFileService);
     }
 
     public async Task DeleteTeacher(Guid schoolId, Guid id)
     {
-        await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
-        await _teacherManagementService.DeleteTeacher(id);
+        await teacherManagementService.IsOwnerOfTeacher(schoolId, id);
+        await teacherManagementService.DeleteTeacher(id);
     }
 
     public async Task DeleteTeacher(Guid schoolId, List<Guid> ids)
     {
-        foreach (var id in ids) await _teacherManagementService.IsOwnerOfTeacher(schoolId, id);
+        foreach (var id in ids) await teacherManagementService.IsOwnerOfTeacher(schoolId, id);
 
-        await _teacherManagementService.DeleteTeacher(ids);
+        await teacherManagementService.DeleteTeacher(ids);
     }
 
     public async Task<string> UploadAvatar(Guid schoolId, Guid teacherId, IFormFile file)
     {
-        await _teacherManagementService.IsOwnerOfTeacher(schoolId, teacherId);
-        return await _teacherManagementService.UploadAvatar(teacherId, file);
+        await teacherManagementService.IsOwnerOfTeacher(schoolId, teacherId);
+        return await teacherManagementService.UploadAvatar(teacherId, file);
     }
 
     private static async Task<TeacherDetailResponse> MapToTeacherResponse(Teacher teacher,

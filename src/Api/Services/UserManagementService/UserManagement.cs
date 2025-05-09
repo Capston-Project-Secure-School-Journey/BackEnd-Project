@@ -8,22 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.UserManagementService;
 
-public class UserManagement : IUserManagement
+public class UserManagement(Context context) : IUserManagement
 {
-    private readonly Context _context;
-
-    public UserManagement(Context context)
-    {
-        _context = context;
-    }
-
     public async Task<SchoolPerson> CreateSchoolAdmin(CreateSchoolAdminDto request)
     {
-        if (await _context.SchoolPersons.AnyAsync(x =>
+        if (await context.SchoolPersons.AnyAsync(x =>
                 x.SchoolId == request.SchoolId && x.UserType == UserType.SchoolAdmin))
             throw new BadRequestException(ErrorMessages.AccountExists);
 
-        if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
+        if (await context.Users.AnyAsync(x => x.UserName == request.UserName))
             throw new BadRequestException(ErrorMessages.UsernameExists);
 
         var user = new SchoolPerson
@@ -36,42 +29,42 @@ public class UserManagement : IUserManagement
             SchoolId = request.SchoolId
         };
 
-        await _context.SchoolPersons.AddAsync(user);
-        _context.Entry(user).State = EntityState.Added;
+        await context.SchoolPersons.AddAsync(user);
+        context.Entry(user).State = EntityState.Added;
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         return user;
     }
 
     public async Task ChangeSchoolAdminPassword(Guid schoolId, string newPassword)
     {
-        var schoolAdmin = await _context.SchoolPersons
+        var schoolAdmin = await context.SchoolPersons
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)
             throw new NotFoundException(ErrorMessages.AccountNotExist);
 
         schoolAdmin.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-        _context.SchoolPersons.Update(schoolAdmin);
-        await _context.SaveChangesAsync();
+        context.SchoolPersons.Update(schoolAdmin);
+        await context.SaveChangesAsync();
     }
 
     public async Task<User> CreateUser(CreateUserDto request)
     {
-        if (await _context.Users.AnyAsync(x => x.UserName == request.UserName))
+        if (await context.Users.AnyAsync(x => x.UserName == request.UserName))
             throw new BadRequestException(ErrorMessages.AccountExists);
 
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
             throw new BadRequestException(ErrorMessages.EmailOrPhoneRequired);
 
         if (!string.IsNullOrEmpty(request.Email) &&
-            await _context.Users.AnyAsync(x => x.Email == request.Email)
+            await context.Users.AnyAsync(x => x.Email == request.Email)
            )
             throw new BadRequestException(ErrorMessages.EmailExists);
 
         if (!string.IsNullOrEmpty(request.PhoneNumber) &&
-            await _context.Users.AnyAsync(x => x.PhoneNumber == request.PhoneNumber)
+            await context.Users.AnyAsync(x => x.PhoneNumber == request.PhoneNumber)
            )
             throw new BadRequestException(ErrorMessages.PhoneExists);
 
@@ -93,8 +86,8 @@ public class UserManagement : IUserManagement
                 Email = request.Email,
                 Gender = request.Gender
             };
-            _context.Drivers.Add(driver);
-            _context.Entry(driver).State = EntityState.Added;
+            context.Drivers.Add(driver);
+            context.Entry(driver).State = EntityState.Added;
             user = driver;
         }
         else
@@ -110,19 +103,19 @@ public class UserManagement : IUserManagement
                 Gender = request.Gender
             };
 
-            _context.Parents.Add(parent);
-            _context.Entry(parent).State = EntityState.Added;
+            context.Parents.Add(parent);
+            context.Entry(parent).State = EntityState.Added;
             user = parent;
         }
 
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return user;
     }
 
     public async Task DeleteSchoolAdmin(Guid schoolId)
     {
-        var schoolAdmin = await _context.SchoolPersons
+        var schoolAdmin = await context.SchoolPersons
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)
@@ -131,13 +124,13 @@ public class UserManagement : IUserManagement
 
         schoolAdmin.AccountStatus = AccountStatus.Deactive;
 
-        _context.SchoolPersons.Remove(schoolAdmin);
-        await _context.SaveChangesAsync();
+        context.SchoolPersons.Remove(schoolAdmin);
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteSchoolAdmin(List<Guid> schoolIds)
     {
-        var trans = await _context.Database.BeginTransactionAsync();
+        var trans = await context.Database.BeginTransactionAsync();
         try
         {
             foreach (var i in schoolIds) await DeleteSchoolAdmin(i);
@@ -153,7 +146,7 @@ public class UserManagement : IUserManagement
 
     public async Task<User> GetSchoolAdmin(Guid schoolId)
     {
-        var schoolAdmin = await _context.SchoolPersons
+        var schoolAdmin = await context.SchoolPersons
             .FirstOrDefaultAsync(x => x.SchoolId == schoolId && x.UserType == UserType.SchoolAdmin);
 
         if (schoolAdmin == null)

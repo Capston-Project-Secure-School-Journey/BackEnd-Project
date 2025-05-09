@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -115,6 +116,7 @@ builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("Toke
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoSettings"));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.UseHttpClientMetrics(); 
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -127,8 +129,11 @@ MongoMappingConfig.RegisterMappings();
 
 var app = builder.Build();
 
+app.UsePathBase("/api");
 app.UseMiddleware<TimeMeasuringMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseMetricServer();
+app.UseHttpMetrics();
 app.UseOpenApi();
 app.UseSwaggerUI();
 app.UseCors(cors);
