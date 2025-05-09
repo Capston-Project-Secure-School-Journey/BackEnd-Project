@@ -18,9 +18,11 @@ jobs:
         run: |
           echo '${{ secrets.APPSETTINGS_JSON }}' > src/Api/appsettings.json
           echo '${{ secrets.FIREBASEADMINSDK }}' > src/Api/firebase-adminsdk.json
-          echo '${{ secrets.SSAST_TECH_KEY }}' > src/Nginx/privkey.pem
-          echo '${{ secrets.SSAST_TECH_CER }}' > src/Nginx/fullchain.pem
+          echo '${{ secrets.SSAST_TECH_KEY }}' > src/Nginx/api.privkey.pem
+          echo '${{ secrets.SSAST_TECH_CER }}' > src/Nginx/api.fullchain.pem
           echo '${{ secrets.GRAFANA_ENV }}' > src/DashboardSystem/grafana.env
+          echo '${{ secrets.DASHBOARD_SSAST_TECH_KEY }}' > src/Nginx/dashboard.privkey.pem
+          echo '${{ secrets.DASHBOARD_SSAST_TECH_CER }}' > src/Nginx/dashboard.fullchain.pem
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -38,9 +40,11 @@ jobs:
         run: |
           rm -f src/Api/appsettings.json
           rm -f src/Api/firebase-adminsdk.json
-          rm -f src/Nginx/privkey.pem
-          rm -f src/Nginx/fullchain.pem
+          rm -f src/Nginx/api.privkey.pem
+          rm -f src/Nginx/api.fullchain.pem
           rm -f src/DashboardSystem/grafana.env
+          rm -f src/Nginx/dashboard.privkey.pem
+          rm -f src/Nginx/dashboard.fullchain.pem
 
   deploy:
     name: Deploy to Production
@@ -48,10 +52,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Create firebase-adminsdk.json file from secrets
+      - name: Create env file from secrets
         run: echo '${{ secrets.APPSETTINGS_JSON }}' > appsettings.json
 
       - name: Copy docker-compose.yml to Production
@@ -66,7 +67,7 @@ jobs:
           target: "temp"
           strip_components: 0
 
-      - name: Remove appsettings.json file
+      - name: Remove env file
         run: rm -f src/Api/appsettings.json
 
       - name: SSH to Production & Deploy
