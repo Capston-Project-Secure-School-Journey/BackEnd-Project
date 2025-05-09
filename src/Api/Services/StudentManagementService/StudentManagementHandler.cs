@@ -10,27 +10,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.StudentManagementService;
 
-public class StudentManagementHandler : IStudentManagementHandler
+public class StudentManagementHandler(
+    IStudentManagementService studentManagementService,
+    IMapper mapper,
+    Context context,
+    IFileUploadService uploadService)
+    : IStudentManagementHandler
 {
-    private readonly IStudentManagementService _studentManagementService;
-    private readonly IMapper _mapper;
-    private readonly Context _context;
-    private readonly IFileUploadService _uploadService;
-
-    public StudentManagementHandler(IStudentManagementService studentManagementService,
-        IMapper mapper,
-        Context context,
-        IFileUploadService uploadService)
-    {
-        _studentManagementService = studentManagementService;
-        _mapper = mapper;
-        _context = context;
-        _uploadService = uploadService;
-    }
-
     public async Task<Pagination<StudentResponse>> GetStudents(Guid schoolId, GetStudentRequest request)
     {
-        var query = await _studentManagementService.GetStudentsByFilterQueryAble(schoolId, request.Name,
+        var query = await studentManagementService.GetStudentsByFilterQueryAble(schoolId, request.Name,
             request.ClassId);
         var total = await query.CountAsync();
 
@@ -38,7 +27,8 @@ public class StudentManagementHandler : IStudentManagementHandler
 
         var data = await query
             .Include(x => x.Class)
-            .Select(x => _mapper.Map<StudentResponse>(x))
+            .OrderBy(x => x.FullName)
+            .Select(x => mapper.Map<StudentResponse>(x))
             .ToListAsync();
 
         var response = new Pagination<StudentResponse>(data, request.Limit, request.Page, total);
@@ -48,10 +38,10 @@ public class StudentManagementHandler : IStudentManagementHandler
 
     public async Task<StudentDetailResponse> GetStudentById(Guid schoolId, Guid id)
     {
-        await _studentManagementService.IsOwnerOfStudent(schoolId, id);
-        var student = await _studentManagementService.GetStudentById(id);
+        await studentManagementService.IsOwnerOfStudent(schoolId, id);
+        var student = await studentManagementService.GetStudentById(id);
 
-        return await MapStudent2StudentResponse(student, _context, _mapper, _uploadService);
+        return await MapStudent2StudentResponse(student, context, mapper, uploadService);
     }
 
     public Task<IEnumerable<StudentResponse>> GetMyChildren(Guid parentId)
@@ -61,41 +51,41 @@ public class StudentManagementHandler : IStudentManagementHandler
 
     public async Task<StudentDetailResponse> AddStudent(Guid schoolId, CreateStudentRequest request)
     {
-        var dto = _mapper.Map<CreateStudentDto>(request);
+        var dto = mapper.Map<CreateStudentDto>(request);
         dto.SchoolId = schoolId;
-        var student = await _studentManagementService.AddStudent(dto);
+        var student = await studentManagementService.AddStudent(dto);
 
-        return await MapStudent2StudentResponse(student, _context, _mapper, _uploadService);
+        return await MapStudent2StudentResponse(student, context, mapper, uploadService);
     }
 
     public async Task<StudentDetailResponse> UpdateStudent(Guid schoolId, UpdateStudentRequest request)
     {
-        await _studentManagementService.IsOwnerOfStudent(schoolId, request.Id);
+        await studentManagementService.IsOwnerOfStudent(schoolId, request.Id);
 
-        var dto = _mapper.Map<UpdateStudentDto>(request);
+        var dto = mapper.Map<UpdateStudentDto>(request);
         dto.SchoolId = schoolId;
-        var student = await _studentManagementService.UpdateStudent(dto);
+        var student = await studentManagementService.UpdateStudent(dto);
 
-        return await MapStudent2StudentResponse(student, _context, _mapper, _uploadService);
+        return await MapStudent2StudentResponse(student, context, mapper, uploadService);
     }
 
     public async Task DeleteStudent(Guid schoolId, Guid id)
     {
-        await _studentManagementService.IsOwnerOfStudent(schoolId, id);
-        await _studentManagementService.DeleteStudent(id);
+        await studentManagementService.IsOwnerOfStudent(schoolId, id);
+        await studentManagementService.DeleteStudent(id);
     }
 
     public async Task DeleteStudent(Guid schoolId, List<Guid> ids)
     {
-        foreach (var id in ids) await _studentManagementService.IsOwnerOfStudent(schoolId, id);
+        foreach (var id in ids) await studentManagementService.IsOwnerOfStudent(schoolId, id);
 
-        await _studentManagementService.DeleteStudent(ids);
+        await studentManagementService.DeleteStudent(ids);
     }
 
     public async Task<string> UploadAvatar(Guid schoolId, Guid studentId, IFormFile file)
     {
-        await _studentManagementService.IsOwnerOfStudent(schoolId, studentId);
-        return await _studentManagementService.UploadAvatar(studentId, file);
+        await studentManagementService.IsOwnerOfStudent(schoolId, studentId);
+        return await studentManagementService.UploadAvatar(studentId, file);
     }
 
     private static async Task<StudentDetailResponse> MapStudent2StudentResponse(Student student, Context context,

@@ -12,24 +12,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ChildrenManagementService;
 
-public class ChildrenManagementService : IChildrenManagementService
+public class ChildrenManagementService(
+    Context context,
+    IMapper mapper,
+    IFileUploadService uploadFileService,
+    IUserBanService userBanService)
+    : IChildrenManagementService
 {
-    private readonly Context _context;
-    private readonly IMapper _mapper;
-    private readonly IFileUploadService _uploadFileService;
-    private readonly IUserBanService _userBanService;
-
-    public ChildrenManagementService(Context context, IMapper mapper,
-        IFileUploadService uploadFileService,
-        IUserBanService userBanService)
-    {
-        _context = context;
-        _mapper = mapper;
-        _uploadFileService = uploadFileService;
-        _userBanService = userBanService;
-    }
-
-
     public async Task<IEnumerable<ChildDto>> GetMyChildren(Guid parentId)
     {
         var parent = await GetParent(parentId);
@@ -37,24 +26,27 @@ public class ChildrenManagementService : IChildrenManagementService
         if (parent.RelationshipWithStudents.Count == 0)
             return new List<ChildDto>();
 
-        var childs = parent.RelationshipWithStudents
+        var children = parent.RelationshipWithStudents
             .Select(x => new { x.StudentId, x.Relationship, x.IsFirstAdded })
             .ToList();
-
-        IQueryable<Student>? children = null;
-        foreach (var id in childs.Select(x => x.StudentId))
-            if (children == null)
-                children = _context.Students.AsQueryable().Where(x => x.Id == id);
+        
+        IQueryable<Student>? childrenDetail = null;
+        foreach (var id in children.Select(x => x.StudentId))
+            if (childrenDetail == null)
+                childrenDetail = context.Students.AsQueryable().Where(x => x.Id == id);
             else
-                children = children.Union(
-                    _context.Students.AsQueryable().Where(x => x.Id == id));
+                childrenDetail = childrenDetail.Union(
+                    context.Students.AsQueryable().Where(x => x.Id == id));
 
-        var response = (await children!
+        if (childrenDetail == null) return new List<ChildDto>();
+        
+        var response = (await childrenDetail
                 .ToListAsync())
             .Select(MapStudentToChildDto)
+            .OrderBy(c => c.FullName)
             .ToList();
 
-        foreach (var child in response) child.IsFirstAdded = childs.First(x => x.StudentId == child.Id).IsFirstAdded;
+        foreach (var child in response) child.IsFirstAdded = children.First(x => x.StudentId == child.Id).IsFirstAdded;
         return response;
     }
 
@@ -68,7 +60,7 @@ public class ChildrenManagementService : IChildrenManagementService
         if (parent.RelationshipWithStudents.All(x => x.StudentId != childId))
             throw new ForbiddenException(ErrorMessages.AccessDenied);
 
-        var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == childId);
+        var child = await context.Students.FirstOrDefaultAsync(x => x.Id == childId);
 
         var response = await MapStudentToChildDetailDto(child!);
         response.IsFirstAdded = parent.RelationshipWithStudents.First(x => x.StudentId == child!.Id).IsFirstAdded;
@@ -77,7 +69,7 @@ public class ChildrenManagementService : IChildrenManagementService
 
     public async Task RegisterChild(Guid parentId, RegisterChildDto dto)
     {
-        await _userBanService.CheckUserBaned(parentId, BanType.AddChild, true);
+        await userBanService.CheckUserBaned(parentId, BanType.AddChild, true);
 
         var student = FindStudentWithHash(dto.SecretCode);
         var parent = await GetParent(parentId);
@@ -86,11 +78,11 @@ public class ChildrenManagementService : IChildrenManagementService
             !student.LastName.Equals(dto.LastName, StringComparison.CurrentCultureIgnoreCase) ||
             student.DateOfBirth != dto.DateOfBirth)
         {
-            await _userBanService.AddErrorRequest(parent.Id, BanType.AddChild);
+            await userBanService.AddErrorRequest(parent.Id, BanType.AddChild);
             throw new BadRequestException(ErrorMessages.StudentInfoMismatch);
         }
 
-        await _userBanService.RemoveUserBan(parentId, BanType.AddChild);
+        await userBanService.RemoveUserBan(parentId, BanType.AddChild);
         if (parent.RelationshipWithStudents.Count == 0)
         {
             parent.RelationshipWithStudents = [];
@@ -101,7 +93,7 @@ public class ChildrenManagementService : IChildrenManagementService
                 throw new BadRequestException(ErrorMessages.StudentAlreadyAdded);
         }
 
-        var isFirstAdded = await _context.Parents
+        var isFirstAdded = await context.Parents
             .FromSqlRaw(
                 @"SELECT * FROM users 
                   WHERE discriminator = 'parent' 
@@ -118,8 +110,8 @@ public class ChildrenManagementService : IChildrenManagementService
                 IsFirstAdded = !isFirstAdded
             });
 
-        _context.Parents.Update(parent);
-        await _context.SaveChangesAsync();
+        context.Parents.Update(parent);
+        await context.SaveChangesAsync();
     }
 
     public async Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto)
@@ -131,7 +123,7 @@ public class ChildrenManagementService : IChildrenManagementService
         if (!parent.RelationshipWithStudents.First(x => x.StudentId == dto.ChildId).IsFirstAdded)
             throw new BadRequestException(ErrorMessages.OnlyFirstParentCanEditAddress);
 
-        var child = await _context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
+        var child = await context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         child.PickUpLocation = dto.PickUpLocation;
@@ -140,8 +132,8 @@ public class ChildrenManagementService : IChildrenManagementService
         // UTC
         child.LastTimeUpdatedPickupLocation = DateTimeHelper.GetDateTimeUtc7();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
-        _context.Students.Update(child);
-        await _context.SaveChangesAsync();
+        context.Students.Update(child);
+        await context.SaveChangesAsync();
 
         var date = DateTimeHelper.GetDateTimeUtc7();
         if (date.DayOfWeek == DayOfWeek.Sunday)
@@ -157,7 +149,7 @@ public class ChildrenManagementService : IChildrenManagementService
 
     private Student FindStudentWithHash(string hash)
     {
-        var studentId = _context.Students
+        var studentId = context.Students
             .Select(st => st.Id)
             .AsEnumerable()
             .FirstOrDefault(id => HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(id)) == hash);
@@ -165,13 +157,13 @@ public class ChildrenManagementService : IChildrenManagementService
         if (studentId == Guid.Empty)
             throw new BadRequestException(ErrorMessages.ErrorDuringProcessing);
 
-        var studentEntity = _context.Students.FirstOrDefault(st => st.Id == studentId);
+        var studentEntity = context.Students.FirstOrDefault(st => st.Id == studentId);
         return studentEntity!;
     }
 
     private async Task<Parent> GetParent(Guid parentId)
     {
-        var parent = await _context.Parents.FirstOrDefaultAsync(p => p.Id == parentId);
+        var parent = await context.Parents.FirstOrDefaultAsync(p => p.Id == parentId);
 
         if (parent == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
@@ -181,26 +173,26 @@ public class ChildrenManagementService : IChildrenManagementService
 
     private async Task<ChildDetailDto> MapStudentToChildDetailDto(Student child)
     {
-        if (!_context.Entry(child).Reference(x => x.School).IsLoaded)
-            await _context.Entry(child).Reference(x => x.School).LoadAsync();
-        if (!_context.Entry(child).Reference(x => x.Class).IsLoaded)
-            await _context.Entry(child).Reference(x => x.Class).LoadAsync();
+        if (!context.Entry(child).Reference(x => x.School).IsLoaded)
+            await context.Entry(child).Reference(x => x.School).LoadAsync();
+        if (!context.Entry(child).Reference(x => x.Class).IsLoaded)
+            await context.Entry(child).Reference(x => x.Class).LoadAsync();
 
-        var response = _mapper.Map<ChildDetailDto>(child);
+        var response = mapper.Map<ChildDetailDto>(child);
         response.SchoolName = child.School.SchoolName;
         response.ClassName = child.Class.ClassName;
 
         if (child.AvatarKey != null)
-            response.AvatarUrl = await _uploadFileService
+            response.AvatarUrl = await uploadFileService
                 .GeneratePreSignedDownloadUrlAsync(child.AvatarKey.Value, 30);
         return response;
     }
 
     private ChildDto MapStudentToChildDto(Student child)
     {
-        if (!_context.Entry(child).Reference(x => x.School).IsLoaded)
-            _context.Entry(child).Reference(x => x.School).Load();
-        var response = _mapper.Map<ChildDto>(child);
+        if (!context.Entry(child).Reference(x => x.School).IsLoaded)
+            context.Entry(child).Reference(x => x.School).Load();
+        var response = mapper.Map<ChildDto>(child);
         response.SchoolName = child.School.SchoolName;
 
         return response;
