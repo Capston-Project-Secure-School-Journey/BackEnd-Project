@@ -23,7 +23,10 @@
       - app-network
 
   prometheus:
-    image: prom/prometheus
+    image: tpham1467/prometheus
+    build:
+      context: ./src/DashboardSystem
+      dockerfile: prometheus.Dockerfile
     volumes:
       - ./src/DashboardSystem/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     command:
@@ -32,7 +35,10 @@
       - app-network
 
   grafana:
-    image: grafana/grafana
+    image: tpham1467/grafana
+    build:
+      context: ./src/DashboardSystem
+      dockerfile: grafana.Dockerfile
     env_file:
       - ./src/DashboardSystem/grafana.env
     volumes:
