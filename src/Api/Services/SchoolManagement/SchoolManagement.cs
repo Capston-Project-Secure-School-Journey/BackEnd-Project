@@ -10,21 +10,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.SchoolManagement;
 
-public class SchoolManagement : ISchoolManagement
+public class SchoolManagement(
+    Context dbContext,
+    IFileUploadService fileUploadService)
+    : ISchoolManagement
 {
-    private readonly Context _context;
-    private readonly IFileUploadService _fileUploadService;
-
-    public SchoolManagement(Context dbContext,
-        IFileUploadService fileUploadService)
-    {
-        _context = dbContext;
-        _fileUploadService = fileUploadService;
-    }
-
     private async Task<School> GetById(Guid id)
     {
-        var school = await _context.Schools.FirstOrDefaultAsync(s => s.Id == id);
+        var school = await dbContext.Schools.FirstOrDefaultAsync(s => s.Id == id);
 
         if (school == null)
             throw new NotFoundException(ErrorMessages.SchoolNotFound);
@@ -33,20 +26,22 @@ public class SchoolManagement : ISchoolManagement
 
     public async Task<School> CreateSchool(CreateSchoolDto data)
     {
-        var school = new School();
-        school.SchoolType = data.SchoolType;
-        school.SchoolName = data.SchoolName;
-        school.SchoolDescription = data.SchoolDescription;
-        school.Address = data.Address;
-        school.MorningStartTime = data.MorningStartTime;
-        school.MorningEndTime = data.MorningEndTime;
-        school.AfternoonEndTime = data.AfternoonEndTime;
-        school.AfternoonStartTime = data.AfternoonStartTime;
-        school.Email = data.Email;
-        school.PhoneNumber = data.PhoneNumber;
+        var school = new School
+        {
+            SchoolType = data.SchoolType,
+            SchoolName = data.SchoolName,
+            SchoolDescription = data.SchoolDescription,
+            Address = data.Address,
+            MorningStartTime = data.MorningStartTime,
+            MorningEndTime = data.MorningEndTime,
+            AfternoonEndTime = data.AfternoonEndTime,
+            AfternoonStartTime = data.AfternoonStartTime,
+            Email = data.Email,
+            PhoneNumber = data.PhoneNumber
+        };
 
-        await _context.Schools.AddAsync(school);
-        await _context.SaveChangesAsync();
+        await dbContext.Schools.AddAsync(school);
+        await dbContext.SaveChangesAsync();
 
         return school;
     }
@@ -66,9 +61,9 @@ public class SchoolManagement : ISchoolManagement
         school.Email = data.Email;
         school.PhoneNumber = data.PhoneNumber;
         school.Images =
-            await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, _fileUploadService);
-        _context.Schools.Update(school);
-        await _context.SaveChangesAsync();
+            await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, fileUploadService);
+        dbContext.Schools.Update(school);
+        await dbContext.SaveChangesAsync();
         return school;
     }
 
@@ -76,35 +71,25 @@ public class SchoolManagement : ISchoolManagement
     {
         var school = await GetById(schoolId);
 
-        _context.Schools.Remove(school);
-        await _context.SaveChangesAsync();
+        dbContext.Schools.Remove(school);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteSchool(List<Guid> schoolIds)
     {
-        var trans = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            foreach (var schoolId in schoolIds) await DeleteSchool(schoolId);
+        foreach (var schoolId in schoolIds) await DeleteSchool(schoolId);
 
-            await _context.SaveChangesAsync();
-            await trans.CommitAsync();
-        }
-        catch (Exception)
-        {
-            await trans.RollbackAsync();
-            throw;
-        }
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<School>> GetSchools()
     {
-        return await _context.Schools.ToListAsync();
+        return await dbContext.Schools.ToListAsync();
     }
 
     public async Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null)
     {
-        var query = _context.Schools
+        var query = dbContext.Schools
             .AsQueryable()
             .AsNoTracking();
         if (schoolType != null) query = query.Where(s => s.SchoolType == schoolType);
@@ -117,7 +102,7 @@ public class SchoolManagement : ISchoolManagement
 
     public Task<IQueryable<School>> GetSchoolsQueryAble(SchoolType? schoolType = null, string? schoolName = null)
     {
-        var query = _context.Schools
+        var query = dbContext.Schools
             .AsQueryable()
             .AsNoTracking();
 

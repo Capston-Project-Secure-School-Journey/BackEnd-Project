@@ -11,27 +11,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.StudentManagementService;
 
-public class StudentManagementService : IStudentManagementService
+public class StudentManagementService(
+    Context context,
+    IClassManagementService classManagementService,
+    IFileUploadService uploadFileService,
+    IQrCodeGenerator qrCodeGenerator)
+    : IStudentManagementService
 {
-    private readonly Context _context;
-    private readonly IClassManagementService _classManagementService;
-    private readonly IFileUploadService _uploadFileService;
-    private readonly IQrCodeGenerator _qrCodeGenerator;
-
-    public StudentManagementService(Context context,
-        IClassManagementService classManagementService,
-        IFileUploadService uploadFileService,
-        IQrCodeGenerator qrCodeGenerator)
-    {
-        _context = context;
-        _classManagementService = classManagementService;
-        _uploadFileService = uploadFileService;
-        _qrCodeGenerator = qrCodeGenerator;
-    }
-
     public async Task<IEnumerable<Student>> GetStudents(Guid schoolId)
     {
-        return await _context.Students
+        return await context.Students
             .Where(s => s.SchoolId == schoolId)
             .ToListAsync();
     }
@@ -45,7 +34,7 @@ public class StudentManagementService : IStudentManagementService
 
     public Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId, string? name, Guid? classId)
     {
-        var query = _context.Students.AsQueryable()
+        var query = context.Students.AsQueryable()
             .AsNoTracking()
             .Where(s => s.SchoolId == schoolId);
 
@@ -59,7 +48,7 @@ public class StudentManagementService : IStudentManagementService
 
     public async Task<Student> GetStudentById(Guid id)
     {
-        var student = await _context.Students
+        var student = await context.Students
             .FirstOrDefaultAsync(s => s.Id == id);
         if (student == null)
             throw new NotFoundException(ErrorMessages.StudentNotExist);
@@ -69,10 +58,10 @@ public class StudentManagementService : IStudentManagementService
 
     public async Task<Student> AddStudent(CreateStudentDto request)
     {
-        var trans = await _context.Database.BeginTransactionAsync();
+        var trans = await context.Database.BeginTransactionAsync();
         try
         {
-            var cl = await _classManagementService.GetClassById(request.ClassId);
+            var cl = await classManagementService.GetClassById(request.ClassId);
             if (cl.SchoolId != request.SchoolId)
                 throw new BadRequestException(ErrorMessages.ClassNotExist);
 
@@ -88,16 +77,16 @@ public class StudentManagementService : IStudentManagementService
 
             cl.NumberOfStudent += 1;
 
-            _context.Students.Add(st);
-            _context.Classes.Update(cl);
-            await _context.SaveChangesAsync();
+            context.Students.Add(st);
+            context.Classes.Update(cl);
+            await context.SaveChangesAsync();
             var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(st.Id));
-            var stream = _qrCodeGenerator.GenerateQrCodeStream(hash);
-            var uploadRe = await _uploadFileService.UploadStreamAsync(stream,
+            var stream = qrCodeGenerator.GenerateQrCodeStream(hash);
+            var uploadRe = await uploadFileService.UploadStreamAsync(stream,
                 st.Id.ToString() + ".png", "image/png", "student_qr_images");
             st.QrImageKey = uploadRe.Key;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             await trans.CommitAsync();
 
             return st;
@@ -105,19 +94,19 @@ public class StudentManagementService : IStudentManagementService
         catch (Exception)
         {
             await trans.RollbackAsync();
-            _ = _uploadFileService.RollBackAsync();
+            _ = uploadFileService.RollBackAsync();
             throw;
         }
     }
 
     public async Task<Student> UpdateStudent(UpdateStudentDto request)
     {
-        var cl = await _classManagementService.GetClassById(request.ClassId);
+        var cl = await classManagementService.GetClassById(request.ClassId);
         if (cl.SchoolId != request.SchoolId)
             throw new BadRequestException(ErrorMessages.ClassNotExist);
 
         var st = await GetStudentById(request.Id);
-        var oldClass = await _classManagementService.GetClassById(st.ClassId);
+        var oldClass = await classManagementService.GetClassById(st.ClassId);
         oldClass.NumberOfStudent -= 1;
         cl.NumberOfStudent += 1;
 
@@ -127,27 +116,27 @@ public class StudentManagementService : IStudentManagementService
         st.Gender = request.Gender;
         st.ClassId = request.ClassId;
 
-        _context.Students.Update(st);
-        _context.Classes.Update(cl);
-        _context.Classes.Update(oldClass);
-        await _context.SaveChangesAsync();
+        context.Students.Update(st);
+        context.Classes.Update(cl);
+        context.Classes.Update(oldClass);
+        await context.SaveChangesAsync();
         return st;
     }
 
     public async Task DeleteStudent(Guid id)
     {
         var student = await GetStudentById(id);
-        await _context.Entry(student).Reference(x => x.Class).LoadAsync();
+        await context.Entry(student).Reference(x => x.Class).LoadAsync();
         student.Class.NumberOfStudent -= 1;
-        _context.Students.Remove(student);
-        _context.Classes.Update(student.Class);
+        context.Students.Remove(student);
+        context.Classes.Update(student.Class);
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteStudent(List<Guid> ids)
     {
-        var trans = await _context.Database.BeginTransactionAsync();
+        var trans = await context.Database.BeginTransactionAsync();
         try
         {
             foreach (var id in ids)
@@ -162,13 +151,13 @@ public class StudentManagementService : IStudentManagementService
 
     public async Task CheckExistStudent(Guid schoolId, Guid studentId)
     {
-        if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
+        if (!await context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
             throw new NotFoundException(ErrorMessages.StudentNotExist);
     }
 
     public async Task IsOwnerOfStudent(Guid schoolId, Guid studentId)
     {
-        if (!await _context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
+        if (!await context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Id == studentId))
             throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
@@ -179,16 +168,16 @@ public class StudentManagementService : IStudentManagementService
         try
         {
             if (student.AvatarKey != null)
-                await _uploadFileService.DeleteFileManagementAsync(student.AvatarKey.Value);
-            uploadResponse = await _uploadFileService.UploadFileAsync(file, "avatar/students");
+                await uploadFileService.DeleteFileManagementAsync(student.AvatarKey.Value);
+            uploadResponse = await uploadFileService.UploadFileAsync(file, "avatar/students");
 
             student.AvatarKey = uploadResponse.Key;
-            _context.Students.Update(student);
-            await _context.SaveChangesAsync();
+            context.Students.Update(student);
+            await context.SaveChangesAsync();
         }
         catch (Exception)
         {
-            _ = _uploadFileService.RollBackAsync();
+            _ = uploadFileService.RollBackAsync();
             throw;
         }
 
