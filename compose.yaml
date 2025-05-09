@@ -22,6 +22,26 @@
     networks:
       - app-network
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./src/DashboardSystem/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    env_file:
+      - ./src/DashboardSystem/grafana.env
+    volumes:
+      - ./grafana:/var/lib/grafana8080
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
