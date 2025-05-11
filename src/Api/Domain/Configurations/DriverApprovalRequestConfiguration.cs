@@ -64,5 +64,10 @@ public class DriverApprovalRequestConfiguration : IEntityTypeConfiguration<Drive
             .WithOne(x => x.Request)
             .HasForeignKey(e => e.RequestId)
             .OnDelete(DeleteBehavior.NoAction);
+        
+        builder.HasOne(u => u.Driver)
+            .WithMany(d => d.DriverApprovalRequests)
+            .HasForeignKey(app => app.DriverId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

@@ -113,8 +113,8 @@ public class SchoolManagementHandler(
         var total = await query.CountAsync();
 
         var data = await query
-            .Select(x => mapper.Map<SchoolResponse>(x))
             .OrderBy(sc => sc.SchoolName)
+            .Select(x => mapper.Map<SchoolResponse>(x))
             .Pagination(request.Page, request.Limit)
             .ToListAsync();
 

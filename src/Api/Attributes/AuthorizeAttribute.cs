@@ -52,7 +52,7 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
             RemoveHeader(context.HttpContext);
             AddHeader(context.HttpContext, userInfo);
 
-            if (userInfo.Item3.Value == AccountStatus.Deactive)
+            if (userInfo.Item3.Value == AccountStatus.DeActive)
                 throw new ForbiddenException(ErrorMessages.AccountLocked);
 
             if (userTypeFilter is { Length: > 0 } &&

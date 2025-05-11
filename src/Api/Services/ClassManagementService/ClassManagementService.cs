@@ -11,24 +11,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ClassManagementService;
 
-public class ClassManagementService : IClassManagementService
+public class ClassManagementService(
+    Context context,
+    ISchoolManagement schoolManagement,
+    ITeacherManagementService teacherManagement)
+    : IClassManagementService
 {
-    private readonly Context _context;
-    private readonly ISchoolManagement _schoolManagement;
-    private readonly ITeacherManagementService _teacherManagement;
-
-    public ClassManagementService(Context context,
-        ISchoolManagement schoolManagement,
-        ITeacherManagementService teacherManagement)
-    {
-        _context = context;
-        _schoolManagement = schoolManagement;
-        _teacherManagement = teacherManagement;
-    }
-
     public async Task<IEnumerable<Class>> GetClasses(Guid schoolId)
     {
-        return await _context.Classes
+        return await context.Classes
             .Where(cl => cl.SchoolId == schoolId)
             .ToListAsync();
     }
@@ -42,7 +33,7 @@ public class ClassManagementService : IClassManagementService
 
     public Task<IQueryable<Class>> GetClassesQueryAbleByFilter(Guid schoolId, string? className, Grade? grade)
     {
-        var query = _context.Classes.AsQueryable()
+        var query = context.Classes.AsQueryable()
             .AsNoTracking()
             .Where(cl => cl.SchoolId == schoolId);
 
@@ -56,7 +47,7 @@ public class ClassManagementService : IClassManagementService
 
     public async Task<Class> GetClassById(Guid id)
     {
-        var cl = await _context.Classes.FirstOrDefaultAsync(x => x.Id == id);
+        var cl = await context.Classes.FirstOrDefaultAsync(x => x.Id == id);
 
         if (cl == null) throw new NotFoundException(ErrorMessages.ClassNotFound);
 
@@ -65,11 +56,11 @@ public class ClassManagementService : IClassManagementService
 
     public async Task<Class> AddClass(CreateClassDto request)
     {
-        var school = await _schoolManagement.GetSchool(request.SchoolId);
+        var school = await schoolManagement.GetSchool(request.SchoolId);
 
         ValidateGrade(school.SchoolType, request.Grade);
         foreach (var i in request.ManagedTeachers)
-            await _teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
+            await teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
 
         await CheckExistClassName(request.SchoolId, request.ClassName);
 
@@ -82,20 +73,20 @@ public class ClassManagementService : IClassManagementService
             NumberOfStudent = 0
         };
 
-        _context.Classes.Add(cl);
-        _context.Entry(cl).State = EntityState.Added;
-        await _context.SaveChangesAsync();
+        context.Classes.Add(cl);
+        context.Entry(cl).State = EntityState.Added;
+        await context.SaveChangesAsync();
 
         return cl;
     }
 
     public async Task<Class> UpdateClass(UpdateClassDto request)
     {
-        var school = await _schoolManagement.GetSchool(request.SchoolId);
+        var school = await schoolManagement.GetSchool(request.SchoolId);
         var cl = await GetClassById(request.Id);
 
         foreach (var i in request.ManagedTeachers)
-            await _teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
+            await teacherManagement.CheckExistTeacher(request.SchoolId, i.ManagedTeacherId);
 
         ValidateGrade(school.SchoolType, request.Grade);
 
@@ -106,8 +97,8 @@ public class ClassManagementService : IClassManagementService
         cl.Grade = request.Grade;
         cl.ManagedTeachers = request.ManagedTeachers;
 
-        _context.Classes.Update(cl);
-        await _context.SaveChangesAsync();
+        context.Classes.Update(cl);
+        await context.SaveChangesAsync();
 
         return cl;
     }
@@ -116,7 +107,7 @@ public class ClassManagementService : IClassManagementService
     {
         try
         {
-            var trans = await _context.Database.BeginTransactionAsync();
+            var trans = await context.Database.BeginTransactionAsync();
             try
             {
                 await DeleteClassNoTransaction(id);
@@ -139,7 +130,7 @@ public class ClassManagementService : IClassManagementService
     {
         try
         {
-            var trans = await _context.Database.BeginTransactionAsync();
+            var trans = await context.Database.BeginTransactionAsync();
             try
             {
                 foreach (var id in ids) await DeleteClassNoTransaction(id);
@@ -160,13 +151,13 @@ public class ClassManagementService : IClassManagementService
 
     public async Task IsOwnerOfClass(Guid schoolId, Guid classId)
     {
-        if (!await _context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
+        if (!await context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
             throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 
     private async Task CheckExistClassName(Guid schoolId, string className)
     {
-        if (await _context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
+        if (await context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
             throw new BadRequestException(ErrorMessages.DuplicateClassName);
     }
 
@@ -174,15 +165,15 @@ public class ClassManagementService : IClassManagementService
     {
         var cl = await GetClassById(id);
 
-        await _context.Entry(cl)
+        await context.Entry(cl)
             .Collection<Student>(c => c.Students)
             .LoadAsync();
 
         // Delete students
-        _context.Students.RemoveRange(cl.Students);
+        context.Students.RemoveRange(cl.Students);
 
-        _context.Classes.Remove(cl);
-        await _context.SaveChangesAsync();
+        context.Classes.Remove(cl);
+        await context.SaveChangesAsync();
     }
 
     private static void ValidateGrade(SchoolType schoolType, Grade grade)

@@ -59,6 +59,7 @@ public class StudentManagementService(
     public async Task<Student> AddStudent(CreateStudentDto request)
     {
         var trans = await context.Database.BeginTransactionAsync();
+        await uploadFileService.BeginTransactionAsync();
         try
         {
             var cl = await classManagementService.GetClassById(request.ClassId);
@@ -164,6 +165,7 @@ public class StudentManagementService(
     public async Task<string> UploadAvatar(Guid studentId, IFormFile file)
     {
         var student = await GetStudentById(studentId);
+        await uploadFileService.BeginTransactionAsync();
         UploadFileResponse uploadResponse;
         try
         {

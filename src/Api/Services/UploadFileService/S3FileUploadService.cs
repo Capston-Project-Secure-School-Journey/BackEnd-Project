@@ -324,4 +324,9 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         await UploadTransactionManager.RollbackAsync();
     }
+    
+    public async Task BeginTransactionAsync()
+    {
+        await UploadTransactionManager.BeginTransactionAsync();
+    }
 }

@@ -61,7 +61,6 @@ public class CreateApplicationNotificationJob(IServiceProvider serviceProvider) 
         catch (Exception e)
         {
             logger.LogError(e, "An error occured while creating application notification");
-            throw;
         }
     }
 

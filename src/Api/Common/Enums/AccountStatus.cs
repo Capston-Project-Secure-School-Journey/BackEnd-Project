@@ -4,5 +4,5 @@ public enum AccountStatus
 {
     New,
     Verified,
-    Deactive
+    DeActive
 }

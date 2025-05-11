@@ -66,12 +66,12 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
 
         builder.Property(s => s.PickUpLat)
             .HasColumnName("pick_up_lat")
-            .HasColumnType(Constants.Decimal(10, 6))
+            .HasColumnType(Constants.Double)
             .IsRequired();
 
         builder.Property(s => s.PickUpLng)
             .HasColumnName("pick_up_lng")
-            .HasColumnType(Constants.Decimal(10, 6))
+            .HasColumnType(Constants.Double)
             .IsRequired();
 
         builder.Property(s => s.LocationGroup)

@@ -31,6 +31,7 @@ public static class Constants
     public const string Json = "json";
     public const string Tinyint = "tinyint";
     public const string Float = "float";
+    public const string Double = "double";
     public const string Timestamp = "timestamp";
 
     // Helper methods

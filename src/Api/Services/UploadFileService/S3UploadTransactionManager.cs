@@ -17,6 +17,16 @@ public class UploadTransactionManager(IFileDeleter fileDeleter, ILogger<UploadTr
             }
     }
 
+    public Task BeginTransactionAsync()
+    {
+        lock (_lock)
+        {
+            _uploadedKeys.Clear();
+        }
+
+        return Task.CompletedTask;
+    }
+    
     public async Task RollbackAsync()
     {
         var tasks = new List<Task>();
