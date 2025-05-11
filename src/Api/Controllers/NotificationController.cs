@@ -12,7 +12,7 @@ public class NotificationController(INotificationService notificationService) : 
 {
     [HttpGet]
     [Authorize()]
-    public async Task<Pagination<Notification>> GetMyNotifications([FromQuery] int currentPage)
+    public async Task<Pagination<Notification>> GetMyNotifications([FromQuery] int currentPage = 0)
     {
         var userId = this.GetUserId();
         return await notificationService.GetNotifications(userId, currentPage);

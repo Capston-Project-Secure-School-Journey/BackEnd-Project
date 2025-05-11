@@ -79,7 +79,7 @@ public class SchoolManagementController : ControllerBase
     [Authorize(UserType.Admin)]
     [ValidateModel]
     public async Task<ActionResult> ChangeSchoolAdminPassword([FromRoute] Guid schoolId,
-        [FromForm] [PasswordStrength] string newPassword)
+        [FromBody] [PasswordStrength] string newPassword)
     {
         await _schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
         return Ok();
