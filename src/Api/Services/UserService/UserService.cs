@@ -73,6 +73,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
     public async Task<string> UpdateAvatar(Guid id, IFormFile file)
     {
         UploadFileResponse uploadResponse;
+        await uploadFileService.BeginTransactionAsync();
         try
         {
             var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);

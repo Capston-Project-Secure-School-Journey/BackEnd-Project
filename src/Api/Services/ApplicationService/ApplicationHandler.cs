@@ -7,6 +7,7 @@ using Api.Extensions;
 using Api.Jobs;
 using Api.Services.ApprovalProcessor;
 using Api.Services.UploadFileService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
 using Hangfire;
@@ -22,22 +23,32 @@ public class ApplicationHandler(
     IFileUploadService fileUploadService)
     : IApplicationHandler
 {
-    public async Task<List<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId, int currentPage, int pageSize)
+    public async Task<Pagination<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId,
+        GetDriverApprovalApplication request)
     {
-        var applications = await applicationService.GetApplicationsBySchool(schoolId);
-        var responses = applications.Pagination(currentPage, pageSize)
+        var queryable = await applicationService.GetApplicationsBySchool(schoolId, request.Status);
+        var count = await queryable.CountAsync();
+        var data = queryable
+            .Pagination(request.Page, request.Limit).AsEnumerable()
             .Select(mapper.Map<ApplicationResponse>)
             .ToList();
+        var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
 
         return responses;
     }
 
-    public async Task<List<ApplicationResponse>> GetApplicationsByDriver(Guid driverId, int currentPage, int pageSize)
+    public async Task<Pagination<ApplicationResponse>> GetApplicationsByDriver(Guid driverId,
+        GetDriverApprovalApplication request)
     {
-        var applications = await applicationService.GetApplicationsByDriver(driverId);
-        var responses = applications.Pagination(currentPage, 5)
+        var queryable = await applicationService.GetApplicationsByDriver(driverId, request.Status);
+        var count = await queryable.CountAsync();
+        var data = queryable.Pagination(request.Page, request.Limit)
+            .AsEnumerable()
             .Select(mapper.Map<ApplicationResponse>)
             .ToList();
+
+        var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
+
 
         return responses;
     }

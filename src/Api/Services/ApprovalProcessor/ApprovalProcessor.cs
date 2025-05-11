@@ -5,6 +5,7 @@ using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ApprovalProcessor;
 using Api.Extensions;
+using Api.Services.SchoolManagement;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,17 +13,19 @@ namespace Api.Services.ApprovalProcessor;
 
 public class ApprovalProcessor(
     Context context,
-    IFileUploadService fileUploadService) : IApprovalProcessor
+    IFileUploadService fileUploadService,
+    ISchoolManagement schoolManagement) : IApprovalProcessor
 {
     public async Task<DriverApprovalRequest> CreateApplication(Guid driverId, Guid schoolId)
     {
+        await schoolManagement.GetSchool(schoolId);
         var driver = await context
             .Drivers
             .FirstOrDefaultAsync(dr => dr.Id == driverId);
         ValidateDriverInfo(driver!);
         var isApplied = await context
             .DriverApprovalRequests
-            .Where(x => x.DriverId == driverId && x.SchoolId == schoolId)
+            .Where(x => x.DriverId == driverId)
             .Where(x => x.RequestStatus != RequestStatus.Rejected && x.RequestStatus != RequestStatus.Cancelled)
             .AnyAsync();
 

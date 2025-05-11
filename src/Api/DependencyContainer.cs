@@ -4,12 +4,14 @@ using Api.Services.AuthenticationService;
 using Api.Services.TokenService;
 using Api.Domain.ModelSettings;
 using Api.Extensions;
+using Api.Scheduling;
 using Api.Services.ApplicationService;
 using Api.Services.ApprovalProcessor;
 using Api.Services.ChildrenManagementService;
 using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
 using Api.Services.NotificationService;
+using Api.Services.PickupScheduleService;
 using Api.Services.ScheduleManagementService;
 using Api.Services.StudentManagementService;
 using Api.Services.TeacherManagementService;
@@ -31,6 +33,7 @@ public static class DependencyContainer
         services.AddSingleton<IAuthorizationChecker, AuthorizationChecker>();
         services.AddSingleton<IVerifiedEmailChecker, VerifiedEmailChecker>();
         services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
+        services.AddSingleton<IStudentGroupingAlgorithm, SimpleStudentGrouping>();
         services.AddSingleton<IMongoClient>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
@@ -81,6 +84,8 @@ public static class DependencyContainer
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<INotificationSender, NotificationFcmSender>();
 
+        services.AddScoped<IPickupScheduleService, PickupScheduleService>();
+        
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
         services.AddSingleton<ValidateModelAttribute>();

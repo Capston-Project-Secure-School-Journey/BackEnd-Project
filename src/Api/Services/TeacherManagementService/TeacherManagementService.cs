@@ -139,6 +139,7 @@ public class TeacherManagementService(
     public async Task<string> UploadAvatar(Guid teacherId, IFormFile file)
     {
         var teacher = await GetTeacherById(teacherId);
+        await uploadService.BeginTransactionAsync();
         UploadFileResponse uploadResponse;
         try
         {

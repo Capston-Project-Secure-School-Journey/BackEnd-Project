@@ -10,6 +10,6 @@ public class UpdateChildPickupLocationDto
     [MaxLength(1000, ErrorMessage = "Địa chỉ không quá 1000 không được quá 1000 ký tự.")]
     public string PickUpLocation { get; set; } = string.Empty;
 
-    [Required] public decimal PickUpLat { get; set; }
-    [Required] public decimal PickUpLng { get; set; }
+    [Required] public double PickUpLat { get; set; }
+    [Required] public double PickUpLng { get; set; }
 }

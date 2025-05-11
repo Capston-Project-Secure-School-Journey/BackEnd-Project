@@ -77,6 +77,7 @@ public static class ErrorMessages
     public const string GeneratePreSignUploadUrlError = "Error generating pre-signed upload URL";
     public const string FileUploadError = "Error uploading file";
     public const string NotificationSendFailure = "Failed to send notification";
+    public const string DeviceTokenCannotBeEmpty = "Device token cannot be empty";
     private const string FileTooLargeLimitFormat = "File quá lớn. Yêu cầu file nhỏ hơn {0}Mb";
 
     public static string FileTooLargeLimit(int size)

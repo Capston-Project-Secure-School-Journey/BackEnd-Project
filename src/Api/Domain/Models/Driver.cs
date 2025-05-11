@@ -12,12 +12,13 @@ public class Driver : User
     public DateTime? LastCheckDrivingLicense { get; set; }
     public List<DriverInformationImage> DriverInformationImages { get; set; }
     public List<FileMetadata> VehicleImages { get; set; }
-
+    public HashSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
     public Driver()
     {
         DriverInformationImages = [];
         VehicleImages = [];
         VerifiedBy = [];
+        DriverApprovalRequests = [];
     }
 }
 
