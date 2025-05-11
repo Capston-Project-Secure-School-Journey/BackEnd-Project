@@ -7,6 +7,7 @@ using Api.Extensions;
 using Api.Jobs;
 using Api.Services.ApprovalProcessor;
 using Api.Services.UploadFileService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
 using Hangfire;
@@ -22,20 +23,20 @@ public class ApplicationHandler(
     IFileUploadService fileUploadService)
     : IApplicationHandler
 {
-    public async Task<List<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId, int currentPage, int pageSize)
+    public async Task<List<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId, GetDriverApprovalApplication request)
     {
-        var applications = await applicationService.GetApplicationsBySchool(schoolId);
-        var responses = applications.Pagination(currentPage, pageSize)
+        var applications = await applicationService.GetApplicationsBySchool(schoolId, request.Status);
+        var responses = applications.Pagination(request.Page, request.Limit)
             .Select(mapper.Map<ApplicationResponse>)
             .ToList();
 
         return responses;
     }
 
-    public async Task<List<ApplicationResponse>> GetApplicationsByDriver(Guid driverId, int currentPage, int pageSize)
+    public async Task<List<ApplicationResponse>> GetApplicationsByDriver(Guid driverId, GetDriverApprovalApplication request)
     {
-        var applications = await applicationService.GetApplicationsByDriver(driverId);
-        var responses = applications.Pagination(currentPage, 5)
+        var applications = await applicationService.GetApplicationsByDriver(driverId, request.Status);
+        var responses = applications.Pagination(request.Page, request.Limit)
             .Select(mapper.Map<ApplicationResponse>)
             .ToList();
 
