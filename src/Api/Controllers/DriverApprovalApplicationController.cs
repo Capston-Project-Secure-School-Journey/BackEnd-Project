@@ -35,7 +35,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpGet]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
-    public async Task<List<ApplicationResponse>> GetApplications([FromQuery] int currentPage, [FromQuery] int pageSize)
+    public async Task<List<ApplicationResponse>> GetApplications([FromQuery] int currentPage = 0, [FromQuery] int pageSize = 15)
     {
         var userId = this.GetUserId();
         var userType = this.GetUserType();
@@ -67,7 +67,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     [HttpPost]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
-    public async Task<ApplicationResponse> CreateApplication([FromForm] Guid schoolId)
+    public async Task<ApplicationResponse> CreateApplication([FromBody] Guid schoolId)
     {
         var userId = this.GetUserId();
         return await _applicationHandler.CreateApplication(userId, schoolId);
@@ -94,7 +94,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpDelete("{applicationId}")]
     [Authorize(UserType.Driver)]
-    [CheckVerifiedEmail]
+    // [CheckVerifiedEmail]
     public async Task<ActionResult> DeleteApplication([FromRoute] Guid applicationId)
     {
         var userId = this.GetUserId();
@@ -104,7 +104,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/reject")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> RejectApplication([FromRoute] Guid applicationId, [FromForm] string reason)
+    public async Task<ActionResult> RejectApplication([FromRoute] Guid applicationId, [FromBody] string reason)
     {
         var userId = this.GetUserId();
         await _applicationHandler.RejectApplication(applicationId, userId, reason);
@@ -113,7 +113,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/approve")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> ApproveApplication([FromRoute] Guid applicationId, [FromForm] string reason)
+    public async Task<ActionResult> ApproveApplication([FromRoute] Guid applicationId, [FromBody] string reason)
     {
         var userId = this.GetUserId();
         await _applicationHandler.ApproveApplication(applicationId, userId);
@@ -122,7 +122,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/request-more-info")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> RequestMoreInfo([FromRoute] Guid applicationId, [FromForm] string reason)
+    public async Task<ActionResult> RequestMoreInfo([FromRoute] Guid applicationId, [FromBody] string reason)
     {
         var userId = this.GetUserId();
         await _applicationHandler.RequireAdditionalDetails(applicationId, userId, reason);
@@ -131,7 +131,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/cancel")]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
-    public async Task<ActionResult> CancelApplication([FromRoute] Guid applicationId, [FromForm] string reason)
+    public async Task<ActionResult> CancelApplication([FromRoute] Guid applicationId, [FromBody] string reason)
     {
         var userId = this.GetUserId();
         var userType = this.GetUserType();

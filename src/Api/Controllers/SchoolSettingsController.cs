@@ -17,7 +17,7 @@ public class SchoolSettingsController(Context context) : ControllerBase
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult> SetSchoolStartDate([FromRoute] Guid schoolId,
-        [FromForm] DateOnly date)
+        [FromBody] DateOnly date)
     {
         if (this.GetSchoolId() != schoolId)
             throw new ForbiddenException(ErrorMessages.AccessDenied);
