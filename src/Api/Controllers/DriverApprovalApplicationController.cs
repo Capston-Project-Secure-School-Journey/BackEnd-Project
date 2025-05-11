@@ -54,7 +54,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpGet("{applicationId}/action-can-do")]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
-    public async Task<List<ApplicationActionDto>> GetApplications([FromRoute] Guid applicationId)
+    public async Task<List<ApplicationActionDto>> GetActionsCanDo([FromRoute] Guid applicationId)
     {
         var userId = this.GetUserId();
         var userType = this.GetUserType();
