@@ -8,8 +8,6 @@ public class PickupSchedule
     public Guid SchoolId { get; set; }
     public string SchoolName { get; set; } = string.Empty;
     public SessionType SessionType { get; set; }
-    public Guid ClassId { get; set; }
-    public string ClassName { get; set; } = string.Empty;
     public DateOnly Date { get; set; }
     public Guid DriverId { get; set; }
     public string DriverName { get; set; } = string.Empty;

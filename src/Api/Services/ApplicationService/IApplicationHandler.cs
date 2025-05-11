@@ -1,12 +1,13 @@
 using Api.DTOs.ApprovalProcessor;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 
 namespace Api.Services.ApplicationService;
 
 public interface IApplicationHandler
 {
-    Task<List<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId, int currentPage, int pageSize);
-    Task<List<ApplicationResponse>> GetApplicationsByDriver(Guid driverId, int currentPage, int pageSize);
+    Task<Pagination<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId, GetDriverApprovalApplication request);
+    Task<Pagination<ApplicationResponse>> GetApplicationsByDriver(Guid driverId, GetDriverApprovalApplication request);
     Task<ApplicationResponse> GetApplication(Guid applicationId);
     Task<ApplicationResponse> CreateApplication(Guid driverId, Guid schoolId);
     Task<ApplicationResponse> UpdateApplication(Guid applicationId, Guid driverId);

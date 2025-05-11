@@ -15,8 +15,8 @@ public class Student : BaseModel
     public Guid? AvatarKey { get; set; }
     public Guid? QrImageKey { get; set; }
     public string PickUpLocation { get; set; } = string.Empty;
-    public decimal PickUpLat { get; set; }
-    public decimal PickUpLng { get; set; }
+    public double PickUpLat { get; set; }
+    public double PickUpLng { get; set; }
     public DateTime? LastTimeUpdatedPickupLocation { get; set; }
     public int? LocationGroup { get; set; }
     public List<ManagedBy> ManagedBy { get; set; } = [];

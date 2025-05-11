@@ -5,10 +5,10 @@ namespace Api.Domain.Models;
 public class StudentOnBus
 {
     public Guid StudentId { get; set; }
-    public Guid ParentId { get; set; }
+    public List<ManagedBy> Parents { get; set; } = [];
     public string PickupAddress { get; set; } = string.Empty;
-    public decimal PickupLat { get; set; }
-    public decimal PickupLng { get; set; }
+    public double PickupLat { get; set; }
+    public double PickupLng { get; set; }
     public Gender Gender { get; set; }
     public string AvatarUrl { get; set; } = string.Empty;
     public string ClassName { get; set; } = string.Empty;

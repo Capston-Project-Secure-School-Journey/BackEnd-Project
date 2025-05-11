@@ -21,8 +21,8 @@ public class ClassManagementHandler(
         var total = await query.CountAsync();
 
         var data = await query
-            .Select(x => mapper.Map<ClassResponse>(x))
             .OrderBy(x => x.Grade)
+            .Select(x => mapper.Map<ClassResponse>(x))
             .Pagination(request.Page, request.Limit)
             .ToListAsync();
 

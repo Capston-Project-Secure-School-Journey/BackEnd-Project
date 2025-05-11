@@ -16,4 +16,5 @@ public interface IFileUploadService
     Task<string> GeneratePreSignedDownloadUrlAsync(Guid fileManagementKey, int expirationMinutes = 60);
     Task<UploadFileResponse> CopyObjectAsync(Guid id, string prefix);
     Task RollBackAsync();
+    Task BeginTransactionAsync();
 }

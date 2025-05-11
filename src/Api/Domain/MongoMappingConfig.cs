@@ -32,13 +32,6 @@ public static class MongoMappingConfig
                     .SetSerializer(new EnumSerializer<SessionType>(BsonType.String))
                     .SetElementName("sessionType");
 
-                cm.MapMember(x => x.ClassId)
-                    .SetSerializer(new GuidSerializer(BsonType.String))
-                    .SetElementName("classId");
-
-                cm.MapMember(x => x.ClassName)
-                    .SetElementName("className");
-
                 cm.MapMember(x => x.Date)
                     .SetElementName("date")
                     .SetSerializer(new DateOnlySerializer());
@@ -95,9 +88,8 @@ public static class MongoMappingConfig
                         .SetElementName("studentId")
                         .SetSerializer(new GuidSerializer(BsonType.String));
 
-                    cm.MapMember(x => x.ParentId)
-                        .SetElementName("parentId")
-                        .SetSerializer(new GuidSerializer(BsonType.String));
+                    cm.MapMember(x => x.Parents)
+                        .SetElementName("parents");
 
                     cm.MapMember(x => x.PickupAddress)
                         .SetElementName("pickupAddress");

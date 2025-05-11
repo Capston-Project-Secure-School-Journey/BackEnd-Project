@@ -2,10 +2,11 @@ using System.Linq.Expressions;
 using Api.Domain.Models;
 using Api.Extensions;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace Api.Domain;
 
-public class Context(DbContextOptions options) : DbContext(options)
+public class Context(DbContextOptions options, IMongoDatabase mongoDatabase) : DbContext(options)
 {
     public bool BypassSoftDelete { get; set; } = false;
     public DbSet<User> Users { get; set; }
@@ -25,7 +26,7 @@ public class Context(DbContextOptions options) : DbContext(options)
     public DbSet<SystemVariable> SystemVariables { get; set; }
     public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
     public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
-
+    public IMongoDatabase MongoDatabase => mongoDatabase;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Context).Assembly);

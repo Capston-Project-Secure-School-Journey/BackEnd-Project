@@ -2,6 +2,7 @@ using Api.Attributes;
 using Api.Common.Enums;
 using Api.DTOs.ApprovalProcessor;
 using Api.Services.ApplicationService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,19 +36,19 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpGet]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
-    public async Task<List<ApplicationResponse>> GetApplications([FromQuery] int currentPage = 0, [FromQuery] int pageSize = 15)
+    public async Task<Pagination<ApplicationResponse>> GetApplications([FromQuery] GetDriverApprovalApplication request)
     {
         var userId = this.GetUserId();
         var userType = this.GetUserType();
 
         if (userType == UserType.Driver)
         {
-            return await _applicationHandler.GetApplicationsByDriver(userId, currentPage, pageSize);
+            return await _applicationHandler.GetApplicationsByDriver(userId, request);
         }
         else
         {
             var schoolId = this.GetSchoolId();
-            return await _applicationHandler.GetApplicationsBySchool(schoolId, currentPage, pageSize);
+            return await _applicationHandler.GetApplicationsBySchool(schoolId, request);
         }
     }
 

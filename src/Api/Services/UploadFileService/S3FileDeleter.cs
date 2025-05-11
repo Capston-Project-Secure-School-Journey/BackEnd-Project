@@ -33,7 +33,7 @@ public class S3FileDeleter : IFileDeleter
     {
         try
         {
-            if (await FileExist(key))
+            if (!await FileExist(key))
                 return false;
             var deleteRequest = new DeleteObjectRequest
             {

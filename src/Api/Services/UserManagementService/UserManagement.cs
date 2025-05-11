@@ -122,7 +122,7 @@ public class UserManagement(Context context) : IUserManagement
             throw new NotFoundException(ErrorMessages.AccountNotExist);
 
 
-        schoolAdmin.AccountStatus = AccountStatus.Deactive;
+        schoolAdmin.AccountStatus = AccountStatus.DeActive;
 
         context.SchoolPersons.Remove(schoolAdmin);
         await context.SaveChangesAsync();

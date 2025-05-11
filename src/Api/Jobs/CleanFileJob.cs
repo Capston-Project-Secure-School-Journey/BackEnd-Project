@@ -53,7 +53,6 @@ public class CleanFileJob(
             logger.LogError(e, "Clean files failed");
             if (trans != null)
                 await trans.DisposeAsync();
-            throw;
         }
     }
 }

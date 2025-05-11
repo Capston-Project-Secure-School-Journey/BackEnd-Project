@@ -23,5 +23,7 @@ public static class JobRegister
             job => job.ExecuteAsync(),
             "35 2 * * *",
             options);
+        
+        // BackgroundJob.Enqueue<CreatePickupScheduleJob>(job => job.ExecuteAsync(new Guid("08dd51bb-21d2-4413-83df-5482d1645010")));
     }
 }
