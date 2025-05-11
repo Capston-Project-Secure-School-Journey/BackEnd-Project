@@ -10,24 +10,26 @@ namespace Api.Services.ApplicationService;
 public class ApplicationService(
     Context context) : IApplicationService
 {
-    public Task<List<DriverApprovalRequest>> GetApplicationsBySchool(Guid schoolId)
+    public Task<List<DriverApprovalRequest>> GetApplicationsBySchool(Guid schoolId, RequestStatus? status)
     {
         var applications = context
             .DriverApprovalRequests
             .AsNoTracking()
             .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created)
+            .Where(x => status == null || x.RequestStatus == status.Value)
             .OrderBy(x => x.RequestedDate)
             .ToList();
 
         return Task.FromResult(applications);
     }
 
-    public Task<List<DriverApprovalRequest>> GetApplicationsByDriver(Guid driverId)
+    public Task<List<DriverApprovalRequest>> GetApplicationsByDriver(Guid driverId, RequestStatus? status)
     {
         var applications = context
             .DriverApprovalRequests
             .AsNoTracking()
             .Where(x => x.DriverId == driverId)
+            .Where(x => status == null || x.RequestStatus == status.Value)
             .OrderBy(x => x.RequestedDate)
             .ToList();
 
