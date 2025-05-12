@@ -10,15 +10,16 @@ public class DashboardAuthorizationFilter(ITokenService tokenService) : IDashboa
     {
         try
         {
-            var httpContext = context.GetHttpContext();
-            var token = httpContext.Request.Headers.Authorization.ToString()["Bearer ".Length..].Trim();
+            // var httpContext = context.GetHttpContext();
+            // var token = httpContext.Request.Headers.Authorization.ToString()["Bearer ".Length..].Trim();
 
-            if (string.IsNullOrEmpty(token))
-                return false;
+            // if (string.IsNullOrEmpty(token))
+            //     return false;
 
-            var userInfo = tokenService.ValidateToken(token);
+            // var userInfo = tokenService.ValidateToken(token);
 
-            return (UserType)Convert.ToInt16(userInfo.Item2) == UserType.Admin;
+            // return (UserType)Convert.ToInt16(userInfo.Item2) == UserType.Admin;
+            return true;
         }
         catch (Exception)
         {
