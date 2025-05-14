@@ -22,8 +22,8 @@ public class TeacherManagementHandler(
         var total = await query.CountAsync();
 
         var data = await query
-            .Pagination(request.Page, request.Limit)
             .OrderBy(t => t.FullName)
+            .Pagination(request.Page, request.Limit)
             .Select(x => mapper.Map<TeacherResponse>(x))
             .ToListAsync();
         var response = new Pagination<TeacherResponse>(data, request.Limit, request.Page, total);
