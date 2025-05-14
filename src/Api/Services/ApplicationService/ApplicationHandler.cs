@@ -29,7 +29,8 @@ public class ApplicationHandler(
         var queryable = await applicationService.GetApplicationsBySchool(schoolId, request.Status);
         var count = await queryable.CountAsync();
         var data = queryable
-            .Pagination(request.Page, request.Limit).AsEnumerable()
+            .Pagination(request.Page, request.Limit)
+            .AsEnumerable()
             .Select(mapper.Map<ApplicationResponse>)
             .ToList();
         var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
