@@ -3,7 +3,7 @@ using Api.Domain.Models;
 
 namespace Api.DTOs.PickupScheduleService;
 
-public class CreatePickupScheduleServiceDto
+public class CreatePickupScheduleDto
 {
     public Guid DriverId { get; set; }
     public List<Student> Students { get; set; } = [];
