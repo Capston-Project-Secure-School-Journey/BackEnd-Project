@@ -63,10 +63,11 @@ public class CreatePickupScheduleJob(
             foreach (var key in studentsPerSession.Keys)
             {
                 var groups = groupingAlgorithm.AllocateStudentsToBuses(studentsPerSession[key], ref drivers);
-                
+
+                var requests = new List<CreatePickupScheduleDto>();
                 foreach (var group in groups)
                 {
-                    var dto = new CreatePickupScheduleServiceDto()
+                    var dto = new CreatePickupScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
@@ -74,9 +75,9 @@ public class CreatePickupScheduleJob(
                         SessionType = key.Item2,
                         Students = group.Value
                     };
-
-                    await pickupScheduleService.AddPickupSchedule(dto);
+                    requests.Add(dto);
                 }
+                await pickupScheduleService.AddPickupSchedule(requests);
             }
 
             logger.LogInformation("CreatePickupScheduleJob successfully");
