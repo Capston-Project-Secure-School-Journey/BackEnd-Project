@@ -13,21 +13,14 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("schools")]
-public class SchoolManagementController : ControllerBase
+public class SchoolManagementController(ISchoolManagementHandler schoolManagementHandler) : ControllerBase
 {
-    private readonly ISchoolManagementHandler _schoolManagementHandler;
-
-    public SchoolManagementController(ISchoolManagementHandler schoolManagementHandler)
-    {
-        _schoolManagementHandler = schoolManagementHandler;
-    }
-
     [HttpPost]
     [Authorize(UserType.Admin)]
     [ValidateModel]
     public async Task<ActionResult<SchoolDetailResponse>> CreateSchool([FromBody] CreateSchoolRequest request)
     {
-        return await _schoolManagementHandler.CreateSchool(request);
+        return await schoolManagementHandler.CreateSchool(request);
     }
 
     [HttpPut("{schoolId}")]
@@ -36,7 +29,7 @@ public class SchoolManagementController : ControllerBase
     public async Task<ActionResult<SchoolDetailResponse>> UpdateSchool([FromRoute] Guid schoolId,
         [FromBody] UpdateSchoolRequest request)
     {
-        return await _schoolManagementHandler.UpdateSchool(schoolId, request,
+        return await schoolManagementHandler.UpdateSchool(schoolId, request,
             this.GetUserId(),
             this.GetUserType());
     }
@@ -45,7 +38,7 @@ public class SchoolManagementController : ControllerBase
     [Authorize(UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromRoute] Guid schoolId)
     {
-        await _schoolManagementHandler.DeleteSchool(schoolId);
+        await schoolManagementHandler.DeleteSchool(schoolId);
         return Ok();
     }
 
@@ -53,7 +46,7 @@ public class SchoolManagementController : ControllerBase
     [Authorize(UserType.Admin)]
     public async Task<IActionResult> DeleteSchool([FromBody] List<Guid> schoolIds)
     {
-        await _schoolManagementHandler.DeleteSchool(schoolIds);
+        await schoolManagementHandler.DeleteSchool(schoolIds);
         return Ok();
     }
 
@@ -62,7 +55,7 @@ public class SchoolManagementController : ControllerBase
     [Authorize(UserType.Admin)]
     public async Task<Pagination<SchoolResponse>> GetSchools([FromQuery] GetSchoolRequest request)
     {
-        return await _schoolManagementHandler.GetSchools(request);
+        return await schoolManagementHandler.GetSchools(request);
     }
 
     [HttpGet("{schoolId}")]
@@ -72,7 +65,7 @@ public class SchoolManagementController : ControllerBase
         var userType = this.GetUserType();
         if (userType == UserType.SchoolAdmin && this.GetSchoolId() != schoolId)
             throw new ForbiddenException(ErrorMessages.AccessDenied);
-        return await _schoolManagementHandler.GetSchool(schoolId);
+        return await schoolManagementHandler.GetSchool(schoolId);
     }
 
     [HttpPost("{schoolId}/change-school-admin-password")]
@@ -81,7 +74,7 @@ public class SchoolManagementController : ControllerBase
     public async Task<ActionResult> ChangeSchoolAdminPassword([FromRoute] Guid schoolId,
         [FromBody] [PasswordStrength] string newPassword)
     {
-        await _schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
+        await schoolManagementHandler.ChangeSchoolAdminPassword(schoolId, newPassword);
         return Ok();
     }
 
@@ -108,7 +101,7 @@ public class SchoolManagementController : ControllerBase
 
         if (!acceptContentType.Contains(contentType)) throw new BadRequestException(ErrorMessages.InvalidFileType);
 
-        return await _schoolManagementHandler.GetPreSignedUploadImage(this.GetUserId(),
+        return await schoolManagementHandler.GetPreSignedUploadImage(this.GetUserId(),
             schoolId,
             fileName,
             contentType,
