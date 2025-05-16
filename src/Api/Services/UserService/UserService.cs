@@ -133,7 +133,20 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
         var user = await context.Drivers.FirstOrDefaultAsync(x => x.Id == userId);
         if (user == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
+        
+        var oldUser = await context.Users
+            .FirstOrDefaultAsync(u => EF.Functions.JsonContains(u.DeviceTokens, $"[\"{deviceToken}\"]"));
 
+        if (oldUser != null)
+        {
+            oldUser.DeviceTokens = oldUser.DeviceTokens
+                .Where(t => t != deviceToken)
+                .ToArray();;
+            
+            context.Users.Update(oldUser);
+            await context.SaveChangesAsync();
+        }
+        
         if (!user.DeviceTokens.Contains(deviceToken))
         {
             user.DeviceTokens = user.DeviceTokens.Append(deviceToken).ToArray();

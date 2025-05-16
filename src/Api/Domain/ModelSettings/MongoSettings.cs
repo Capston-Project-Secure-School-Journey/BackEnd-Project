@@ -2,6 +2,6 @@ namespace Api.Domain.ModelSettings;
 
 public class MongoSettings
 {
-    public string ConnectionString { get; set; } = default!;
-    public string DatabaseName { get; set; } = default!;
+    public string ConnectionString { get; set; } = null!;
+    public string DatabaseName { get; set; } = null!;
 }

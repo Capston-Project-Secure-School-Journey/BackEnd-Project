@@ -114,7 +114,7 @@ public class AlertInsufficientDriversJob(
         writer.WriteLine("DriverId,FullName,SeatingCapacity");
 
         foreach (var d in drivers)
-            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver.FirstName + d.Driver.LastName)},{d.SeatingCapacity}");
+            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver?.FirstName + d.Driver?.LastName)},{d.SeatingCapacity}");
 
         writer.WriteLine($"Số lượng xe hiện tại:,{drivers.Count}");
         writer.WriteLine($"Số chỗ ngồi hiện tại:,{drivers.Sum(x => x.SeatingCapacity)}");

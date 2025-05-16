@@ -17,8 +17,9 @@ public class DriverApprovalRequest
     public DateTime? LastCheckDrivingLicense { get; set; }
     public List<DriverInformationImage> DriverInformationImages { get; set; }
     public List<FileMetadata> VehicleImages { get; set; }
-    public Driver Driver { get; set; } = null!;
+    public Driver? Driver { get; set; }
     public HashSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
+    public School? School { get; set; }
 
     public DriverApprovalRequest()
     {
