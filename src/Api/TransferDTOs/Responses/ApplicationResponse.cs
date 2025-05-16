@@ -6,9 +6,11 @@ public class ApplicationResponse
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
+    public string SchoolName { get; set; } = string.Empty;
     public DateTime RequestedDate { get; set; }
     public string MotivationLetter { get; set; } = string.Empty;
     public Guid DriverId { get; set; }
+    public string DriverName { get; set; } = string.Empty;
     public RequestStatus RequestStatus { get; set; }
     public Guid? ApprovedBy { get; set; }
     public string VehicleType { get; set; } = string.Empty;

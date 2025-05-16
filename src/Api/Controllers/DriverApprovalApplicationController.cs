@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.DTOs.ApprovalProcessor;
@@ -105,16 +106,18 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/reject")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> RejectApplication([FromRoute] Guid applicationId, [FromBody] string reason)
+    [ValidateModel]
+    public async Task<ActionResult> RejectApplication([FromRoute] Guid applicationId, [FromBody] RejectApplicationRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.RejectApplication(applicationId, userId, reason);
+        await _applicationHandler.RejectApplication(applicationId, userId, request.Reason);
         return Ok();
     }
 
     [HttpPut("{applicationId}/approve")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> ApproveApplication([FromRoute] Guid applicationId, [FromBody] string reason)
+    [ValidateModel]
+    public async Task<ActionResult> ApproveApplication([FromRoute] Guid applicationId, [FromBody] ApproveApplicationRequest request)
     {
         var userId = this.GetUserId();
         await _applicationHandler.ApproveApplication(applicationId, userId);
@@ -123,23 +126,25 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
     [HttpPut("{applicationId}/request-more-info")]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<ActionResult> RequestMoreInfo([FromRoute] Guid applicationId, [FromBody] string reason)
+    [ValidateModel]
+    public async Task<ActionResult> RequestMoreInfo([FromRoute] Guid applicationId, [FromBody] RequestMoreInfoRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.RequireAdditionalDetails(applicationId, userId, reason);
+        await _applicationHandler.RequireAdditionalDetails(applicationId, userId, request.Reason);
         return Ok();
     }
 
     [HttpPut("{applicationId}/cancel")]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
-    public async Task<ActionResult> CancelApplication([FromRoute] Guid applicationId, [FromBody] string reason)
+    [ValidateModel]
+    public async Task<ActionResult> CancelApplication([FromRoute] Guid applicationId, [FromBody] CancelApplicationRequest request)
     {
         var userId = this.GetUserId();
         var userType = this.GetUserType();
         if (userType == UserType.Driver)
-            await _applicationHandler.CancelApplicationByDriver(applicationId, userId, reason);
+            await _applicationHandler.CancelApplicationByDriver(applicationId, userId, request.Reason);
         else
-            await _applicationHandler.CancelApplicationByReviewer(applicationId, userId, reason);
+            await _applicationHandler.CancelApplicationByReviewer(applicationId, userId, request.Reason);
         return Ok();
     }
 }
