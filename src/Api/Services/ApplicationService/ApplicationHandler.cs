@@ -152,7 +152,7 @@ public class ApplicationHandler(
 
         if (!entity.Collection<DriverRequestStatusHistory>(x => x.DriverRequestStatusHistories).IsLoaded)
             await entity.Collection<DriverRequestStatusHistory>(x => x.DriverRequestStatusHistories).LoadAsync();
-
+        
         var response = mapper.Map<ApplicationResponse>(request);
         foreach (var file in request.VehicleImages)
         {
