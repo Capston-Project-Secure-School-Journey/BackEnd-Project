@@ -66,15 +66,24 @@ public class CreatePickupScheduleJob(
 
                 foreach (var group in groups)
                 {
-                    var dto = new CreatePickupScheduleDto()
+                    requests.Add(new CreatePickupScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
                         SchoolId = schoolId,
                         SessionType = key.Item2,
-                        Students = group.Value
-                    };
-                    requests.Add(dto);
+                        Students = group.Value,
+                        Type = PickupScheduleType.PickUp,
+                    });
+                    requests.Add(new CreatePickupScheduleDto()
+                    {
+                        DriverId = group.Key.Id,
+                        Date = key.Item1,
+                        SchoolId = schoolId,
+                        SessionType = key.Item2,
+                        Students = group.Value,
+                        Type = PickupScheduleType.DropOff,
+                    });
                 }
             }
             await pickupScheduleService.AddPickupSchedule(requests);

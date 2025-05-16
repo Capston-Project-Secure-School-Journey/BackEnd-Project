@@ -12,7 +12,8 @@ namespace Api.Services.SchoolManagement;
 
 public class SchoolManagement(
     Context dbContext,
-    IFileUploadService fileUploadService)
+    IFileUploadService fileUploadService,
+    GoogleMapsService googleMapsService)
     : ISchoolManagement
 {
     private async Task<School> GetById(Guid id)
@@ -26,6 +27,7 @@ public class SchoolManagement(
 
     public async Task<School> CreateSchool(CreateSchoolDto data)
     {
+        ValidateSchoolTime(data.MorningStartTime, data.MorningEndTime, data.AfternoonStartTime, data.AfternoonEndTime);
         var school = new School
         {
             SchoolType = data.SchoolType,
@@ -40,6 +42,13 @@ public class SchoolManagement(
             PhoneNumber = data.PhoneNumber
         };
 
+        if (string.IsNullOrEmpty(data.Address))
+        {
+            var address = await googleMapsService.GetLatLngFromAddressAsync(data.Address);
+            school.AddressLat = address.lat;
+            school.AddressLng = address.lng;
+        }
+
         await dbContext.Schools.AddAsync(school);
         await dbContext.SaveChangesAsync();
 
@@ -49,7 +58,8 @@ public class SchoolManagement(
     public async Task<School> UpdateSchool(UpdateSchoolDto data)
     {
         var school = await GetById(data.Id);
-
+        ValidateSchoolTime(data.MorningStartTime, data.MorningEndTime, data.AfternoonStartTime, data.AfternoonEndTime);
+        
         school.SchoolType = data.SchoolType;
         school.SchoolName = data.SchoolName;
         school.SchoolDescription = data.SchoolDescription;
@@ -62,6 +72,14 @@ public class SchoolManagement(
         school.PhoneNumber = data.PhoneNumber;
         school.Images =
             await RefreshUploadedFileList.RefreshUploadedFiles(school.Images, data.ImageKeys, fileUploadService);
+
+        if (string.IsNullOrEmpty(data.Address))
+        {
+            var address = await googleMapsService.GetLatLngFromAddressAsync(data.Address);
+            school.AddressLat = address.lat;
+            school.AddressLng = address.lng;
+        }
+
         dbContext.Schools.Update(school);
         await dbContext.SaveChangesAsync();
         return school;
@@ -117,5 +135,12 @@ public class SchoolManagement(
     {
         var school = await GetById(schoolId);
         return school;
+    }
+
+    private static void ValidateSchoolTime(TimeSpan morningStartTime, TimeSpan morningEndTime,
+        TimeSpan afternoonStartTime, TimeSpan afternoonEndTime)
+    {
+        if (morningStartTime >= morningEndTime || afternoonStartTime >= afternoonEndTime)
+            throw new BadRequestException("Thời gian bắt đầu giờ học đang lớn hơn thời gian kết thúc học.");
     }
 }
