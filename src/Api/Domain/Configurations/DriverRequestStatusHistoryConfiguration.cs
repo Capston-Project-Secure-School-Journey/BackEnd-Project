@@ -39,6 +39,6 @@ public class DriverRequestStatusHistoryConfiguration : IEntityTypeConfiguration<
         builder.Property(u => u.Note)
             .HasColumnName("note")
             .HasColumnType(Constants.Nvarchar(1000))
-            .IsRequired();
+            .IsRequired(false);
     }
 }

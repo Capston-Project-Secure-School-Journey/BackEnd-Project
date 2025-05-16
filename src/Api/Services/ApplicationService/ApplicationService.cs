@@ -14,6 +14,8 @@ public class ApplicationService(
     {
         var applications = context
             .DriverApprovalRequests
+            .Include(x => x.School)
+            .Include(x => x.Driver)
             .AsNoTracking()
             .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created)
             .Where(x => status == null || x.RequestStatus == status.Value)
@@ -27,6 +29,8 @@ public class ApplicationService(
     {
         var applications = context
             .DriverApprovalRequests
+            .Include(x => x.School)
+            .Include(x => x.Driver)
             .AsNoTracking()
             .Where(x => x.DriverId == driverId)
             .Where(x => status == null || x.RequestStatus == status.Value)
@@ -40,6 +44,8 @@ public class ApplicationService(
     {
         var applications = await context
             .DriverApprovalRequests
+            .Include(x => x.School)
+            .Include(x => x.Driver)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == applicationId);
 

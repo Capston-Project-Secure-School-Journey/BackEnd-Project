@@ -39,7 +39,7 @@ public class SimpleStudentGrouping : IStudentGroupingAlgorithm
             var assignedIds = distances.Select(x => x.Student.Id).ToList();
             remaining = remaining.Where(s => !assignedIds.Contains(s.Id)).ToList();
 
-            driveList[busId].Used += 1;
+            driveList[busId].Used += distances.Count;
             flag = (flag + 1) % 4;
         }
 

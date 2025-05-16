@@ -59,12 +59,11 @@ public class CreatePickupScheduleJob(
 
             var studentsPerSession = await GroupStudentsBySessionAsync(schedules, db, schoolId);
 
-
+            var requests = new List<CreatePickupScheduleDto>();
             foreach (var key in studentsPerSession.Keys)
             {
                 var groups = groupingAlgorithm.AllocateStudentsToBuses(studentsPerSession[key], ref drivers);
 
-                var requests = new List<CreatePickupScheduleDto>();
                 foreach (var group in groups)
                 {
                     var dto = new CreatePickupScheduleDto()
@@ -77,9 +76,9 @@ public class CreatePickupScheduleJob(
                     };
                     requests.Add(dto);
                 }
-                await pickupScheduleService.AddPickupSchedule(requests);
             }
-
+            await pickupScheduleService.AddPickupSchedule(requests);
+            
             logger.LogInformation("CreatePickupScheduleJob successfully");
         }
         catch (Exception e)
