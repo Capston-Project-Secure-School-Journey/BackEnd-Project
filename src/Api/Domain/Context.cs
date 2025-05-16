@@ -27,6 +27,7 @@ public class Context(DbContextOptions options, IMongoDatabase mongoDatabase) : D
     public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
     public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
     public IMongoDatabase MongoDatabase => mongoDatabase;
+    public const string MongoCollectionName = "pickup_schedules";
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Context).Assembly);
