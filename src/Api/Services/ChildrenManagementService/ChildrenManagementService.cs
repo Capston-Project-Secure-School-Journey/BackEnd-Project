@@ -98,7 +98,7 @@ public class ChildrenManagementService(
                 @"SELECT * FROM users 
                   WHERE discriminator = 'parent' 
                     and IsDeleted = 0 
-                    and  JSON_CONTAINS(RelationshipWithStudents, JSON_OBJECT('StudentId', {0}))",
+                    and  JSON_CONTAINS(relationship_with_students, JSON_OBJECT('StudentId', {0}))",
                 student.Id)
             .AnyAsync();
 
