@@ -2,7 +2,6 @@ using Api.Common.Enums;
 using Api.Domain.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
 
 namespace Api.Domain;
@@ -70,10 +69,7 @@ public static class MongoMappingConfig
                     .SetElementName("numberOfCurrentStudents");
 
                 cm.MapMember(x => x.BestRoute)
-                    .SetElementName("bestRoute")
-                    .SetSerializer(
-                        new DictionaryInterfaceImplementerSerializer<Dictionary<string, string>>(
-                            DictionaryRepresentation.Document));
+                    .SetElementName("bestRoute");
 
                 cm.MapMember(x => x.Students)
                     .SetElementName("students");

@@ -4,6 +4,8 @@ using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.PickupScheduleService;
+using Api.Scheduling;
+using Api.Services.SchoolManagement;
 using Api.Services.UploadFileService;
 using Api.Services.UserService;
 using Api.TransferDTOs.Responses;
@@ -16,12 +18,15 @@ public class PickupScheduleService(
     Context context,
     IUserService userService,
     IFileUploadService fileUploadService,
-    IMapper mapper) : IPickupScheduleService
+    IMapper mapper,
+    ISchoolManagement schoolManagement,
+    GoogleMapsService googleMapsService) : IPickupScheduleService
 {
     public async Task<PickupSchedule> AddPickupSchedule(CreatePickupScheduleDto request)
     {
         var pickupSchedule = await CreatePickupScheduleFromDto(request);
-        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>("pickup_schedules");
+        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>(Context.MongoCollectionName);
+        await DeletePickupSchedule(request);
         await pickupScheduleCollection.InsertOneAsync(pickupSchedule);
 
         return pickupSchedule;
@@ -30,13 +35,16 @@ public class PickupScheduleService(
     public async Task<List<PickupSchedule>> AddPickupSchedule(List<CreatePickupScheduleDto> requests)
     {
         var pickupSchedules = new List<PickupSchedule>();
+        var tasks = new List<Task>();
         foreach (var request in requests)
         {
+            tasks.Add(DeletePickupSchedule(request));
             var pickupSchedule = await CreatePickupScheduleFromDto(request);
             pickupSchedules.Add(pickupSchedule);
         }
 
-        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>("pickup_schedules");
+        await Task.WhenAll(tasks);
+        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>(Context.MongoCollectionName);
         await pickupScheduleCollection.InsertManyAsync(pickupSchedules);
 
         return pickupSchedules;
@@ -44,7 +52,7 @@ public class PickupScheduleService(
 
     public async Task<PickupScheduleView> GetPickupScheduleView(DateOnly date, Guid schoolId)
     {
-        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>("pickup_schedules");
+        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>(Context.MongoCollectionName);
         var pickupSchedules = await pickupScheduleCollection
             .Aggregate()
             .Group(
@@ -106,23 +114,20 @@ public class PickupScheduleService(
 
     public async Task<List<PickupScheduleResponse>> GetPickupScheduleByDate(DateOnly date, Guid schoolId)
     {
-        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>("pickup_schedules");
-
+        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>(Context.MongoCollectionName);
         var projection = Builders<PickupSchedule>.Projection
             .Exclude(x => x.BestRoute)
             .Exclude(x => x.Students);
 
         var pickupSchedule = (await pickupScheduleCollection
-            .Find(sp => sp.Date == date && sp.SchoolId == schoolId)
-            .Sort(Builders<PickupSchedule>.Sort
-                .Ascending(x => x.SessionType)
-                .Descending(y => y.NumberOfStudents)
-            )
-            .Project<PickupSchedule>(projection)
-            .ToListAsync())
+                .Find(sp => sp.Date == date && sp.SchoolId == schoolId)
+                .SortByDescending(x => x.SessionType)
+                .ThenBy(x => x.Type)
+                .ThenByDescending(x => x.NumberOfStudents)
+                .Project<PickupSchedule>(projection)
+                .ToListAsync())
             .Select(mapper.Map<PickupScheduleResponse>)
             .ToList();
-
 
         return pickupSchedule;
     }
@@ -156,6 +161,8 @@ public class PickupScheduleService(
     private async Task<PickupSchedule> CreatePickupScheduleFromDto(CreatePickupScheduleDto pickupScheduleDto)
     {
         var driver = await userService.GetUser(pickupScheduleDto.DriverId, UserType.Driver) as Driver;
+        var school = await schoolManagement.GetSchool(pickupScheduleDto.SchoolId);
+
         if (driver == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
 
@@ -164,6 +171,7 @@ public class PickupScheduleService(
             DriverId = pickupScheduleDto.DriverId,
             SchoolId = pickupScheduleDto.SchoolId,
             SessionType = pickupScheduleDto.SessionType,
+            SchoolName = school.SchoolName,
             Date = pickupScheduleDto.Date,
             DriverName = driver.FirstName + " " + driver.LastName,
             DriverAvatar = driver.AvatarKey == null
@@ -173,10 +181,12 @@ public class PickupScheduleService(
             DriverGender = driver.Gender,
             LicenseNumber = driver.LicenseNumber,
             IsAllNotesRead = true,
+            Type = pickupScheduleDto.Type,
+            StartTime = GetStartTime(pickupScheduleDto.Type, pickupScheduleDto.SessionType, school),
+            EndTime = null,
             NumberOfStudents = pickupScheduleDto.Students.Count,
             NumberOfCurrentStudents = pickupScheduleDto.Students.Count,
             JourneyStatus = JourneyStatus.NotStarted,
-            BestRoute = new(),
             Students = new()
         };
 
@@ -205,7 +215,67 @@ public class PickupScheduleService(
             };
             pickupSchedule.Students.Add(studentOnBus);
         }
-        
+
+        await GetBestRoute(pickupSchedule, school);
         return pickupSchedule;
+    }
+
+    private async Task DeletePickupSchedule(CreatePickupScheduleDto pickupScheduleDto)
+    {
+        var pickupScheduleCollection = context.MongoDatabase.GetCollection<PickupSchedule>("pickup_schedules");
+        await pickupScheduleCollection.DeleteOneAsync(pk =>
+            pk.SchoolId == pickupScheduleDto.SchoolId
+            && pk.Date == pickupScheduleDto.Date
+            && pk.SessionType == pickupScheduleDto.SessionType);
+    }
+
+    private static TimeSpan GetStartTime(PickupScheduleType pickupScheduleType, SessionType sessionType, School school)
+    {
+        switch (pickupScheduleType)
+        {
+            case PickupScheduleType.PickUp:
+                if (sessionType == SessionType.Morning)
+                    return school.MorningStartTime - new TimeSpan(1, 0, 0);
+                return school.AfternoonStartTime - new TimeSpan(1, 0, 0);
+            case PickupScheduleType.DropOff:
+                if (sessionType == SessionType.Afternoon)
+                    return school.AfternoonEndTime;
+                return school.MorningEndTime;
+            default:
+                throw new InvalidDataException("Invalid pickup schedule type");
+        }
+    }
+
+    private async Task GetBestRoute(PickupSchedule pickupSchedule, School school)
+    {
+        string origin;
+        string destination;
+        var firstStudent = pickupSchedule
+            .Students
+            .OrderByDescending(x =>
+                IStudentGroupingAlgorithm.Haversine(x.PickupLat, x.PickupLng, school.AddressLat,
+                    school.AddressLng))
+            .FirstOrDefault();
+        if (firstStudent == null)
+            throw new InvalidDataException("No first student found");
+
+        var waypoints = pickupSchedule
+            .Students
+            .Where(x => x.StudentId != firstStudent.StudentId)
+            .Select(x => x.PickupLat + "," + x.PickupLng)
+            .ToList();
+
+        if (pickupSchedule.Type == PickupScheduleType.PickUp)
+        {
+            origin = firstStudent.PickupLat + "," + firstStudent.PickupLng;
+            destination = school.AddressLat + "," + school.AddressLng;
+        }
+        else
+        {
+            origin = school.AddressLat + "," + school.AddressLng;
+            destination = firstStudent.PickupLat + "," + firstStudent.PickupLng;
+        }
+
+        pickupSchedule.BestRoute = await googleMapsService.GetOptimizedRouteAsync(origin, destination, waypoints);
     }
 }

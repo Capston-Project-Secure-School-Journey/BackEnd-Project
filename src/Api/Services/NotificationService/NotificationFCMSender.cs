@@ -168,11 +168,8 @@ public class NotificationFcmSender : INotificationSender
     {
         if (tokens == null || tokens.Length == 0)
             throw new NotificationFailedException(ErrorMessages.DeviceTokenCannotBeEmpty);
-        foreach (var token in tokens)
-        {
-            if (string.IsNullOrEmpty(token))
-                throw new NotificationFailedException(ErrorMessages.DeviceTokenCannotBeEmpty);
-        }
+        if (tokens.Any(string.IsNullOrEmpty))
+            throw new NotificationFailedException(ErrorMessages.DeviceTokenCannotBeEmpty);
     }
 
     private static void ThrowIfDeviceTokensAreEmpty(string token)

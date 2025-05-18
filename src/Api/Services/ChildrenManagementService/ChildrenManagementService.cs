@@ -16,7 +16,8 @@ public class ChildrenManagementService(
     Context context,
     IMapper mapper,
     IFileUploadService uploadFileService,
-    IUserBanService userBanService)
+    IUserBanService userBanService,
+    GoogleMapsService googleMapsService)
     : IChildrenManagementService
 {
     public async Task<IEnumerable<ChildDto>> GetMyChildren(Guid parentId)
@@ -125,10 +126,14 @@ public class ChildrenManagementService(
 
         var child = await context.Students.FirstOrDefaultAsync(x => x.Id == dto.ChildId);
 
+        if (!await googleMapsService.IsCarAccessibleAddressAsync(dto.PickUpLocation))
+            throw new BadRequestException("Địa chỉ này ôtô không thể đi vào.\n Vui lòng chọn địa chỉ khác.");
+        
+        var locationAddress = await googleMapsService.GetLatLngFromAddressAsync(dto.PickUpLocation);
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         child.PickUpLocation = dto.PickUpLocation;
-        child.PickUpLat = dto.PickUpLat;
-        child.PickUpLng = dto.PickUpLng;
+        child.PickUpLat = locationAddress.lat;
+        child.PickUpLng = locationAddress.lng;
         // UTC
         child.LastTimeUpdatedPickupLocation = DateTimeHelper.GetDateTimeUtc7();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.

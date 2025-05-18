@@ -9,5 +9,6 @@ public class CreatePickupScheduleDto
     public List<Student> Students { get; set; } = [];
     public Guid SchoolId { get; set; }
     public SessionType SessionType { get; set; }
+    public PickupScheduleType Type { get; set; }
     public DateOnly Date { get; set; }
 }

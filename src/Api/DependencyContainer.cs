@@ -5,6 +5,7 @@ using Api.Services.TokenService;
 using Api.Domain.ModelSettings;
 using Api.Extensions;
 using Api.Scheduling;
+using Api.Services;
 using Api.Services.ApplicationService;
 using Api.Services.ApprovalProcessor;
 using Api.Services.ChildrenManagementService;
@@ -33,7 +34,8 @@ public static class DependencyContainer
         services.AddSingleton<IAuthorizationChecker, AuthorizationChecker>();
         services.AddSingleton<IVerifiedEmailChecker, VerifiedEmailChecker>();
         services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
-        services.AddSingleton<IStudentGroupingAlgorithm, SimpleStudentGrouping>();
+        services.AddSingleton<IStudentGroupingAlgorithm, KMeansStudentGrouping>();
+        services.AddSingleton<GoogleMapsService>();
         services.AddSingleton<IMongoClient>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;

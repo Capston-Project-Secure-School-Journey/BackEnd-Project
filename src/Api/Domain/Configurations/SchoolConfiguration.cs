@@ -36,6 +36,16 @@ public class SchoolConfiguration : IEntityTypeConfiguration<School>
             .HasColumnName("address")
             .HasColumnType(Constants.Nvarchar(1000))
             .IsRequired();
+        
+        builder.Property(j => j.AddressLat)
+            .HasColumnName("address_lat")
+            .HasColumnType(Constants.Double)
+            .IsRequired();
+        
+        builder.Property(j => j.AddressLng)
+            .HasColumnName("address_lng")
+            .HasColumnType(Constants.Double)
+            .IsRequired();
 
         builder.Property(j => j.MorningStartTime)
             .HasColumnName("morning_start_time")

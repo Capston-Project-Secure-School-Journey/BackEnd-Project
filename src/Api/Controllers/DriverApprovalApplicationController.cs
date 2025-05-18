@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Api.Attributes;
 using Api.Common.Enums;
 using Api.DTOs.ApprovalProcessor;

@@ -6,7 +6,6 @@ using Api;
 using Api.DashboardAuthorizationFilters;
 using Api.Jobs;
 using Api.Pipeline.Middlewares;
-using Api.Services.TokenService;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.AspNetCore.Mvc;
@@ -115,7 +114,8 @@ builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("Toke
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoSettings"));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
-builder.Services.UseHttpClientMetrics(); 
+builder.Services.UseHttpClientMetrics();
+builder.Services.AddHttpClient();
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -141,7 +141,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization =
     [
-        new DashboardAuthorizationFilter(app.Services.GetRequiredService<ITokenService>())
+        new DashboardAuthorizationFilter()
     ]
 });
 
