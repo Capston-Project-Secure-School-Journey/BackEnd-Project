@@ -75,6 +75,15 @@ public static class MongoMappingConfig
                     .SetElementName("students");
             });
 
+
+            if (!BsonClassMap.IsClassMapRegistered(typeof(ManagedBy)))
+                BsonClassMap.RegisterClassMap<ManagedBy>(cm =>
+                {
+                    cm.AutoMap();
+                    cm.MapMember(x => x.ParentId)
+                        .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
+                });
+
             if (!BsonClassMap.IsClassMapRegistered(typeof(StudentOnBus)))
                 BsonClassMap.RegisterClassMap<StudentOnBus>(cm =>
                 {
