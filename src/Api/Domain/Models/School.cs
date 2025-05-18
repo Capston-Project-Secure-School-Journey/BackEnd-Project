@@ -9,6 +9,8 @@ public class School : BaseModel
     public string SchoolName { get; set; } = string.Empty;
     public string? SchoolDescription { get; set; }
     public string Address { get; set; } = string.Empty;
+    public double AddressLat { get; set; }
+    public double AddressLng { get; set; }
     public TimeSpan MorningStartTime { get; set; }
     public TimeSpan MorningEndTime { get; set; }
     public TimeSpan AfternoonEndTime { get; set; }
