@@ -20,8 +20,7 @@ public class ShuttleScheduleManagementService(
     IUserService userService,
     IFileUploadService fileUploadService,
     IMapper mapper,
-    ISchoolManagement schoolManagement,
-    GoogleMapsService googleMapsService) : IShuttleScheduleManagementService
+    ISchoolManagement schoolManagement) : IShuttleScheduleManagementService
 {
     public async Task UpdateShuttleSchedule(ShuttleSchedule shuttleSchedule)
     {
@@ -50,7 +49,7 @@ public class ShuttleScheduleManagementService(
             .Set("Students.$.DroppedOffTime", studentOnBus.DroppedOffTime)
             .Set("Students.$.IsSkipUpReason", studentOnBus.IsSkipUpReason)
             .Set("Students.$.SkipPickup", studentOnBus.SkipPickup);
-        
+
         await context.ShuttleScheduleCollection.UpdateOneAsync(filter, update);
     }
 
@@ -75,36 +74,36 @@ public class ShuttleScheduleManagementService(
     {
         var monthRange = DateTimeHelper.GetMonthRange(date);
         var shuttleSchedules = (await context.ShuttleScheduleCollection
-            .Aggregate()
-            .Group(
-                key => new
-                {
-                    key.Date,
-                    key.SchoolId,
-                    key.SessionType,
-                    key.Type
-                },
-                g => new ShuttleScheduleGroupResult
-                {
-                    Id = new GroupKey
+                .Aggregate()
+                .Group(
+                    key => new
                     {
-                        Date = g.Key.Date,
-                        SchoolId = g.Key.SchoolId,
-                        SessionType = g.Key.SessionType,
-                        Type = g.Key.Type
+                        key.Date,
+                        key.SchoolId,
+                        key.SessionType,
+                        key.Type
                     },
-                    TotalStudents = g.Sum(x => x.NumberOfStudents),
-                    TotalTrips = g.Count(),
-                }
-            )
-            .Sort(Builders<ShuttleScheduleGroupResult>.Sort
-                .Descending(x => x.Id.Date)
-                .Descending(x => x.Id.SessionType)
-                .Ascending(x => x.Id.Type)
-            )
-            .ToListAsync())
-            .Where(g => g.Id.SchoolId == schoolId 
-                        && g.Id.Date >= monthRange.StartOfMonth 
+                    g => new ShuttleScheduleGroupResult
+                    {
+                        Id = new GroupKey
+                        {
+                            Date = g.Key.Date,
+                            SchoolId = g.Key.SchoolId,
+                            SessionType = g.Key.SessionType,
+                            Type = g.Key.Type
+                        },
+                        TotalStudents = g.Sum(x => x.NumberOfStudents),
+                        TotalTrips = g.Count(),
+                    }
+                )
+                .Sort(Builders<ShuttleScheduleGroupResult>.Sort
+                    .Descending(x => x.Id.Date)
+                    .Descending(x => x.Id.SessionType)
+                    .Ascending(x => x.Id.Type)
+                )
+                .ToListAsync())
+            .Where(g => g.Id.SchoolId == schoolId
+                        && g.Id.Date >= monthRange.StartOfMonth
                         && g.Id.Date <= monthRange.EndOfMonth);
 
         var response = new ShuttleScheduleView();
@@ -221,7 +220,13 @@ public class ShuttleScheduleManagementService(
             var studentOnBus = new StudentOnBus()
             {
                 StudentId = student.Id,
-                Parents = student.ManagedBy,
+                Parents = student.ManagedBy.Select(x => new ParentInfo()
+                {
+                    ParentId = x.ParentId,
+                    Relationship = x.RelationshipWithStudent,
+                    FullName = GetParentName(x.ParentId),
+                    PhoneNumber = GetParentPhoneNumber(x.ParentId)
+                }).ToList(),
                 PickupAddress = student.PickUpLocation,
                 PickupLat = student.PickUpLat,
                 PickupLng = student.PickUpLng,
@@ -241,7 +246,7 @@ public class ShuttleScheduleManagementService(
             shuttleSchedule.Students.Add(studentOnBus);
         }
 
-        await GetBestRoute(shuttleSchedule, school);
+        GetBestRoute(shuttleSchedule, school);
         return shuttleSchedule;
     }
 
@@ -254,7 +259,8 @@ public class ShuttleScheduleManagementService(
             && pk.SessionType == shuttleScheduleDto.SessionType);
     }
 
-    private static TimeSpan GetStartTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType, School school)
+    private static TimeSpan GetStartTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType,
+        School school)
     {
         switch (shuttleScheduleType)
         {
@@ -271,7 +277,7 @@ public class ShuttleScheduleManagementService(
         }
     }
 
-    private async Task GetBestRoute(ShuttleSchedule shuttleSchedule, School school)
+    private void GetBestRoute(ShuttleSchedule shuttleSchedule, School school)
     {
         string origin;
         string destination;
@@ -301,6 +307,22 @@ public class ShuttleScheduleManagementService(
             destination = firstStudent.PickupLat + "," + firstStudent.PickupLng;
         }
 
-        shuttleSchedule.BestRoute = (await googleMapsService.GetOptimizedRouteAsync(origin, destination, waypoints)).Item2;
+        shuttleSchedule.BestRoute = new BestRoute()
+        {
+            Origin = origin,
+            Destination = destination,
+            Waypoints = waypoints
+        };
+    }
+
+    private string GetParentName(Guid parentId)
+    {
+        return context.Parents.Where(p => p.Id == parentId).Select(p => p.FirstName + " " + p.LastName)
+            .FirstOrDefault() ?? string.Empty;
+    }
+
+    private string GetParentPhoneNumber(Guid parentId)
+    {
+        return context.Parents.Where(p => p.Id == parentId).Select(p => p.PhoneNumber).FirstOrDefault() ?? string.Empty;
     }
 }
