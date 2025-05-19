@@ -11,6 +11,7 @@ public class ShuttleScheduleDateView
 {
     public DateOnly Date { get; set; }
     public Guid SchoolId { get; set; }
+    public ShuttleScheduleType Type { get; set; }
     public SessionType SessionType { get; set; }
     public int NumberOfStudents { get; set; }
     public int NumberOfTrips { get; set; }
@@ -20,6 +21,7 @@ public class GroupKey
 {
     public DateOnly Date { get; set; }
     public Guid SchoolId { get; set; }
+    public ShuttleScheduleType Type { get; set; }
     public SessionType SessionType { get; set; }
 }
 
