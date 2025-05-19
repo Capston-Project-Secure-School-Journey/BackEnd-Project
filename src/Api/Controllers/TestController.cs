@@ -28,7 +28,7 @@ public class TestController(INotificationSender notificationSender, INotificatio
             Navigation = string.Empty
         };
         var notification = await notificationService.CreateNotification(createNotificationDto);
-        await notificationSender.SendAsync(deviceToken, title, content);
+        await notificationSender.SendOneAsync(deviceToken, title, content, null);
         return Ok(notification);
     }
 }
