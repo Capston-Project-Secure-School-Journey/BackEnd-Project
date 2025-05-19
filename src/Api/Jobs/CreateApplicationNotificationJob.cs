@@ -4,7 +4,7 @@ using Api.DTOs.NotificationService;
 using Api.Services.ApplicationService;
 using Api.Services.ApprovalProcessor;
 using Api.Services.NotificationService;
-using Microsoft.EntityFrameworkCore;
+using Hangfire;
 
 namespace Api.Jobs;
 
@@ -21,7 +21,6 @@ public class CreateApplicationNotificationJob(IServiceProvider serviceProvider) 
             var db = scope.ServiceProvider.GetRequiredService<Context>();
             var applicationService = scope.ServiceProvider.GetRequiredService<IApplicationService>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-            var notificationSender = scope.ServiceProvider.GetRequiredService<INotificationSender>();
             var approvalProcessor = scope.ServiceProvider.GetRequiredService<IApprovalProcessor>();
 
             if (!Guid.TryParse(args[0] as string, out var applicationId))
@@ -52,25 +51,14 @@ public class CreateApplicationNotificationJob(IServiceProvider serviceProvider) 
             };
 
             var notification = await notificationService.CreateNotification(createNotificationDto);
-            await notificationSender.SendManyAsync(await GetDeviceTokens(recipientId),
-                notification.Title,
-                notification.Content);
             
             logger.LogInformation("Application notification created successfully");
+            BackgroundJob.Enqueue<SendNotificationJob>(
+                (job) => job.ExecuteAsync(new List<Guid> { notification.Id }));
         }
         catch (Exception e)
         {
             logger.LogError(e, "An error occured while creating application notification");
         }
-    }
-
-    private async Task<string[]> GetDeviceTokens(Guid userId)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<Context>();
-        var user = await db.Users.FirstOrDefaultAsync(x => x.Id == userId);
-        if (user == null)
-            return [];
-        return user.DeviceTokens;
     }
 }

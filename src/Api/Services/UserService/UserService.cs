@@ -155,6 +155,14 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
         }
     }
 
+    public async Task<string[]> GetDeviceTokens(Guid userId)
+    {
+        return (await context.Drivers
+            .Where(x => x.Id == userId)
+            .Select(u => u.DeviceTokens)
+            .FirstOrDefaultAsync()) ?? [];
+    }
+
     private static bool IsVerified(User user)
     {
         return user.AccountStatus == AccountStatus.Verified &&
