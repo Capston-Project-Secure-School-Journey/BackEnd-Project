@@ -73,8 +73,8 @@ public static class MongoMappingConfig
             });
 
 
-            if (!BsonClassMap.IsClassMapRegistered(typeof(ManagedBy)))
-                BsonClassMap.RegisterClassMap<ManagedBy>(cm =>
+            if (!BsonClassMap.IsClassMapRegistered(typeof(ParentInfo)))
+                BsonClassMap.RegisterClassMap<ParentInfo>(cm =>
                 {
                     cm.AutoMap();
                     cm.MapMember(x => x.ParentId)
