@@ -32,7 +32,7 @@ public class SchoolJobSubscriber(IServiceProvider serviceProvider) : IJob
                     delay);
             }
 
-            BackgroundJob.Schedule<CreatePickupScheduleJob>(
+            BackgroundJob.Schedule<CreateShuttleScheduleJob>(
                 job => job.ExecuteAsync(schoolId),
                 saturdayNextWeek.Date.AddHours(23) - DateTimeHelper.GetDateTimeUtc7());
         }

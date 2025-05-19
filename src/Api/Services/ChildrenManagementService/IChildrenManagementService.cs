@@ -1,3 +1,4 @@
+using Api.Domain.Models;
 using Api.DTOs.ChildrenManagement;
 
 namespace Api.Services.ChildrenManagementService;
@@ -8,4 +9,5 @@ public interface IChildrenManagementService
     Task<ChildDetailDto> GetChildById(Guid parentId, Guid childId);
     Task RegisterChild(Guid parentId, RegisterChildDto dto);
     Task<string> UpdateChildPickupLocation(Guid parentId, UpdateChildPickupLocationDto dto);
+    Task<Student> FindStudentWithHash(string hash);
 }

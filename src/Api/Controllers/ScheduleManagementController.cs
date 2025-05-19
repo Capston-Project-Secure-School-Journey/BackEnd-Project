@@ -9,21 +9,14 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("schedules")]
-public class ScheduleManagementController : ControllerBase
+public class ScheduleManagementController(IScheduleManagementHandler scheduleManagementHandler) : ControllerBase
 {
-    private readonly IScheduleManagementHandler _scheduleManagementHandler;
-
-    public ScheduleManagementController(IScheduleManagementHandler scheduleManagementHandler)
-    {
-        _scheduleManagementHandler = scheduleManagementHandler;
-    }
-
     [HttpGet("schedule-view")]
     [Authorize(UserType.SchoolAdmin)]
     public async Task<ClassSchedulePaginationResponse> GetCurrentScheduleView([FromQuery] DateOnly date)
     {
         var schoolId = this.GetSchoolId();
-        return await _scheduleManagementHandler.GetScheduleView(schoolId, date);
+        return await scheduleManagementHandler.GetScheduleView(schoolId, date);
     }
 
     [HttpPost]
@@ -32,7 +25,7 @@ public class ScheduleManagementController : ControllerBase
     public async Task<IEnumerable<ClassScheduleResponse>> CreateSchedule([FromBody] CreateScheduleRequest request)
     {
         var schoolId = this.GetSchoolId();
-        return await _scheduleManagementHandler.CreateSchedule(schoolId, request);
+        return await scheduleManagementHandler.CreateSchedule(schoolId, request);
     }
 
     [HttpPut("{scheduleId}")]
@@ -43,7 +36,7 @@ public class ScheduleManagementController : ControllerBase
     {
         var schoolId = this.GetSchoolId();
         request.Id = scheduleId;
-        return await _scheduleManagementHandler.UpdateSchedule(schoolId, request);
+        return await scheduleManagementHandler.UpdateSchedule(schoolId, request);
     }
 
     [HttpGet]
@@ -51,7 +44,7 @@ public class ScheduleManagementController : ControllerBase
     public async Task<List<ClassScheduleResponse>> GetScheduleByDate([FromQuery] DateOnly date)
     {
         var schoolId = this.GetSchoolId();
-        return await _scheduleManagementHandler.GetScheduleByDate(schoolId, date);
+        return await scheduleManagementHandler.GetScheduleByDate(schoolId, date);
     }
 
     [HttpDelete]
@@ -59,7 +52,7 @@ public class ScheduleManagementController : ControllerBase
     public async Task<IActionResult> DeleteSchedule([FromBody] List<Guid> ids)
     {
         var schoolId = this.GetSchoolId();
-        await _scheduleManagementHandler.DeleteSchedule(schoolId, ids);
+        await scheduleManagementHandler.DeleteSchedule(schoolId, ids);
         return Ok();
     }
 
@@ -68,7 +61,7 @@ public class ScheduleManagementController : ControllerBase
     public async Task<IActionResult> DeleteSchedule([FromRoute] Guid scheduleId)
     {
         var schoolId = this.GetSchoolId();
-        await _scheduleManagementHandler.DeleteSchedule(schoolId, scheduleId);
+        await scheduleManagementHandler.DeleteSchedule(schoolId, scheduleId);
 
         return Ok();
     }
