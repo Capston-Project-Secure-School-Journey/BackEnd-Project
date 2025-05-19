@@ -19,4 +19,5 @@ public class StudentOnBus
     public bool IsDroppedOff { get; set; } = false;
     public DateTime? DroppedOffTime { get; set; } = null;
     public bool SkipPickup { get; set; } = false;
+    public string IsSkipUpReason { get; set; } = string.Empty;
 }

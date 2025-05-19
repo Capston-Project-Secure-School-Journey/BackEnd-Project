@@ -8,22 +8,15 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("parent")]
-public class ParentController : ControllerBase
+public class ParentController(IChildrenManagementHandler childrenManagementHandler) : ControllerBase
 {
-    private readonly IChildrenManagementService _childrenManagementService;
-
-    public ParentController(IChildrenManagementService childrenManagementService)
-    {
-        _childrenManagementService = childrenManagementService;
-    }
-
     [HttpGet("my-children")]
     [Authorize(UserType.Parent)]
     [CheckVerifiedEmail]
     public async Task<IEnumerable<ChildDto>> GetMyChildren()
     {
         var userId = this.GetUserId();
-        return await _childrenManagementService.GetMyChildren(userId);
+        return await childrenManagementHandler.GetMyChildren(userId);
     }
 
     [HttpGet("my-children/{childId}")]
@@ -32,7 +25,7 @@ public class ParentController : ControllerBase
     public async Task<ActionResult<ChildDetailDto>> GetChildById([FromRoute] Guid childId)
     {
         var userId = this.GetUserId();
-        return await _childrenManagementService.GetChildById(userId, childId);
+        return await childrenManagementHandler.GetChildById(userId, childId);
     }
 
     [HttpPost]
@@ -42,7 +35,7 @@ public class ParentController : ControllerBase
     public async Task<ActionResult> RegisterChild([FromBody] RegisterChildDto request)
     {
         var userId = this.GetUserId();
-        await _childrenManagementService.RegisterChild(userId, request);
+        await childrenManagementHandler.RegisterChild(userId, request);
         return Ok();
     }
 
@@ -53,7 +46,7 @@ public class ParentController : ControllerBase
     public async Task<ActionResult> UpdateChildPickupLocation([FromBody] UpdateChildPickupLocationDto request)
     {
         var userId = this.GetUserId();
-        var message = await _childrenManagementService.UpdateChildPickupLocation(userId, request);
+        var message = await childrenManagementHandler.UpdateChildPickupLocation(userId, request);
         return Ok(message);
     }
 }
