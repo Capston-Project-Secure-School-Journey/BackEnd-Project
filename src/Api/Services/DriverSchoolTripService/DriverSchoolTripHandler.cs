@@ -1,6 +1,9 @@
+using Api.Common.Enums;
 using Api.Domain.Models;
+using Api.Jobs.SchoolTripEventDispatchJobs;
 using Api.Services.ShuttleScheduleManagementService;
 using Api.TransferDTOs.Responses;
+using Hangfire;
 
 namespace Api.Services.DriverSchoolTripService;
 
@@ -23,18 +26,24 @@ public class DriverSchoolTripHandler(
     {
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(shuttleScheduleId, driverId);
         await driverSchoolTripService.StartJourney(shuttleScheduleId);
+        BackgroundJob.Enqueue<SendSchoolTripEventJob>(
+            (job) => job.ExecuteAsync(shuttleScheduleId, SchoolTripEvent.CommandStartedEvent));
     }
 
     public async Task EndJourney(Guid shuttleScheduleId, Guid driverId)
     {
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(shuttleScheduleId, driverId);
         await driverSchoolTripService.EndJourney(shuttleScheduleId);
+        BackgroundJob.Enqueue<SendSchoolTripEventJob>(
+            (job) => job.ExecuteAsync(shuttleScheduleId, SchoolTripEvent.CommandCompletedEvent));
     }
 
     public async Task CancelJourney(Guid shuttleScheduleId, Guid driverId, string cancelReason)
     {
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(shuttleScheduleId, driverId);
         await driverSchoolTripService.CancelJourney(shuttleScheduleId, cancelReason);
+        BackgroundJob.Enqueue<SendSchoolTripEventJob>(
+            (job) => job.ExecuteAsync(shuttleScheduleId, SchoolTripEvent.CommandCancelledEvent));
     }
 
     public async Task SkipStudent(Guid shuttleScheduleId, Guid driverId, Guid studentId, string cancelReason)
@@ -66,5 +75,7 @@ public class DriverSchoolTripHandler(
     public async Task UpdateCurrentAddress(Guid shuttleScheduleId, Guid driverId, double lat, double lng)
     {
         await driverSchoolTripService.UpdateCurrentAddress(shuttleScheduleId, driverId, lat, lng);
+        BackgroundJob.Enqueue<SendDriverAddressJob>(
+            (job) => job.ExecuteAsync(shuttleScheduleId));
     }
 }

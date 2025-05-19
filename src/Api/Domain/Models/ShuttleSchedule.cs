@@ -26,6 +26,13 @@ public class ShuttleSchedule
     public int NumberOfDroppedOffStudents { get; set; }
     public double CurrentLat { get; set; } = 0;
     public double CurrentLng { get; set; } = 0;
-    public string BestRoute { get; set; } = string.Empty;
+    public BestRoute BestRoute { get; set; } = null!;
     public List<StudentOnBus> Students { get; set; } = new();
+}
+
+public class BestRoute
+{
+    public string Origin { get; set; } = string.Empty;
+    public string Destination { get; set; } = string.Empty;
+    public List<string> Waypoints { get; set; } = new();
 }
