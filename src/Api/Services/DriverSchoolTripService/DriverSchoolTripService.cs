@@ -3,7 +3,6 @@ using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.Extensions;
-using Api.Services.ChildrenManagementService;
 using Api.Services.ShuttleScheduleManagementService;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
@@ -77,7 +76,7 @@ public class DriverSchoolTripService(
 
         var students = shuttleSchedule.Students;
         var studentNotPickedUp = students
-            .FirstOrDefault(st => st.SkipPickup == false && (st.IsPickedUp == false || st.IsDroppedOff == false));
+            .FirstOrDefault(st => !st.SkipPickup && (!st.IsPickedUp || !st.IsDroppedOff));
 
         if (studentNotPickedUp != null)
             throw new BadRequestException($"Vẫn còn học sinh {studentNotPickedUp.FullName} chưa được đón hoặc trả.\n" +
@@ -99,8 +98,6 @@ public class DriverSchoolTripService(
             throw new BadRequestException(
                 $"Chuyến đi không thể hủy. Vì trạng thái hiện tại là: {shuttleSchedule.JourneyStatus.GetEnumDisplayName()}");
 
-        var currentTime = DateTimeHelper.GetDateTimeUtc7();
-
         shuttleSchedule.JourneyStatus = JourneyStatus.Cancelled;
         shuttleSchedule.CancelReason = cancelReason;
         await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
@@ -112,7 +109,6 @@ public class DriverSchoolTripService(
 
         try
         {
-            var currentTime = DateTimeHelper.GetDateTimeUtc7();
             var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
             var studentOnBus = shuttleSchedule.Students.FirstOrDefault(st => st.StudentId == studentId);
 
@@ -164,24 +160,26 @@ public class DriverSchoolTripService(
     public async Task<bool> HasUpcomingShuttle(Guid driverId)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
+        var lowerBound = currentTime.TimeOfDay.Add(TimeSpan.FromHours(0.5 * -1));
+        var upperBound = currentTime.TimeOfDay.Add(TimeSpan.FromHours(2));
         return await context.ShuttleScheduleCollection
             .Find(ss => ss.Date == DateOnly.FromDateTime(currentTime)
-                        && (ss.StartTime - currentTime.TimeOfDay).TotalHours < 2
-                        && (ss.StartTime - currentTime.TimeOfDay).TotalHours > -0.5
-                        && ss.JourneyStatus == JourneyStatus.NotStarted
-                        && ss.DriverId == driverId)
+                        && ss.StartTime >= lowerBound
+                        && ss.StartTime <= upperBound
+                        && ss.JourneyStatus == JourneyStatus.NotStarted)
             .AnyAsync();
     }
 
     public async Task<ShuttleSchedule> GetUpcomingShuttleSchedule(Guid driverId)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
+        var lowerBound = currentTime.TimeOfDay.Add(TimeSpan.FromHours(0.5 * -1));
+        var upperBound = currentTime.TimeOfDay.Add(TimeSpan.FromHours(2));
         var shuttleSchedule = await context.ShuttleScheduleCollection
             .Find(ss => ss.Date == DateOnly.FromDateTime(currentTime)
-                        && (ss.StartTime - currentTime.TimeOfDay).TotalHours < 2
-                        && (ss.StartTime - currentTime.TimeOfDay).TotalHours > -0.5
-                        && ss.JourneyStatus == JourneyStatus.NotStarted
-                        && ss.DriverId == driverId)
+                        && ss.StartTime >= lowerBound
+                        && ss.StartTime <= upperBound
+                        && ss.JourneyStatus == JourneyStatus.NotStarted)
             .FirstOrDefaultAsync();
 
         return shuttleSchedule;

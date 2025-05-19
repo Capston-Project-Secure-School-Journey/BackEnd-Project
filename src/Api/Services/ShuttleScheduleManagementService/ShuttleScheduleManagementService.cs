@@ -4,6 +4,7 @@ using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.ShuttleScheduleService;
+using Api.Extensions;
 using Api.Scheduling;
 using Api.Services.SchoolManagement;
 using Api.Services.UploadFileService;
@@ -22,15 +23,6 @@ public class ShuttleScheduleManagementService(
     ISchoolManagement schoolManagement,
     GoogleMapsService googleMapsService) : IShuttleScheduleManagementService
 {
-    public async Task<ShuttleSchedule> AddShuttleSchedule(CreateShuttleScheduleDto request)
-    {
-        var shuttleSchedule = await CreateShuttleScheduleFromDto(request);
-        await DeleteShuttleSchedule(request);
-        await context.ShuttleScheduleCollection.InsertOneAsync(shuttleSchedule);
-
-        return shuttleSchedule;
-    }
-
     public async Task UpdateShuttleSchedule(ShuttleSchedule shuttleSchedule)
     {
         var filter = Builders<ShuttleSchedule>.Filter.Eq(s => s.Id, shuttleSchedule.Id);
@@ -81,14 +73,16 @@ public class ShuttleScheduleManagementService(
 
     public async Task<ShuttleScheduleView> GetShuttleScheduleView(DateOnly date, Guid schoolId)
     {
-        var shuttleSchedules = await context.ShuttleScheduleCollection
+        var monthRange = DateTimeHelper.GetMonthRange(date);
+        var shuttleSchedules = (await context.ShuttleScheduleCollection
             .Aggregate()
             .Group(
                 key => new
                 {
                     key.Date,
                     key.SchoolId,
-                    key.SessionType
+                    key.SessionType,
+                    key.Type
                 },
                 g => new ShuttleScheduleGroupResult
                 {
@@ -96,17 +90,22 @@ public class ShuttleScheduleManagementService(
                     {
                         Date = g.Key.Date,
                         SchoolId = g.Key.SchoolId,
-                        SessionType = g.Key.SessionType
+                        SessionType = g.Key.SessionType,
+                        Type = g.Key.Type
                     },
                     TotalStudents = g.Sum(x => x.NumberOfStudents),
                     TotalTrips = g.Count(),
                 }
             )
             .Sort(Builders<ShuttleScheduleGroupResult>.Sort
-                .Ascending(x => x.Id.Date)
+                .Descending(x => x.Id.Date)
                 .Descending(x => x.Id.SessionType)
+                .Ascending(x => x.Id.Type)
             )
-            .ToListAsync();
+            .ToListAsync())
+            .Where(g => g.Id.SchoolId == schoolId 
+                        && g.Id.Date >= monthRange.StartOfMonth 
+                        && g.Id.Date <= monthRange.EndOfMonth);
 
         var response = new ShuttleScheduleView();
         foreach (var sp in shuttleSchedules)
@@ -117,6 +116,7 @@ public class ShuttleScheduleManagementService(
                 {
                     Date = sp.Id.Date,
                     SchoolId = sp.Id.SchoolId,
+                    Type = sp.Id.Type,
                     SessionType = sp.Id.SessionType,
                     NumberOfStudents = sp.TotalStudents,
                     NumberOfTrips = sp.TotalTrips
@@ -129,6 +129,7 @@ public class ShuttleScheduleManagementService(
                     {
                         Date = sp.Id.Date,
                         SchoolId = sp.Id.SchoolId,
+                        Type = sp.Id.Type,
                         SessionType = sp.Id.SessionType,
                         NumberOfStudents = sp.TotalStudents,
                         NumberOfTrips = sp.TotalTrips
