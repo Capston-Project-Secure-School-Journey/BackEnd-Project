@@ -72,7 +72,7 @@ public class ChildrenManagementService(
     {
         await userBanService.CheckUserBaned(parentId, BanType.AddChild, true);
 
-        var student = FindStudentWithHash(dto.SecretCode);
+        var student = await FindStudentWithHash(dto.SecretCode);
         var parent = await GetParent(parentId);
 
         if (!student.FirstName.Equals(dto.FirstName, StringComparison.CurrentCultureIgnoreCase) ||
@@ -152,7 +152,7 @@ public class ChildrenManagementService(
             $"Địa chỉ có hiệu lực từ ngày: {startOfNextWeek.ToShortDateString()}. Vì vậy hãy đón con tại địa chỉ cũ.";
     }
 
-    private Student FindStudentWithHash(string hash)
+    public async Task<Student> FindStudentWithHash(string hash)
     {
         var studentId = context.Students
             .Select(st => st.Id)
@@ -162,7 +162,7 @@ public class ChildrenManagementService(
         if (studentId == Guid.Empty)
             throw new BadRequestException(ErrorMessages.ErrorDuringProcessing);
 
-        var studentEntity = context.Students.FirstOrDefault(st => st.Id == studentId);
+        var studentEntity =  await context.Students.FirstOrDefaultAsync(st => st.Id == studentId);
         return studentEntity!;
     }
 
