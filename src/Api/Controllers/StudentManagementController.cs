@@ -9,22 +9,15 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("students")]
-public class StudentManagementController : ControllerBase
+public class StudentManagementController(IStudentManagementHandler studentManagementHandler) : ControllerBase
 {
-    private readonly IStudentManagementHandler _studentManagementHandler;
-
-    public StudentManagementController(IStudentManagementHandler studentManagementHandler)
-    {
-        _studentManagementHandler = studentManagementHandler;
-    }
-
     [HttpPost]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<StudentDetailResponse>> CreateStudent([FromBody] CreateStudentRequest request)
     {
         var schoolId = this.GetSchoolId();
-        return await _studentManagementHandler.AddStudent(schoolId, request);
+        return await studentManagementHandler.AddStudent(schoolId, request);
     }
 
     [HttpPut("{studentId}")]
@@ -36,7 +29,7 @@ public class StudentManagementController : ControllerBase
         var schoolId = this.GetSchoolId();
 
         request.Id = studentId;
-        return await _studentManagementHandler.UpdateStudent(schoolId, request);
+        return await studentManagementHandler.UpdateStudent(schoolId, request);
     }
 
     [HttpDelete("{studentId}")]
@@ -45,7 +38,7 @@ public class StudentManagementController : ControllerBase
     {
         var schoolId = this.GetSchoolId();
 
-        await _studentManagementHandler.DeleteStudent(schoolId, studentId);
+        await studentManagementHandler.DeleteStudent(schoolId, studentId);
         return Ok();
     }
 
@@ -55,7 +48,7 @@ public class StudentManagementController : ControllerBase
     {
         var schoolId = this.GetSchoolId();
 
-        await _studentManagementHandler.DeleteStudent(schoolId, studentIds);
+        await studentManagementHandler.DeleteStudent(schoolId, studentIds);
         return Ok();
     }
 
@@ -66,7 +59,7 @@ public class StudentManagementController : ControllerBase
     {
         var schoolId = this.GetSchoolId();
 
-        return await _studentManagementHandler.GetStudents(schoolId, request);
+        return await studentManagementHandler.GetStudents(schoolId, request);
     }
 
     [HttpGet("{studentId}")]
@@ -74,7 +67,7 @@ public class StudentManagementController : ControllerBase
     public async Task<StudentDetailResponse> GetStudent([FromRoute] Guid studentId)
     {
         var schoolId = this.GetSchoolId();
-        return await _studentManagementHandler.GetStudentById(schoolId, studentId);
+        return await studentManagementHandler.GetStudentById(schoolId, studentId);
     }
 
     [HttpPost("{studentId}/upload-avatar")]
@@ -89,6 +82,6 @@ public class StudentManagementController : ControllerBase
         IFormFile file)
     {
         var schoolId = this.GetSchoolId();
-        return Ok(await _studentManagementHandler.UploadAvatar(schoolId, studentId, file));
+        return Ok(await studentManagementHandler.UploadAvatar(schoolId, studentId, file));
     }
 }

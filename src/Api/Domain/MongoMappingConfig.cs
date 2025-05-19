@@ -10,9 +10,9 @@ public static class MongoMappingConfig
 {
     public static void RegisterMappings()
     {
-        if (!BsonClassMap.IsClassMapRegistered(typeof(PickupSchedule)))
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ShuttleSchedule)))
         {
-            BsonClassMap.RegisterClassMap<PickupSchedule>(cm =>
+            BsonClassMap.RegisterClassMap<ShuttleSchedule>(cm =>
             {
                 cm.AutoMap();
 
@@ -64,9 +64,6 @@ public static class MongoMappingConfig
 
                 cm.MapMember(x => x.NumberOfStudents)
                     .SetElementName("numberOfStudents");
-
-                cm.MapMember(x => x.NumberOfCurrentStudents)
-                    .SetElementName("numberOfCurrentStudents");
 
                 cm.MapMember(x => x.BestRoute)
                     .SetElementName("bestRoute");

@@ -3,12 +3,12 @@ using Api.Services;
 
 namespace Api.Domain.Models;
 
-public class PickupSchedule
+public class ShuttleSchedule
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
     public string SchoolName { get; set; } = string.Empty;
-    public PickupScheduleType Type { get; set; }
+    public ShuttleScheduleType Type { get; set; }
     public SessionType SessionType { get; set; }
     public DateOnly Date { get; set; }
     public Guid DriverId { get; set; }
@@ -21,8 +21,12 @@ public class PickupSchedule
     public TimeSpan StartTime { get; set; }
     public TimeSpan? EndTime { get; set; }
     public JourneyStatus JourneyStatus { get; set; }
+    public string CancelReason { get; set; } = string.Empty;
     public int NumberOfStudents { get; set; }
-    public int NumberOfCurrentStudents { get; set; }
-    public GoogleMapsService.DirectionsResponse BestRoute { get; set; } = null!;
+    public int NumberOfPickedUpStudents { get; set; }
+    public int NumberOfDroppedOffStudents { get; set; }
+    public double CurrentLat { get; set; } = 0;
+    public double CurrentLng { get; set; } = 0;
+    public string BestRoute { get; set; } = string.Empty;
     public List<StudentOnBus> Students { get; set; } = new();
 }

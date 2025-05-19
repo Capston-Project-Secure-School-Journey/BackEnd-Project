@@ -1,6 +1,6 @@
 namespace Api.Common.Enums;
 
-public enum PickupScheduleType
+public enum ShuttleScheduleType
 {
     PickUp,
     DropOff

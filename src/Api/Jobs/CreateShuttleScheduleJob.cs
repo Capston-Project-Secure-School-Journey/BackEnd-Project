@@ -2,20 +2,20 @@ using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
-using Api.DTOs.PickupScheduleService;
+using Api.DTOs.ShuttleScheduleService;
 using Api.DTOs.Scheduling;
 using Api.Extensions;
 using Api.Scheduling;
-using Api.Services.PickupScheduleService;
+using Api.Services.ShuttleScheduleManagementService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Jobs;
 
-public class CreatePickupScheduleJob(
+public class CreateShuttleScheduleJob(
     IServiceProvider serviceProvider,
-    ILogger<CreatePickupScheduleJob> logger,
+    ILogger<CreateShuttleScheduleJob> logger,
     IStudentGroupingAlgorithm groupingAlgorithm,
-    IPickupScheduleService pickupScheduleService) : IJob
+    IShuttleScheduleManagementService shuttleScheduleManagementService) : IJob
 {
     public async Task ExecuteAsync(params object[] args)
     {
@@ -59,40 +59,40 @@ public class CreatePickupScheduleJob(
 
             var studentsPerSession = await GroupStudentsBySessionAsync(schedules, db, schoolId);
 
-            var requests = new List<CreatePickupScheduleDto>();
+            var requests = new List<CreateShuttleScheduleDto>();
             foreach (var key in studentsPerSession.Keys)
             {
                 var groups = groupingAlgorithm.AllocateStudentsToBuses(studentsPerSession[key], ref drivers);
 
                 foreach (var group in groups)
                 {
-                    requests.Add(new CreatePickupScheduleDto()
+                    requests.Add(new CreateShuttleScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
                         SchoolId = schoolId,
                         SessionType = key.Item2,
                         Students = group.Value,
-                        Type = PickupScheduleType.PickUp,
+                        Type = ShuttleScheduleType.PickUp,
                     });
-                    requests.Add(new CreatePickupScheduleDto()
+                    requests.Add(new CreateShuttleScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
                         SchoolId = schoolId,
                         SessionType = key.Item2,
                         Students = group.Value,
-                        Type = PickupScheduleType.DropOff,
+                        Type = ShuttleScheduleType.DropOff,
                     });
                 }
             }
-            await pickupScheduleService.AddPickupSchedule(requests);
+            await shuttleScheduleManagementService.AddShuttleSchedule(requests);
             
-            logger.LogInformation("CreatePickupScheduleJob successfully");
+            logger.LogInformation("CreateShuttleScheduleJob successfully");
         }
         catch (Exception e)
         {
-            logger.LogError(e, "CreatePickupScheduleJob failed");
+            logger.LogError(e, "CreateShuttleScheduleJob failed");
         }
     }
 
