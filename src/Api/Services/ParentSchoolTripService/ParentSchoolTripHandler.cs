@@ -1,4 +1,3 @@
-using Api.Domain.Models;
 using Api.TransferDTOs.Responses;
 
 namespace Api.Services.ParentSchoolTripService;
