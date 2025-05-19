@@ -2,12 +2,12 @@ using Api.Common.Enums;
 
 namespace Api.TransferDTOs.Responses;
 
-public class PickupScheduleView
+public class ShuttleScheduleView
 {
-    public Dictionary<DateOnly, List<PickupScheduleDateView>> Data { get; set; } = [];
+    public Dictionary<DateOnly, List<ShuttleScheduleDateView>> Data { get; set; } = [];
 }
 
-public class PickupScheduleDateView
+public class ShuttleScheduleDateView
 {
     public DateOnly Date { get; set; }
     public Guid SchoolId { get; set; }
@@ -23,7 +23,7 @@ public class GroupKey
     public SessionType SessionType { get; set; }
 }
 
-public class PickupScheduleGroupResult
+public class ShuttleScheduleGroupResult
 {
     public GroupKey Id { get; set; } = null!;
     public int TotalStudents { get; set; }

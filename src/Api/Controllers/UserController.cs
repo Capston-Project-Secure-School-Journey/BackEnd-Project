@@ -13,20 +13,13 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("me")]
-public class UserController : ControllerBase
+public class UserController(IUserHandler userHandler) : ControllerBase
 {
-    private readonly IUserHandler _userHandler;
-
-    public UserController(IUserHandler userHandler)
-    {
-        _userHandler = userHandler;
-    }
-
     [HttpGet]
     [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<UserProfile> GetProfile()
     {
-        return await _userHandler.GetProfile(this.GetUserId(), this.GetUserType());
+        return await userHandler.GetProfile(this.GetUserId(), this.GetUserType());
     }
 
     [HttpPut]
@@ -34,7 +27,7 @@ public class UserController : ControllerBase
     [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
     public async Task<UserProfile> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
-        return await _userHandler.UpdateProfile(this.GetUserId(), request);
+        return await userHandler.UpdateProfile(this.GetUserId(), request);
     }
 
     [HttpPost("upload-avatar")]
@@ -48,7 +41,7 @@ public class UserController : ControllerBase
         ], 10)]
         IFormFile file)
     {
-        return await _userHandler.UpdateAvatar(this.GetUserId(), file);
+        return await userHandler.UpdateAvatar(this.GetUserId(), file);
     }
 
     [HttpPut("driver-information")]
@@ -56,7 +49,7 @@ public class UserController : ControllerBase
     [Authorize(UserType.Driver)]
     public async Task<UserProfile> UpdateDriverInformation([FromBody] UpdateDriverInformationRequest request)
     {
-        return await _userHandler.UpdateDriverInformation(this.GetUserId(), request);
+        return await userHandler.UpdateDriverInformation(this.GetUserId(), request);
     }
 
     [HttpPut("add-device-tokens")]
@@ -64,7 +57,7 @@ public class UserController : ControllerBase
     [Authorize()]
     public async Task<ActionResult> AddDeviceToken([FromBody] string deviceToken)
     {
-        await _userHandler.AddDeviceToken(this.GetUserId(), deviceToken);
+        await userHandler.AddDeviceToken(this.GetUserId(), deviceToken);
         return Ok();
     }
 
@@ -90,6 +83,6 @@ public class UserController : ControllerBase
 
         if (!acceptContentType.Contains(contentType)) throw new BadRequestException(ErrorMessages.InvalidFileType);
 
-        return await _userHandler.GetPreSignedUploadImage(this.GetUserId(), fileName, contentType, fileSize);
+        return await userHandler.GetPreSignedUploadImage(this.GetUserId(), fileName, contentType, fileSize);
     }
 }
