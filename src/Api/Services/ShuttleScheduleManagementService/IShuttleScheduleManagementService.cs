@@ -6,7 +6,6 @@ namespace Api.Services.ShuttleScheduleManagementService;
 
 public interface IShuttleScheduleManagementService
 {
-    Task<ShuttleSchedule> AddShuttleSchedule(CreateShuttleScheduleDto request);
     Task UpdateShuttleSchedule(ShuttleSchedule shuttleSchedule);
     Task UpdateStudentOnShuttleSchedule(Guid shuttleScheduleId, StudentOnBus studentOnBus);
     Task<List<ShuttleSchedule>> AddShuttleSchedule(List<CreateShuttleScheduleDto> requests);

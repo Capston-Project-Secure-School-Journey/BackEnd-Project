@@ -96,10 +96,10 @@ public class DriverSchoolTripController(IDriverSchoolTripHandler handler) : Cont
     [HttpGet("up-coming-shuttle")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
-    public async Task<bool> GetUpcomingShuttleSchedule()
+    public async Task<ShuttleSchedule> GetUpcomingShuttleSchedule()
     {
         var userId = this.GetUserId();
-        return await handler.HasUpcomingShuttle(userId);
+        return await handler.GetUpcomingShuttleSchedule(userId);
     }
 
     [HttpPut("{shuttleScheduleId}/update-current-location")]
