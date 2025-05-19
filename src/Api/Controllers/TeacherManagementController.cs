@@ -9,22 +9,15 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("teachers")]
-public class TeacherManagementController : ControllerBase
+public class TeacherManagementController(ITeacherManagementHandler teacherManagementHandler) : ControllerBase
 {
-    private readonly ITeacherManagementHandler _teacherManagementHandler;
-
-    public TeacherManagementController(ITeacherManagementHandler teacherManagementHandler)
-    {
-        _teacherManagementHandler = teacherManagementHandler;
-    }
-
     [HttpPost]
     [Authorize(UserType.SchoolAdmin)]
     [ValidateModel]
     public async Task<ActionResult<TeacherDetailResponse>> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
         var schoolId = this.GetSchoolId();
-        return await _teacherManagementHandler.AddTeacher(schoolId, request);
+        return await teacherManagementHandler.AddTeacher(schoolId, request);
     }
 
     [HttpPut("{teacherId}")]
@@ -35,7 +28,7 @@ public class TeacherManagementController : ControllerBase
     {
         request.Id = teacherId;
         var schoolId = this.GetSchoolId();
-        return await _teacherManagementHandler.UpdateTeacher(schoolId, request);
+        return await teacherManagementHandler.UpdateTeacher(schoolId, request);
     }
 
     [HttpGet("{teacherId}")]
@@ -43,7 +36,7 @@ public class TeacherManagementController : ControllerBase
     public async Task<ActionResult<TeacherDetailResponse>> GetTeacher([FromRoute] Guid teacherId)
     {
         var schoolId = this.GetSchoolId();
-        return await _teacherManagementHandler.GetTeacherById(schoolId, teacherId);
+        return await teacherManagementHandler.GetTeacherById(schoolId, teacherId);
     }
 
     [HttpGet]
@@ -51,7 +44,7 @@ public class TeacherManagementController : ControllerBase
     public async Task<ActionResult<Pagination<TeacherResponse>>> GetTeachers([FromQuery] GetTeacherRequest request)
     {
         var schoolId = this.GetSchoolId();
-        return await _teacherManagementHandler.GetTeachers(schoolId, request);
+        return await teacherManagementHandler.GetTeachers(schoolId, request);
     }
 
     [HttpDelete("{teacherId}")]
@@ -59,7 +52,7 @@ public class TeacherManagementController : ControllerBase
     public async Task<IActionResult> DeleteTeacher([FromRoute] Guid teacherId)
     {
         var schoolId = this.GetSchoolId();
-        await _teacherManagementHandler.DeleteTeacher(schoolId, teacherId);
+        await teacherManagementHandler.DeleteTeacher(schoolId, teacherId);
 
         return Ok();
     }
@@ -69,7 +62,7 @@ public class TeacherManagementController : ControllerBase
     public async Task<IActionResult> DeleteTeacher([FromBody] List<Guid> teacherIds)
     {
         var schoolId = this.GetSchoolId();
-        await _teacherManagementHandler.DeleteTeacher(schoolId, teacherIds);
+        await teacherManagementHandler.DeleteTeacher(schoolId, teacherIds);
 
         return Ok();
     }
@@ -86,6 +79,6 @@ public class TeacherManagementController : ControllerBase
         IFormFile file)
     {
         var schoolId = this.GetSchoolId();
-        return Ok(await _teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
+        return Ok(await teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
     }
 }

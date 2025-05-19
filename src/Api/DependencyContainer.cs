@@ -11,8 +11,11 @@ using Api.Services.ApprovalProcessor;
 using Api.Services.ChildrenManagementService;
 using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
+using Api.Services.DriverSchoolTripService;
 using Api.Services.NotificationService;
-using Api.Services.PickupScheduleService;
+using Api.Services.ParentSchoolTripService;
+using Api.Services.ScanDeviceSchoolTripService;
+using Api.Services.ShuttleScheduleManagementService;
 using Api.Services.ScheduleManagementService;
 using Api.Services.StudentManagementService;
 using Api.Services.TeacherManagementService;
@@ -86,8 +89,18 @@ public static class DependencyContainer
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<INotificationSender, NotificationFcmSender>();
 
-        services.AddScoped<IPickupScheduleService, PickupScheduleService>();
-        
+        services.AddScoped<IShuttleScheduleManagementService, ShuttleScheduleManagementService>();
+        services.AddScoped<IShuttleScheduleManagementHandler, ShuttleScheduleManagementHandler>();
+
+        services.AddScoped<IDriverSchoolTripService, DriverSchoolTripService>();
+        services.AddScoped<IDriverSchoolTripHandler, DriverSchoolTripHandler>();
+
+        services.AddScoped<IParentSchoolTripHandler, ParentSchoolTripHandler>();
+        services.AddScoped<IParentSchoolTripService, ParentSchoolTripService>();
+
+        services.AddScoped<IScanDeviceSchoolTripHandler, ScanDeviceSchoolTripHandler>();
+        services.AddScoped<IScanDeviceSchoolTripService, ScanDeviceSchoolTripService>();
+
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
         services.AddSingleton<ValidateModelAttribute>();

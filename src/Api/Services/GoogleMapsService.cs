@@ -145,7 +145,7 @@ public class GoogleMapsService(HttpClient httpClient, IConfiguration configurati
         }
     }
 
-    public async Task<DirectionsResponse> GetOptimizedRouteAsync(
+    public async Task<(DirectionsResponse, string)> GetOptimizedRouteAsync(
         string origin,
         string destination,
         List<string> waypoints)
@@ -173,6 +173,6 @@ public class GoogleMapsService(HttpClient httpClient, IConfiguration configurati
         if (response == null || response.Status != "OK" || response.Routes.Count == 0)
             throw new InvalidDataException("");
 
-        return response;
+        return (response, jsonString);
     }
 }
