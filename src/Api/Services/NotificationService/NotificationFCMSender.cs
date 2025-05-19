@@ -1,5 +1,6 @@
 using Api.Common.Exceptions;
 using Api.Common.Utilities;
+using Api.Services.UserService;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
@@ -10,8 +11,10 @@ public class NotificationFcmSender : INotificationSender
 {
     private readonly INotificationService _notificationService;
     private readonly FirebaseMessaging _messaging;
+    private readonly IUserService _userService;
 
-    public NotificationFcmSender(IConfiguration config, INotificationService notificationService)
+    public NotificationFcmSender(IConfiguration config, INotificationService notificationService,
+        IUserService userService)
     {
         _notificationService = notificationService;
 
@@ -22,24 +25,10 @@ public class NotificationFcmSender : INotificationSender
             });
 
         _messaging = FirebaseMessaging.DefaultInstance;
+        _userService = userService;
     }
 
-    public async Task SendAsync(string deviceToken, string title, string body)
-    {
-        ThrowIfDeviceTokensAreEmpty(deviceToken);
-        await SendAsync(deviceToken, title, body, null);
-    }
-
-    public async Task SendAsync(string deviceToken, Guid notificationId)
-    {
-        ThrowIfDeviceTokensAreEmpty(deviceToken);
-        var message = await GetMessageAsync(deviceToken, notificationId, null);
-        var result = await _messaging.SendAsync(message);
-
-        ThrowIfSentFailed(result);
-    }
-
-    public async Task SendAsync(string deviceToken, string title, string body,
+    public async Task SendOneAsync(string deviceToken, string title, string body,
         IReadOnlyDictionary<string, string>? data)
     {
         ThrowIfDeviceTokensAreEmpty(deviceToken);
@@ -49,30 +38,23 @@ public class NotificationFcmSender : INotificationSender
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendAsync(string deviceToken, Guid notificationId, IReadOnlyDictionary<string, string>? data)
+    public async Task SendByNotificationAsync(Guid notificationId, IReadOnlyDictionary<string, string>? data)
     {
-        ThrowIfDeviceTokensAreEmpty(deviceToken);
-        var message = await GetMessageAsync(deviceToken, notificationId, data);
-        var result = await _messaging.SendAsync(message);
-
-        ThrowIfSentFailed(result);
-    }
-
-    public async Task SendManyAsync(string[] deviceTokens, string title, string body)
-    {
-        ThrowIfDeviceTokensAreEmpty(deviceTokens);
-        var messages = GetMessage(deviceTokens, title, body, null);
+        var messages = await GetMessageAsync(notificationId, data);
         var result = await _messaging.SendEachAsync(messages);
 
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendManyAsync(string[] deviceTokens, Guid notificationId)
+    public async Task SendByNotificationManyAsync(List<Guid> notificationIds, IReadOnlyDictionary<string, string>? data)
     {
-        ThrowIfDeviceTokensAreEmpty(deviceTokens);
-        var messages = await GetMessageAsync(deviceTokens, notificationId, null);
-        var result = await _messaging.SendEachAsync(messages);
+        var messages = new List<Message>();
+        foreach (var notificationId in notificationIds)
+        {
+            messages.AddRange(await GetMessageAsync(notificationId, data));
+        }
 
+        var result = await _messaging.SendEachAsync(messages);
         ThrowIfSentFailed(result);
     }
 
@@ -86,42 +68,34 @@ public class NotificationFcmSender : INotificationSender
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendManyAsync(string[] deviceTokens, Guid notificationId,
-        IReadOnlyDictionary<string, string>? data)
+    public async Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string> data, TimeSpan? timeToLive)
     {
-        ThrowIfDeviceTokensAreEmpty(deviceTokens);
-        var messages = await GetMessageAsync(deviceTokens, notificationId, data);
-        var result = await _messaging.SendEachAsync(messages);
+        ThrowIfDeviceTokensAreEmpty(deviceToken);
+        var message = GetDataMessage(deviceToken, data, timeToLive);
+        var result = await _messaging.SendAsync(message);
 
         ThrowIfSentFailed(result);
     }
 
-    public Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string>? data)
-    {
-        ThrowIfDeviceTokensAreEmpty(deviceToken);
-        throw new NotImplementedException();
-    }
-
-    public Task SendDataManyAsync(string[] deviceTokens, IReadOnlyDictionary<string, string>? data)
+    public async Task SendDataManyAsync(string[] deviceTokens, IReadOnlyDictionary<string, string> data,
+        TimeSpan? timeToLive)
     {
         ThrowIfDeviceTokensAreEmpty(deviceTokens);
-        throw new NotImplementedException();
+        var message = GetDataMessage(deviceTokens, data, timeToLive);
+        var result = await _messaging.SendEachAsync(message);
+
+        ThrowIfSentFailed(result);
     }
 
-    private async Task<Message> GetMessageAsync(string token, Guid notificationId,
-        IReadOnlyDictionary<string, string>? data)
-    {
-        var notification = await _notificationService.GetNotificationAsync(notificationId);
-
-        return GetMessage(token, notification.Title, notification.Content, data);
-    }
-
-    private async Task<List<Message>> GetMessageAsync(string[] tokens, Guid notificationId,
+    private async Task<List<Message>> GetMessageAsync(Guid notificationId,
         IReadOnlyDictionary<string, string>? data)
     {
         var messages = new List<Message>();
         var notification = await _notificationService.GetNotificationAsync(notificationId);
-        foreach (var token in tokens) messages.Add(GetMessage(token, notification.Title, notification.Content, data));
+        var deviceTokens = await _userService.GetDeviceTokens(notification.RecipientId);
+        ThrowIfDeviceTokensAreEmpty(deviceTokens);
+        foreach (var token in deviceTokens)
+            messages.Add(GetMessage(token, notification.Title, notification.Content, data));
 
         return messages;
     }
@@ -147,6 +121,45 @@ public class NotificationFcmSender : INotificationSender
         var messages = new List<Message>();
         foreach (var token in tokens) messages.Add(GetMessage(token, title, body, data));
 
+        return messages;
+    }
+
+    private static Message GetDataMessage(string token
+        , IReadOnlyDictionary<string, string> data
+        , TimeSpan? timeToLive)
+    {
+        timeToLive ??= TimeSpan.FromDays(10);
+        var expirationUnixTimestamp = DateTimeOffset.UtcNow.Add(timeToLive.Value).ToUnixTimeSeconds();
+        return new Message()
+        {
+            Token = token,
+            Data = data,
+            Android = new AndroidConfig
+            {
+                Priority = Priority.High,
+                TimeToLive = timeToLive.Value
+            },
+            Apns = new ApnsConfig
+            {
+                Headers = new Dictionary<string, string>
+                {
+                    { "apns-priority", "10" },
+                    { "apns-expiration", expirationUnixTimestamp.ToString() }
+                },
+                Aps = new Aps
+                {
+                    ContentAvailable = true
+                }
+            },
+        };
+    }
+
+    private static List<Message> GetDataMessage(string[] tokens
+        , IReadOnlyDictionary<string, string> data
+        , TimeSpan? timeToLive)
+    {
+        var messages = new List<Message>();
+        foreach (var token in tokens) messages.Add(GetDataMessage(token, data, timeToLive));
         return messages;
     }
 
