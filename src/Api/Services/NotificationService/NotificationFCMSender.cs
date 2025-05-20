@@ -12,18 +12,23 @@ public class NotificationFcmSender : INotificationSender
     private readonly INotificationService _notificationService;
     private readonly FirebaseMessaging _messaging;
     private readonly IUserService _userService;
+    private static readonly object firebaseAppLock = new();
 
     public NotificationFcmSender(IConfiguration config, INotificationService notificationService,
         IUserService userService)
     {
         _notificationService = notificationService;
-
-        if (FirebaseApp.DefaultInstance == null)
-            FirebaseApp.Create(new AppOptions()
+        lock (firebaseAppLock)
+        {
+            if (FirebaseApp.DefaultInstance == null)
             {
-                Credential = GoogleCredential.FromFile(config["FcmSetting:CredentialsPath"]!)
-            });
-
+                var options = new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(config["FcmSetting:CredentialsPath"]!)
+                };
+                FirebaseApp.Create(options);
+            }
+        }
         _messaging = FirebaseMessaging.DefaultInstance;
         _userService = userService;
     }
@@ -46,7 +51,8 @@ public class NotificationFcmSender : INotificationSender
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendByNotificationManyAsync(List<Guid> notificationIds, IReadOnlyDictionary<string, string>? data)
+    public async Task SendByNotificationManyAsync(List<Guid> notificationIds,
+        IReadOnlyDictionary<string, string>? data)
     {
         var messages = new List<Message>();
         foreach (var notificationId in notificationIds)
@@ -68,7 +74,8 @@ public class NotificationFcmSender : INotificationSender
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string> data, TimeSpan? timeToLive)
+    public async Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string> data,
+        TimeSpan? timeToLive)
     {
         ThrowIfDeviceTokensAreEmpty(deviceToken);
         var message = GetDataMessage(deviceToken, data, timeToLive);
