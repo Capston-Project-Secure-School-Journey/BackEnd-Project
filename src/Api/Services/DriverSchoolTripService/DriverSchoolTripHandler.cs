@@ -50,6 +50,8 @@ public class DriverSchoolTripHandler(
     {
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(shuttleScheduleId, driverId);
         await driverSchoolTripService.SkipStudent(shuttleScheduleId, studentId, cancelReason);
+        BackgroundJob.Enqueue<SendStudentTripEventJob>(
+            (job) => job.ExecuteAsync(shuttleScheduleId, StudentTripEvent.SkippedFromDriver, studentId));
     }
 
     public async Task<bool> HasInProgressShuttle(Guid driverId)
