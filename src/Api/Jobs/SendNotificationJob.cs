@@ -12,11 +12,12 @@ public class SendNotificationJob(IServiceProvider serviceProvider, ILogger<SendN
         {
             if (args[0] is not List<Guid> notificationIds || notificationIds.Count == 0)
                 throw new InvalidDataException(ErrorMessages.InvalidArgumentType);
-
+            var data = args[1] as Dictionary<string, string>;
+            
             using var scope = serviceProvider.CreateScope();
             var notificationSender = scope.ServiceProvider.GetRequiredService<INotificationSender>();
 
-            await notificationSender.SendByNotificationManyAsync(notificationIds, null);
+            await notificationSender.SendByNotificationManyAsync(notificationIds, data);
         }
         catch (Exception e)
         {
