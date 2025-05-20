@@ -116,6 +116,7 @@ builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("Mong
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.UseHttpClientMetrics();
 builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
