@@ -1,4 +1,5 @@
 using System.Globalization;
+using Accord;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
@@ -7,12 +8,14 @@ using Api.Services.NotificationService;
 using Api.Services.ShuttleScheduleManagementService;
 using Api.Services.UserService;
 using Hangfire;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Jobs.SchoolTripEventDispatchJobs;
 
 public class SendDriverAddressJob(
     IServiceProvider serviceProvider,
-    ILogger<SendDriverAddressJob> logger) : IJob
+    ILogger<SendDriverAddressJob> logger,
+    IMemoryCache cache) : IJob
 {
     public async Task ExecuteAsync(params object[] args)
     {
@@ -58,14 +61,19 @@ public class SendDriverAddressJob(
             var notificationIds = new List<Guid>();
             foreach (var student in shuttleSchedule.Students)
             {
-                var distance = IStudentGroupingAlgorithm.Haversine(shuttleSchedule.CurrentLat,
-                    shuttleSchedule.CurrentLng,
-                    student.PickupLat,
-                    student.PickupLng);
-
-                if (distance < 200)
+                if (!cache.TryGetValue(shuttleScheduleId.ToString() + student.StudentId.ToString(), out _))
                 {
-                    notifications.AddRange(GetNotificationDto(shuttleSchedule, student));
+                    var distance = IStudentGroupingAlgorithm.Haversine(shuttleSchedule.CurrentLat,
+                        shuttleSchedule.CurrentLng,
+                        student.PickupLat,
+                        student.PickupLng);
+
+                    if (distance < 200)
+                    {
+                        notifications.AddRange(GetNotificationDto(shuttleSchedule, student));
+                        cache.Set(shuttleScheduleId.ToString() + student.StudentId.ToString(), 1,
+                            TimeSpan.FromHours(3));
+                    }
                 }
             }
 
@@ -76,6 +84,7 @@ public class SendDriverAddressJob(
                 {
                     notificationIds.Add((await notificationService.CreateNotification(notificationDto)).Id);
                 }
+
                 await trans.CommitAsync();
             }
             catch (Exception)
