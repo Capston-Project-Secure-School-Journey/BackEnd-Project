@@ -12,12 +12,12 @@ namespace Api.Services.ScanDeviceSchoolTripService;
 public class ScanDeviceSchoolTripService(
     Context context,
     IShuttleScheduleManagementService shuttleScheduleManagementService,
-    IChildrenManagementService childrenManagementService): IScanDeviceSchoolTripService
+    IChildrenManagementService childrenManagementService) : IScanDeviceSchoolTripService
 {
     private static readonly SemaphoreSlim DropOffLock = new(1, 1);
     private static readonly SemaphoreSlim PickUpLock = new(1, 1);
-    
-    public async Task PickUpStudent(string studentHash)
+
+    public async Task<(ShuttleSchedule, StudentOnBus)> PickUpStudent(string studentHash)
     {
         await PickUpLock.WaitAsync();
 
@@ -30,13 +30,15 @@ public class ScanDeviceSchoolTripService(
 
             if (studentOnBus.IsPickedUp)
                 throw new BadRequestException("Học sinh đã lên xe.");
-            
+
             studentOnBus.IsPickedUp = true;
             studentOnBus.PickedUpTime = currentTime;
             shuttleSchedule.NumberOfPickedUpStudents += 1;
 
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
             await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
+
+            return (shuttleSchedule, studentOnBus);
         }
         finally
         {
@@ -44,7 +46,7 @@ public class ScanDeviceSchoolTripService(
         }
     }
 
-    public async Task DropOffStudent(string studentHash)
+    public async Task<(ShuttleSchedule, StudentOnBus)> DropOffStudent(string studentHash)
     {
         await DropOffLock.WaitAsync();
 
@@ -57,20 +59,22 @@ public class ScanDeviceSchoolTripService(
 
             if (studentOnBus.IsDroppedOff)
                 throw new BadRequestException("Học sinh đã xuống xe.");
-            
+
             studentOnBus.IsDroppedOff = true;
             studentOnBus.DroppedOffTime = currentTime;
             shuttleSchedule.NumberOfDroppedOffStudents += 1;
 
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
             await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
+
+            return (shuttleSchedule, studentOnBus);
         }
         finally
         {
             DropOffLock.Release();
         }
     }
-    
+
     private async Task<ShuttleSchedule> GetCurrentShuttleScheduleByStudent(Student student)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
