@@ -93,7 +93,7 @@ public class NotificationFcmSender : INotificationSender
         var messages = new List<Message>();
         var notification = await _notificationService.GetNotificationAsync(notificationId);
         var deviceTokens = await _userService.GetDeviceTokens(notification.RecipientId);
-        ThrowIfDeviceTokensAreEmpty(deviceTokens);
+        // ThrowIfDeviceTokensAreEmpty(deviceTokens);
         foreach (var token in deviceTokens)
             messages.Add(GetMessage(token, notification.Title, notification.Content, data));
 
