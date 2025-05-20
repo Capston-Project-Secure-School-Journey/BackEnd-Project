@@ -122,8 +122,13 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .MinimumLevel.Information()
     .WriteTo.Console()
+    .WriteTo.MySQL(
+        connectionString: connectionString,
+        tableName: "error_logs",
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error)
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .CreateLogger();
+
 builder.Services.AddSerilog();
 MongoMappingConfig.RegisterMappings();
 
