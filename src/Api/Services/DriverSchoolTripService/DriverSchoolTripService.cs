@@ -166,7 +166,8 @@ public class DriverSchoolTripService(
             .Find(ss => ss.Date == DateOnly.FromDateTime(currentTime)
                         && ss.StartTime >= lowerBound
                         && ss.StartTime <= upperBound
-                        && ss.JourneyStatus == JourneyStatus.NotStarted)
+                        && ss.JourneyStatus == JourneyStatus.NotStarted
+                        && ss.DriverId == driverId)
             .AnyAsync();
     }
 
@@ -179,7 +180,8 @@ public class DriverSchoolTripService(
             .Find(ss => ss.Date == DateOnly.FromDateTime(currentTime)
                         && ss.StartTime >= lowerBound
                         && ss.StartTime <= upperBound
-                        && ss.JourneyStatus == JourneyStatus.NotStarted)
+                        && ss.JourneyStatus == JourneyStatus.NotStarted
+                        && ss.DriverId == driverId)
             .FirstOrDefaultAsync();
 
         return shuttleSchedule;

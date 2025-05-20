@@ -130,7 +130,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
 
     public async Task AddDeviceToken(Guid userId, string deviceToken)
     {
-        var user = await context.Drivers.FirstOrDefaultAsync(x => x.Id == userId);
+        var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         if (user == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
 
@@ -157,7 +157,7 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
 
     public async Task<string[]> GetDeviceTokens(Guid userId)
     {
-        return (await context.Drivers
+        return (await context.Users
             .Where(x => x.Id == userId)
             .Select(u => u.DeviceTokens)
             .FirstOrDefaultAsync()) ?? [];
