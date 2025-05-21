@@ -6,8 +6,28 @@ on:
       - main
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Restore dependencies
+        run: dotnet restore tests/Api.Tests/Api.Tests.csproj
+        
+      - name: Run tests
+        run: dotnet test tests/Api.Tests/Api.Tests.csproj --no-restore --verbosity normal
+
   build-and-push:
     name: Build & Push Docker Images
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
