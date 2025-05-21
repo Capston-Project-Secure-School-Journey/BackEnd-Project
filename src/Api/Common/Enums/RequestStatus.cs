@@ -7,5 +7,6 @@ public enum RequestStatus
     Rejected = 2,
     NeedMoreInfo = 3,
     Approved = 4,
-    Cancelled = 5
+    Cancelled = 5,
+    CancellationPending = 6
 }

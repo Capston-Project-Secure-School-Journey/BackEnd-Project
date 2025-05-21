@@ -9,8 +9,7 @@ public enum ApplicationAction
     [Display(Name = "Hủy hồ sơ")] Cancel = 3,
     [Display(Name = "Từ chối hồ sơ")] Reject = 4,
     [Display(Name = "Chấp nhận hồ sơ")] Approve = 5,
-
-    [Display(Name = "Yêu cầu thêm thông tin")]
-    RequestMoreInfo = 6,
-    [Display(Name = "Xóa hồ sơ")] Delete = 7
+    [Display(Name = "Yêu cầu thêm thông tin")] RequestMoreInfo = 6,
+    [Display(Name = "Xóa hồ sơ")] Delete = 7,
+    [Display(Name = "Yêu cầu hủy hồ sơ")] RequestCancellation = 8
 }

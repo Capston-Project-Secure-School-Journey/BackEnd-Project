@@ -93,7 +93,8 @@ public class KMeansStudentGrouping : IStudentGroupingAlgorithm
                 .Where(x => x.ClusterId == i)
                 .ToList();
             assignments.Add(driver, studentsInCluster.Select(st => st.StudentInfo).ToList());
-            driver.Used +=  studentsInCluster.Count;
+            // update driver.used, there are 2 trips (pick up and drop off)
+            driver.Used +=  studentsInCluster.Count * 2;
             i++;
         }
 

@@ -4,7 +4,7 @@ using Hangfire;
 using Microsoft.EntityFrameworkCore;
 // ReSharper disable All
 
-namespace Api.Jobs;
+namespace Api.Jobs.ShuttleScheduleJobs;
 
 public class SchoolJobSubscriber(IServiceProvider serviceProvider) : IJob
 {
