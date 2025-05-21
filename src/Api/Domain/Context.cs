@@ -25,8 +25,9 @@ public class Context(DbContextOptions options, IMongoDatabase mongoDatabase) : D
     public DbSet<UserBan> UserBans { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<SystemVariable> SystemVariables { get; set; }
-    public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; }
-    public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; }
+    public DbSet<DriverApprovalRequest> DriverApprovalRequests { get; set; } = null!;
+    public DbSet<DriverRequestStatusHistory> DriverRequestStatusHistories { get; set; } = null!;
+    public DbSet<ActiveDriver> ActiveDrivers { get; set; } = null!;
     public IMongoDatabase MongoDatabase => mongoDatabase;
 
     public IMongoCollection<ShuttleSchedule> ShuttleScheduleCollection =>

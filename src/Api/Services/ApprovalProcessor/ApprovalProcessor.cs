@@ -23,14 +23,7 @@ public class ApprovalProcessor(
             .Drivers
             .FirstOrDefaultAsync(dr => dr.Id == driverId);
         ValidateDriverInfo(driver!);
-        var isApplied = await context
-            .DriverApprovalRequests
-            .Where(x => x.DriverId == driverId)
-            .Where(x => x.RequestStatus != RequestStatus.Rejected && x.RequestStatus != RequestStatus.Cancelled)
-            .AnyAsync();
-
-        if (isApplied)
-            throw new BadRequestException(ErrorMessages.AlreadyApplied);
+        await CanCreateApplication(driver!);
 
         var trans = await context.Database.BeginTransactionAsync();
         try
@@ -218,26 +211,45 @@ public class ApprovalProcessor(
         if (driver == null)
             throw new BadRequestException(ErrorMessages.SystemError);
 
-        driver.VerifiedBy.Add(new VerifiedBy()
-            { SchoolId = application.SchoolId, VerifiedAt = DateTimeHelper.GetDateTimeUtc7() });
-        context.Drivers.Update(driver);
-
-        var stateHistory = new DriverRequestStatusHistory()
+        var trans = await context.Database.BeginTransactionAsync();
+        try
         {
-            RequestId = application.Id,
-            FromStatus = application.RequestStatus,
-            ToStatus = RequestStatus.Approved,
-            ChangedBy = reviewerId,
-            ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-            Note = string.Empty
-        };
+            driver.VerifiedBy.Add(new VerifiedBy()
+                { SchoolId = application.SchoolId, VerifiedAt = DateTimeHelper.GetDateTimeUtc7() });
+            context.Drivers.Update(driver);
 
-        application.RequestStatus = RequestStatus.Approved;
-        application.ApprovedBy = reviewerId;
+            var stateHistory = new DriverRequestStatusHistory()
+            {
+                RequestId = application.Id,
+                FromStatus = application.RequestStatus,
+                ToStatus = RequestStatus.Approved,
+                ChangedBy = reviewerId,
+                ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
+                Note = string.Empty
+            };
 
-        context.DriverApprovalRequests.Update(application);
-        await context.DriverRequestStatusHistories.AddAsync(stateHistory);
-        await context.SaveChangesAsync();
+            application.RequestStatus = RequestStatus.Approved;
+            application.ApprovedBy = reviewerId;
+
+            var activeDriver = new ActiveDriver
+            {
+                DriverId = application.DriverId,
+                SchoolId = application.SchoolId,
+                SeatingCapacity = application.SeatingCapacity,
+                Used = 0,
+            };
+            await context.ActiveDrivers.AddAsync(activeDriver);
+
+            context.DriverApprovalRequests.Update(application);
+            await context.DriverRequestStatusHistories.AddAsync(stateHistory);
+            await context.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task RejectApplication(Guid applicationId, Guid reviewerId, string reason)
@@ -289,7 +301,35 @@ public class ApprovalProcessor(
         await context.SaveChangesAsync();
     }
 
-    public async Task CancelApplicationByReviewer(Guid applicationId, Guid reviewerId, string reason)
+    public async Task RequestCancellationByReviewer(Guid applicationId, Guid reviewerId, string reason)
+    {
+        var application = await GetApplicationByReviewer(applicationId, reviewerId);
+        var actionsCanDo = GetActionCanDo(application, true);
+
+        if (actionsCanDo.All(x => x.Action != ApplicationAction.RequestCancellation))
+            throw new BadRequestException(ErrorMessages.CannotCancelApplication);
+
+        if (application.RequestStatus == RequestStatus.Approved)
+            await RequestCancellation(application, reviewerId, reason);
+        else
+            await CancelApplication(application, reviewerId, reason);
+    }
+
+    public async Task RequestCancellationByDriver(Guid applicationId, Guid driverId, string reason)
+    {
+        var application = await GetApplicationByDriver(applicationId, driverId);
+        var actionsCanDo = GetActionCanDo(application, false);
+
+        if (actionsCanDo.All(x => x.Action != ApplicationAction.RequestCancellation))
+            throw new BadRequestException(ErrorMessages.CannotCancelApplication);
+
+        if (application.RequestStatus == RequestStatus.Approved)
+            await RequestCancellation(application, driverId, reason);
+        else
+            await CancelApplication(application, driverId, reason);
+    }
+
+    public async Task CancelApplication(Guid applicationId, Guid reviewerId)
     {
         var application = await GetApplicationByReviewer(applicationId, reviewerId);
         var actionsCanDo = GetActionCanDo(application, true);
@@ -297,57 +337,7 @@ public class ApprovalProcessor(
         if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
             throw new BadRequestException(ErrorMessages.CannotCancelApplication);
 
-        var driver = await context
-            .Drivers
-            .FirstOrDefaultAsync(dr => dr.Id == application.DriverId);
-
-        if (driver == null)
-            throw new BadRequestException(ErrorMessages.SystemError);
-
-        var count = driver.VerifiedBy.RemoveAll(x => x.SchoolId == application.SchoolId);
-        if (count > 0)
-            context.Drivers.Update(driver);
-
-        var stateHistory = new DriverRequestStatusHistory()
-        {
-            RequestId = application.Id,
-            FromStatus = application.RequestStatus,
-            ToStatus = RequestStatus.Cancelled,
-            ChangedBy = reviewerId,
-            ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-            Note = reason
-        };
-
-        application.RequestStatus = RequestStatus.Cancelled;
-        context.DriverApprovalRequests.Update(application);
-
-        await context.DriverRequestStatusHistories.AddAsync(stateHistory);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task CancelApplicationByDriver(Guid applicationId, Guid driverId, string reason)
-    {
-        var application = await GetApplicationByDriver(applicationId, driverId);
-        var actionsCanDo = GetActionCanDo(application, false);
-
-        if (actionsCanDo.All(x => x.Action != ApplicationAction.Cancel))
-            throw new BadRequestException(ErrorMessages.CannotCancelApplication);
-
-        var stateHistory = new DriverRequestStatusHistory()
-        {
-            RequestId = application.Id,
-            FromStatus = application.RequestStatus,
-            ToStatus = RequestStatus.Cancelled,
-            ChangedBy = driverId,
-            ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
-            Note = reason
-        };
-
-        application.RequestStatus = RequestStatus.Cancelled;
-        context.DriverApprovalRequests.Update(application);
-
-        await context.DriverRequestStatusHistories.AddAsync(stateHistory);
-        await context.SaveChangesAsync();
+        await CancelApplication(application, reviewerId, string.Empty);
     }
 
     public async Task DeleteApplicationByDriver(Guid applicationId, Guid driverId)
@@ -402,9 +392,13 @@ public class ApprovalProcessor(
         switch (application.RequestStatus)
         {
             case RequestStatus.Approved:
-                if (isReviewer) actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
+                if (isReviewer)
+                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.RequestCancellation });
                 break;
             case RequestStatus.Rejected:
+                break;
+            case RequestStatus.CancellationPending:
+                if (isReviewer) actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
                 break;
             case RequestStatus.Cancelled:
                 break;
@@ -493,5 +487,99 @@ public class ApprovalProcessor(
             throw new BadRequestException(ErrorMessages.MissingLicenseImages);
         if (driver.VehicleImages.Count <= 4)
             throw new BadRequestException(ErrorMessages.RequireAtLeast5VehiclePhotos);
+    }
+
+    private async Task CanCreateApplication(Driver driver)
+    {
+        if (driver == null)
+            throw new BadRequestException(ErrorMessages.SystemError);
+
+        var isApplied = await context
+            .DriverApprovalRequests
+            .Where(x => x.DriverId == driver.Id)
+            .Where(x => x.RequestStatus != RequestStatus.Rejected && x.RequestStatus != RequestStatus.Cancelled)
+            .AnyAsync();
+
+
+        var inCancelledProcess = await context
+            .ActiveDrivers
+            .Where(atd => atd.DriverId == driver.Id
+                          && atd.ExpiredAt != null
+                          && atd.ExpiredAt >= DateTimeHelper.GetDateTimeUtc7())
+            .AnyAsync();
+
+        if (isApplied || inCancelledProcess)
+            throw new BadRequestException(ErrorMessages.AlreadyApplied);
+    }
+
+    private async Task CancelApplication(DriverApprovalRequest application, Guid changedBy, string reason)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var stateHistory = new DriverRequestStatusHistory()
+            {
+                RequestId = application.Id,
+                FromStatus = application.RequestStatus,
+                ToStatus = RequestStatus.Cancelled,
+                ChangedBy = changedBy,
+                ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
+                Note = reason
+            };
+
+            application.RequestStatus = RequestStatus.Cancelled;
+
+
+            var activeDriver = await context.ActiveDrivers.FirstOrDefaultAsync(ad =>
+                ad.DriverId == application.DriverId && ad.SchoolId == application.SchoolId);
+
+            context.ActiveDrivers.Remove(activeDriver!);
+            context.DriverApprovalRequests.Update(application);
+            await context.DriverRequestStatusHistories.AddAsync(stateHistory);
+            await context.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task RequestCancellation(DriverApprovalRequest application, Guid changedBy, string reason)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var stateHistory = new DriverRequestStatusHistory()
+            {
+                RequestId = application.Id,
+                FromStatus = application.RequestStatus,
+                ToStatus = RequestStatus.CancellationPending,
+                ChangedBy = changedBy,
+                ChangedAt = DateTimeHelper.GetDateTimeUtc7(),
+                Note = reason
+            };
+
+            application.RequestStatus = RequestStatus.CancellationPending;
+
+            var activeDriver = await context.ActiveDrivers
+                .FirstOrDefaultAsync(ad => ad.DriverId == application.DriverId && ad.SchoolId == application.SchoolId);
+            if (activeDriver != null)
+            {
+                activeDriver.ExpiredAt = DateTimeHelper.GetDateTimeUtc7().AddMonths(1);
+                context.ActiveDrivers.Update(activeDriver);
+            }
+
+            context.DriverApprovalRequests.Update(application);
+            await context.DriverRequestStatusHistories.AddAsync(stateHistory);
+            await context.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
     }
 }

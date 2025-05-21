@@ -11,8 +11,9 @@ public interface IApprovalProcessor
     Task ApproveApplication(Guid applicationId, Guid reviewerId);
     Task RejectApplication(Guid applicationId, Guid reviewerId, string reason);
     Task RequireAdditionalDetails(Guid applicationId, Guid reviewerId, string reason);
-    Task CancelApplicationByReviewer(Guid applicationId, Guid reviewerId, string reason);
-    Task CancelApplicationByDriver(Guid applicationId, Guid driverId, string reason);
+    Task RequestCancellationByReviewer(Guid applicationId, Guid reviewerId, string reason);
+    Task RequestCancellationByDriver(Guid applicationId, Guid driverId, string reason);
+    Task CancelApplication(Guid applicationId, Guid reviewerId);
     Task DeleteApplicationByDriver(Guid applicationId, Guid driverId);
     Task<List<ApplicationActionDto>> GetActionCanDoByReviewer(Guid applicationId, Guid reviewerId);
     Task<List<ApplicationActionDto>> GetActionCanDoByDriver(Guid applicationId, Guid driverId);
