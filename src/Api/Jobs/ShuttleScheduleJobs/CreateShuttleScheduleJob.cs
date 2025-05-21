@@ -9,7 +9,7 @@ using Api.Scheduling;
 using Api.Services.ShuttleScheduleManagementService;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Jobs;
+namespace Api.Jobs.ShuttleScheduleJobs;
 
 public class CreateShuttleScheduleJob(
     IServiceProvider serviceProvider,
@@ -34,6 +34,9 @@ public class CreateShuttleScheduleJob(
 
             if (startDate is null)
                 return;
+            if (Convert.ToDateTime(startDate.Value) >= DateTimeHelper.GetDateTimeUtc7())
+                return;
+            
             await HasStudentMissingAddress(db, schoolId);
             await IsDriverCapacityInsufficient(db, schoolId);
 
@@ -45,15 +48,15 @@ public class CreateShuttleScheduleJob(
                 .Where(x => x.Date >= nextWeekRange.StartOfWeek && x.Date <= nextWeekRange.EndOfWeek)
                 .ToListAsync();
 
-            var drivers = await db.DriverApprovalRequests
-                .AsNoTracking()
+            var drivers = await db.ActiveDrivers
                 .AsQueryable()
-                .Where(d => d.SchoolId == schoolId && d.RequestStatus == RequestStatus.Approved)
+                .Where(d => d.SchoolId == schoolId)
+                .Where(d => d.ExpiredAt == null || d.ExpiredAt > DateTimeHelper.GetDateTimeUtc7())
                 .Select(x => new DriverData()
                 {
                     Id = x.DriverId,
                     SeatingCapacity = x.SeatingCapacity,
-                    Used = 0
+                    Used = x.Used
                 })
                 .ToListAsync();
 
@@ -86,6 +89,19 @@ public class CreateShuttleScheduleJob(
                     });
                 }
             }
+
+            foreach (var driver in drivers)
+            {
+                var activeDriver = await db.ActiveDrivers
+                    .FirstOrDefaultAsync(ad => ad.DriverId == driver.Id && ad.SchoolId == schoolId);
+                if (activeDriver != null)
+                {
+                    activeDriver.Used += driver.Used;
+                    activeDriver.UpdatedAt = DateTimeHelper.GetDateTimeUtc7();
+                    db.ActiveDrivers.Update(activeDriver);
+                }
+            }
+            await db.SaveChangesAsync();
             await shuttleScheduleManagementService.AddShuttleSchedule(requests);
             
             logger.LogInformation("CreateShuttleScheduleJob successfully");
@@ -121,10 +137,11 @@ public class CreateShuttleScheduleJob(
             .Where(s => s.NeedsPickup)
             .CountAsync();
 
-        var seatingCapacityCount = await db.DriverApprovalRequests
+        var seatingCapacityCount = await db.ActiveDrivers
             .AsNoTracking()
             .AsQueryable()
-            .Where(d => d.SchoolId == schoolId && d.RequestStatus == RequestStatus.Approved)
+            .Where(d => d.SchoolId == schoolId)
+            .Where(d => d.ExpiredAt == null || d.ExpiredAt > DateTimeHelper.GetDateTimeUtc7())
             .SumAsync(d => d.SeatingCapacity);
 
         if (studentCount > seatingCapacityCount)

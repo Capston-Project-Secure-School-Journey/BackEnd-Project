@@ -11,7 +11,7 @@ using Api.Services.UserManagementService;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Jobs;
+namespace Api.Jobs.ShuttleScheduleJobs;
 
 public class AlertInsufficientDriversJob(
     IServiceProvider serviceProvider,
@@ -39,26 +39,26 @@ public class AlertInsufficientDriversJob(
 
             if (startDate is null)
                 return;
-            if (Convert.ToDateTime(startDate.Value) <= DateTimeHelper.GetDateTimeUtc7())
-                return;
 
             var studentCount = await db.Students
                 .Where(s => s.SchoolId == schoolId && s.NeedsPickup)
                 .CountAsync();
 
-            var seatingCapacityCount = await db.DriverApprovalRequests
+            var seatingCapacityCount = await db.ActiveDrivers
                 .AsNoTracking()
                 .AsQueryable()
-                .Where(d => d.SchoolId == schoolId && d.RequestStatus == RequestStatus.Approved)
+                .Where(d => d.SchoolId == schoolId &&
+                            (d.ExpiredAt == null || d.ExpiredAt >= DateTimeHelper.GetDateTimeUtc7()))
                 .SumAsync(d => d.SeatingCapacity);
 
             if (studentCount > seatingCapacityCount)
             {
-                var drivers = await db.DriverApprovalRequests
+                var drivers = await db.ActiveDrivers
                     .AsNoTracking()
                     .AsQueryable()
                     .Include(x => x.Driver)
-                    .Where(d => d.SchoolId == schoolId && d.RequestStatus == RequestStatus.Approved)
+                    .Where(d => d.SchoolId == schoolId &&
+                                (d.ExpiredAt == null || d.ExpiredAt >= DateTimeHelper.GetDateTimeUtc7()))
                     .ToListAsync();
                 var schoolAdmin = await userManagement.GetSchoolAdmin(schoolId);
                 var csvFile = CreateCsvFile(drivers, studentCount);
@@ -106,15 +106,15 @@ public class AlertInsufficientDriversJob(
         }
     }
 
-    private static MemoryStream CreateCsvFile(List<DriverApprovalRequest> drivers, int studentCount)
+    private static MemoryStream CreateCsvFile(List<ActiveDriver> drivers, int studentCount)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream, Encoding.UTF8);
 
-        writer.WriteLine("DriverId,FullName,SeatingCapacity");
+        writer.WriteLine("DriverId,FullName,SeatingCapacity,ExpiredAt");
 
         foreach (var d in drivers)
-            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver?.FirstName + d.Driver?.LastName)},{d.SeatingCapacity}");
+            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver?.FirstName + d.Driver?.LastName)},{d.SeatingCapacity},{d.ExpiredAt}");
 
         writer.WriteLine($"Số lượng xe hiện tại:,{drivers.Count}");
         writer.WriteLine($"Số chỗ ngồi hiện tại:,{drivers.Sum(x => x.SeatingCapacity)}");
