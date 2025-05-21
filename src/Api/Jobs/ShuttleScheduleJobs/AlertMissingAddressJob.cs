@@ -10,7 +10,7 @@ using Api.Services.UploadFileService;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Jobs;
+namespace Api.Jobs.ShuttleScheduleJobs;
 
 public class AlertMissingAddressJob(IServiceProvider serviceProvider, 
     ILogger<AlertMissingAddressJob> logger) : IJob
@@ -33,8 +33,6 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider,
                 .FirstOrDefaultAsync(e => e.Name == "START_DATE" && e.SchoolId == schoolId);
 
             if (startDate is null)
-                return;
-            if (Convert.ToDateTime(startDate.Value) <= DateTimeHelper.GetDateTimeUtc7())
                 return;
 
             var studentNeedAlert = await db.Students

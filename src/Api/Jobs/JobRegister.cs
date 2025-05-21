@@ -1,4 +1,5 @@
 using Api.Extensions;
+using Api.Jobs.ShuttleScheduleJobs;
 using Hangfire;
 
 namespace Api.Jobs;
