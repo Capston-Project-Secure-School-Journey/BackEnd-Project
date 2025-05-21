@@ -97,15 +97,21 @@ public class ApplicationHandler(
         BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
-    public async Task CancelApplicationByReviewer(Guid applicationId, Guid reviewerId, string reason)
+    public async Task RequestCancellationByReviewer(Guid applicationId, Guid reviewerId, string reason)
     {
-        await approvalProcessor.CancelApplicationByReviewer(applicationId, reviewerId, reason);
+        await approvalProcessor.RequestCancellationByReviewer(applicationId, reviewerId, reason);
         BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
-    public async Task CancelApplicationByDriver(Guid applicationId, Guid driverId, string reason)
+    public async Task RequestCancellationByDriver(Guid applicationId, Guid driverId, string reason)
     {
-        await approvalProcessor.CancelApplicationByDriver(applicationId, driverId, reason);
+        await approvalProcessor.RequestCancellationByDriver(applicationId, driverId, reason);
+        BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
+    }
+
+    public async Task CancelApplication(Guid applicationId, Guid driverId)
+    {
+        await approvalProcessor.CancelApplication(applicationId, driverId);
         BackgroundJob.Enqueue<CreateApplicationNotificationJob>((job) => job.ExecuteAsync(applicationId));
     }
 
@@ -152,7 +158,7 @@ public class ApplicationHandler(
 
         if (!entity.Collection<DriverRequestStatusHistory>(x => x.DriverRequestStatusHistories).IsLoaded)
             await entity.Collection<DriverRequestStatusHistory>(x => x.DriverRequestStatusHistories).LoadAsync();
-        
+
         var response = mapper.Map<ApplicationResponse>(request);
         foreach (var file in request.VehicleImages)
         {
