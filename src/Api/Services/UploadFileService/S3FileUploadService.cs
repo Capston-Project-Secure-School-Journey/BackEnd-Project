@@ -76,7 +76,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 throw;
             }
 
-            UploadTransactionManager.TrackUploadedFile(fileName);
+            await UploadTransactionManager.TrackUploadedFile(fileName);
             return new UploadFileResponse()
             {
                 Key = fmKey,
@@ -135,7 +135,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 throw;
             }
 
-            UploadTransactionManager.TrackUploadedFile(key);
+            await UploadTransactionManager.TrackUploadedFile(key);
             var response = new UploadFileResponse()
             {
                 Key = fmKey,
@@ -302,7 +302,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
                 throw;
             }
 
-            UploadTransactionManager.TrackUploadedFile(key);
+            await UploadTransactionManager.TrackUploadedFile(key);
             var response = new UploadFileResponse()
             {
                 Key = fmKey,

@@ -8,7 +8,6 @@ public interface IFileUploadService
 
     Task<UploadFileResponse> UploadStreamAsync(Stream stream, string fileName, string contentType,
         string prefix = "");
-
     Task<bool> DeleteFileManagementAsync(Guid id);
     Task<bool> DeleteFileManagementAsync(List<Guid> ids);
     Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request, int expirationMinutes = 60);
