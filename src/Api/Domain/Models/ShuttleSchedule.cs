@@ -17,8 +17,9 @@ public class ShuttleSchedule
     public Gender DriverGender { get; set; }
     public string LicenseNumber { get; set; } = string.Empty;
     public bool IsAllNotesRead { get; set; }
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan? EndTime { get; set; }
+    public TimeSpan PickupStartTime { get; set; }
+    public TimeSpan PickupEndTime { get; set; }
+    public TimeSpan? EndJourneyTime { get; set; }
     public JourneyStatus JourneyStatus { get; set; }
     public string CancelReason { get; set; } = string.Empty;
     public int NumberOfStudents { get; set; }
@@ -32,7 +33,14 @@ public class ShuttleSchedule
 
 public class BestRoute
 {
-    public string Origin { get; set; } = string.Empty;
-    public string Destination { get; set; } = string.Empty;
-    public List<string> Waypoints { get; set; } = new();
+    public Point Origin { get; set; } = null!;
+    public Point Destination { get; set; } = null!;
+    public List<Point> WayPoints { get; set; } = new();
+}
+
+public class Point
+{
+    public string FullAddress { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
 }

@@ -1,4 +1,5 @@
 using Api.Extensions;
+using Api.Jobs.CleanDatabaseJobs;
 using Api.Jobs.ShuttleScheduleJobs;
 using Hangfire;
 
@@ -21,6 +22,12 @@ public static class JobRegister
 
         RecurringJob.AddOrUpdate<CleanFileJob>(
             "daily-cleanup-job",
+            job => job.ExecuteAsync(),
+            "35 2 * * *",
+            options);
+        
+        RecurringJob.AddOrUpdate<CleanUserRequestedLogsJob>(
+            "daily-cleanup-requested-logs-job",
             job => job.ExecuteAsync(),
             "35 2 * * *",
             options);

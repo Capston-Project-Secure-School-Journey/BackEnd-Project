@@ -4,7 +4,7 @@ using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Api.Jobs;
+namespace Api.Jobs.CleanDatabaseJobs;
 
 public class CleanFileJob(
     Context context,

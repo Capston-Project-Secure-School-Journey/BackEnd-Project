@@ -6,49 +6,60 @@ public class UploadTransactionManager(IFileDeleter fileDeleter, ILogger<UploadTr
     : IUploadTransactionManager
 {
     private readonly List<string> _uploadedKeys = new();
-    private readonly object _lock = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public void TrackUploadedFile(string key)
+    public async Task TrackUploadedFile(string key)
     {
-        if (!string.IsNullOrWhiteSpace(key))
-            lock (_lock)
-            {
+        await _semaphore.WaitAsync();
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(key))
                 _uploadedKeys.Add(key);
-            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    public Task BeginTransactionAsync()
+    public async Task BeginTransactionAsync()
     {
-        lock (_lock)
+        await _semaphore.WaitAsync();
+        try
         {
             _uploadedKeys.Clear();
         }
-
-        return Task.CompletedTask;
+        finally
+        {
+            _semaphore.Release();
+        }
     }
-    
+
     public async Task RollbackAsync()
     {
-        var tasks = new List<Task>();
-        lock (_lock)
+        await _semaphore.WaitAsync();
+        try
         {
+            var tasks = new List<Task>();
             if (_uploadedKeys.Count <= 0)
                 return;
 
-            foreach (var key in _uploadedKeys)
-                tasks.Add(Task.Run(async () =>
+            tasks.AddRange(_uploadedKeys.Select(key => Task.Run(async () =>
+            {
+                try
                 {
-                    try
-                    {
-                        await fileDeleter.DeleteFileAsync(key);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, ErrorMessages.FileDeleteError);
-                    }
-                }));
+                    await fileDeleter.DeleteFileAsync(key);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, ErrorMessages.FileDeleteError);
+                }
+            })));
+            await Task.WhenAll(tasks);
         }
-
-        await Task.WhenAll(tasks);
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

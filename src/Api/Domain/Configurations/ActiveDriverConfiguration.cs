@@ -8,6 +8,7 @@ public class ActiveDriverConfiguration : IEntityTypeConfiguration<ActiveDriver>
 {
     public void Configure(EntityTypeBuilder<ActiveDriver> builder)
     {
+        builder.ToTable("active_drivers");
         builder.HasKey(x => x.Id);
         
         builder.Property(x => x.DriverId)
