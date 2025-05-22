@@ -11,6 +11,7 @@ using Api.Services.UploadFileService;
 using Api.Services.UserService;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 using MongoDB.Driver;
 
 namespace Api.Services.ShuttleScheduleManagementService;
@@ -20,14 +21,17 @@ public class ShuttleScheduleManagementService(
     IUserService userService,
     IFileUploadService fileUploadService,
     IMapper mapper,
-    ISchoolManagement schoolManagement) : IShuttleScheduleManagementService
+    ISchoolManagement schoolManagement,
+    IMemoryCache cache) : IShuttleScheduleManagementService
 {
+    private const string CreateShuttleCacheKey = "CreateShuttleCacheKey";
+
     public async Task UpdateShuttleSchedule(ShuttleSchedule shuttleSchedule)
     {
         var filter = Builders<ShuttleSchedule>.Filter.Eq(s => s.Id, shuttleSchedule.Id);
         var update = Builders<ShuttleSchedule>.Update
             .Set(s => s.JourneyStatus, shuttleSchedule.JourneyStatus)
-            .Set(s => s.EndTime, shuttleSchedule.EndTime)
+            .Set(s => s.EndJourneyTime, shuttleSchedule.EndJourneyTime)
             .Set(s => s.CancelReason, shuttleSchedule.CancelReason)
             .Set(s => s.NumberOfPickedUpStudents, shuttleSchedule.NumberOfPickedUpStudents)
             .Set(s => s.NumberOfDroppedOffStudents, shuttleSchedule.NumberOfDroppedOffStudents);
@@ -183,11 +187,13 @@ public class ShuttleScheduleManagementService(
 
     private async Task<ShuttleSchedule> CreateShuttleScheduleFromDto(CreateShuttleScheduleDto shuttleScheduleDto)
     {
-        var driver = await userService.GetUser(shuttleScheduleDto.DriverId, UserType.Driver) as Driver;
-        var school = await schoolManagement.GetSchool(shuttleScheduleDto.SchoolId);
+        var driver = await GetDriverInCache(shuttleScheduleDto.DriverId);
+        var school = await GetSchoolInCache(shuttleScheduleDto.SchoolId);
 
         if (driver == null)
             throw new NotFoundException(ErrorMessages.UserNotFound);
+        if (school == null)
+            throw new NotFoundException(ErrorMessages.SchoolNotFound);
 
         var shuttleSchedule = new ShuttleSchedule()
         {
@@ -199,14 +205,15 @@ public class ShuttleScheduleManagementService(
             DriverName = driver.FirstName + " " + driver.LastName,
             DriverAvatar = driver.AvatarKey == null
                 ? ""
-                : await fileUploadService.GeneratePreSignedDownloadUrlAsync(driver.AvatarKey.Value, 99999),
+                : await GetImageUrl(driver.AvatarKey.Value),
             VehicleType = driver.VehicleType,
             DriverGender = driver.Gender,
             LicenseNumber = driver.LicenseNumber,
             IsAllNotesRead = true,
             Type = shuttleScheduleDto.Type,
-            StartTime = GetStartTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
-            EndTime = null,
+            PickupStartTime = GetPickupStartTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
+            PickupEndTime = GetPickupEndTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
+            EndJourneyTime = null,
             NumberOfStudents = shuttleScheduleDto.Students.Count,
             NumberOfPickedUpStudents = 0,
             NumberOfDroppedOffStudents = 0,
@@ -233,7 +240,7 @@ public class ShuttleScheduleManagementService(
                 Gender = student.Gender,
                 AvatarUrl = student.AvatarKey == null
                     ? ""
-                    : await fileUploadService.GeneratePreSignedDownloadUrlAsync(student.AvatarKey.Value, 99999),
+                    : await GetImageUrl(student.AvatarKey.Value),
                 ClassName = student.Class.ClassName,
                 ClassId = student.ClassId,
                 FullName = student.FullName,
@@ -253,25 +260,43 @@ public class ShuttleScheduleManagementService(
     private async Task DeleteShuttleSchedule(CreateShuttleScheduleDto shuttleScheduleDto)
     {
         var shuttleScheduleCollection = context.MongoDatabase.GetCollection<ShuttleSchedule>("pickup_schedules");
-        await shuttleScheduleCollection.DeleteOneAsync(pk =>
+        await shuttleScheduleCollection.DeleteManyAsync(pk =>
             pk.SchoolId == shuttleScheduleDto.SchoolId
             && pk.Date == shuttleScheduleDto.Date
             && pk.SessionType == shuttleScheduleDto.SessionType);
     }
 
-    private static TimeSpan GetStartTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType,
+    private static TimeSpan GetPickupStartTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType,
         School school)
     {
         switch (shuttleScheduleType)
         {
             case ShuttleScheduleType.PickUp:
-                if (sessionType == SessionType.Morning)
-                    return school.MorningStartTime - new TimeSpan(1, 0, 0);
-                return school.AfternoonStartTime - new TimeSpan(1, 0, 0);
+                return sessionType == SessionType.Morning
+                    ? school.MorningStartTime - new TimeSpan(2, 0, 0)
+                    : school.AfternoonStartTime - new TimeSpan(2, 0, 0);
             case ShuttleScheduleType.DropOff:
-                if (sessionType == SessionType.Afternoon)
-                    return school.AfternoonEndTime;
-                return school.MorningEndTime;
+                return sessionType == SessionType.Afternoon
+                    ? school.AfternoonEndTime - new TimeSpan(0, 30, 0)
+                    : school.MorningEndTime - new TimeSpan(0, 30, 0);
+            default:
+                throw new InvalidDataException("Invalid pickup schedule type");
+        }
+    }
+
+    private static TimeSpan GetPickupEndTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType,
+        School school)
+    {
+        switch (shuttleScheduleType)
+        {
+            case ShuttleScheduleType.PickUp:
+                return sessionType == SessionType.Morning
+                    ? school.MorningStartTime + new TimeSpan(0, 30, 0)
+                    : school.AfternoonStartTime + new TimeSpan(0, 30, 0);
+            case ShuttleScheduleType.DropOff:
+                return sessionType == SessionType.Afternoon
+                    ? school.AfternoonEndTime + new TimeSpan(0, 30, 0)
+                    : school.MorningEndTime + new TimeSpan(0, 30, 0);
             default:
                 throw new InvalidDataException("Invalid pickup schedule type");
         }
@@ -279,50 +304,111 @@ public class ShuttleScheduleManagementService(
 
     private void GetBestRoute(ShuttleSchedule shuttleSchedule, School school)
     {
-        string origin;
-        string destination;
-        var firstStudent = shuttleSchedule
+        Point origin;
+        Point destination;
+        var nearestStudent = shuttleSchedule
             .Students
             .OrderByDescending(x =>
                 IStudentGroupingAlgorithm.Haversine(x.PickupLat, x.PickupLng, school.AddressLat,
                     school.AddressLng))
             .FirstOrDefault();
-        if (firstStudent == null)
+        if (nearestStudent == null)
             throw new InvalidDataException("No first student found");
 
-        var waypoints = shuttleSchedule
+        var wayPoints = shuttleSchedule
             .Students
-            .Where(x => x.StudentId != firstStudent.StudentId)
-            .Select(x => x.PickupLat + "," + x.PickupLng)
+            .Where(x => x.StudentId != nearestStudent.StudentId)
+            .Select(x => new Point()
+            {
+                FullAddress = x.PickupAddress,
+                Latitude = x.PickupLat,
+                Longitude = x.PickupLng,
+            })
             .ToList();
 
         if (shuttleSchedule.Type == ShuttleScheduleType.PickUp)
         {
-            origin = firstStudent.PickupLat + "," + firstStudent.PickupLng;
-            destination = school.AddressLat + "," + school.AddressLng;
+            origin = new Point()
+            {
+                FullAddress = nearestStudent.PickupAddress,
+                Latitude = nearestStudent.PickupLat,
+                Longitude = nearestStudent.PickupLng
+            };
+            destination = new Point()
+            {
+                FullAddress = school.Address,
+                Latitude = school.AddressLat,
+                Longitude = school.AddressLng
+            };
         }
         else
         {
-            origin = school.AddressLat + "," + school.AddressLng;
-            destination = firstStudent.PickupLat + "," + firstStudent.PickupLng;
+            origin = new Point()
+            {
+                FullAddress = school.Address,
+                Latitude = school.AddressLat,
+                Longitude = school.AddressLng
+            };
+            destination = new Point()
+            {
+                FullAddress = nearestStudent.PickupAddress,
+                Latitude = nearestStudent.PickupLat,
+                Longitude = nearestStudent.PickupLng
+            };
         }
 
         shuttleSchedule.BestRoute = new BestRoute()
         {
             Origin = origin,
             Destination = destination,
-            Waypoints = waypoints
+            WayPoints = wayPoints
         };
     }
 
     private string GetParentName(Guid parentId)
     {
-        return context.Parents.Where(p => p.Id == parentId).Select(p => p.FirstName + " " + p.LastName)
+        var cacheKey = $"{parentId}_{CreateShuttleCacheKey}_Name";
+        if (cache.TryGetValue(cacheKey, out string? parentName)) return parentName ?? string.Empty;
+        parentName = context.Parents.Where(p => p.Id == parentId).Select(p => p.FirstName + " " + p.LastName)
             .FirstOrDefault() ?? string.Empty;
+        cache.Set(cacheKey, parentName, TimeSpan.FromDays(1));
+        return parentName;
     }
 
     private string GetParentPhoneNumber(Guid parentId)
     {
-        return context.Parents.Where(p => p.Id == parentId).Select(p => p.PhoneNumber).FirstOrDefault() ?? string.Empty;
+        var cacheKey = $"{parentId}_{CreateShuttleCacheKey}_Phone";
+        if (cache.TryGetValue(cacheKey, out string? parentPhone)) return parentPhone ?? string.Empty;
+        parentPhone = context.Parents.Where(p => p.Id == parentId).Select(p => p.PhoneNumber).FirstOrDefault() ??
+                      string.Empty;
+        cache.Set(cacheKey, parentPhone, TimeSpan.FromDays(1));
+        return parentPhone;
+    }
+
+    private async Task<string> GetImageUrl(Guid fileManagementId)
+    {
+        var cacheKey = $"{fileManagementId}_{CreateShuttleCacheKey}_FileManagement";
+        if (cache.TryGetValue(cacheKey, out string? url)) return url ?? string.Empty;
+        url = await fileUploadService.GeneratePreSignedDownloadUrlAsync(fileManagementId, 99999);
+        cache.Set(cacheKey, url, TimeSpan.FromDays(1));
+        return url;
+    }
+
+    private async Task<Driver?> GetDriverInCache(Guid driverId)
+    {
+        var cacheKey = $"{driverId}_{CreateShuttleCacheKey}_Driver";
+        if (cache.TryGetValue(cacheKey, out Driver? driver)) return driver ?? null;
+        driver = await userService.GetUser(driverId, UserType.Driver) as Driver;
+        cache.Set(cacheKey, driver, TimeSpan.FromDays(1));
+        return driver;
+    }
+
+    private async Task<School?> GetSchoolInCache(Guid schoolId)
+    {
+        var cacheKey = $"{schoolId}_{CreateShuttleCacheKey}_School";
+        if (cache.TryGetValue(cacheKey, out School? school)) return school ?? null;
+        school = await schoolManagement.GetSchool(schoolId);
+        cache.Set(cacheKey, school, TimeSpan.FromDays(1));
+        return school;
     }
 }

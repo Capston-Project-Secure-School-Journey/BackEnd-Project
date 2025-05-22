@@ -8,13 +8,15 @@ public partial class AuthenticationService
 {
     private string GenerateLoginToken(User user)
     {
-        var claims = new List<Claim>();
-        claims.Add(new Claim("Id", user.Id.ToString()));
-        claims.Add(new Claim("UserName", user.UserName));
-        claims.Add(new Claim(ClaimTypes.Role, Convert.ToInt16(user.UserType).ToString()));
-        claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
-        claims.Add(new Claim(ClaimTypes.Name, user.Id.ToString()));
-        claims.Add(new Claim("AccountStatus", user.AccountStatus.ToString()));
+        var claims = new List<Claim>
+        {
+            new Claim("Id", user.Id.ToString()),
+            new Claim("UserName", user.UserName),
+            new Claim(ClaimTypes.Role, Convert.ToInt16(user.UserType).ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Id.ToString()),
+            new Claim("AccountStatus", user.AccountStatus.ToString())
+        };
         if (user.VerificationMethod != null)
             claims.Add(new Claim("VerificationMethod", user.VerificationMethod.ToString()!));
         claims.Add(new Claim("TokenType", TokenType.Login.ToString()));

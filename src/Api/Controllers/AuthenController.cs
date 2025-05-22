@@ -8,19 +8,12 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthenController : ControllerBase
+public class AuthenController(IAuthenticationService authenticationService) : ControllerBase
 {
-    private readonly IAuthenticationService _authenticationService;
-
-    public AuthenController(IAuthenticationService authenticationService)
-    {
-        _authenticationService = authenticationService;
-    }
-
     [HttpPost("login")]
     [ValidateModel]
     public async Task<ActionResult<AuthenticateResponse>> Login([FromBody] AuthenticateRequest request)
     {
-        return await _authenticationService.Login(request);
+        return await authenticationService.Login(request);
     }
 }
