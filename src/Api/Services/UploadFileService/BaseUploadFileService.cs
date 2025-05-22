@@ -10,7 +10,6 @@ namespace Api.Services.UploadFileService;
 
 public class BaseUploadFileService(Context context, IUploadTransactionManager uploadTransactionManager)
 {
-    private readonly Context _context = context;
     protected readonly IUploadTransactionManager UploadTransactionManager = uploadTransactionManager;
 
     protected async Task<FileManagement> AddFileManagement(AddFileManagementDto data, bool preSign)
@@ -28,21 +27,21 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
             IsUploaded = !preSign
         };
 
-        _context.FileManagements.Add(file);
-        _context.Entry(file).State = EntityState.Added;
-        await _context.SaveChangesAsync();
+        context.FileManagements.Add(file);
+        context.Entry(file).State = EntityState.Added;
+        await context.SaveChangesAsync();
 
         return file;
     }
 
     protected async Task DeleteFileManagement(Guid id)
     {
-        var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
+        var file = await context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
 
         if (file != null)
         {
-            _context.FileManagements.Remove(file);
-            await _context.SaveChangesAsync();
+            context.FileManagements.Remove(file);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -62,8 +61,8 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
     {
         var file = await CheckIfFileExist(id);
         file.IsUploaded = true;
-        _context.FileManagements.Update(file);
-        await _context.SaveChangesAsync();
+        context.FileManagements.Update(file);
+        await context.SaveChangesAsync();
     }
 
     public async Task<FileManagement> GetFileData(Guid id)
@@ -73,7 +72,7 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
 
     private async Task<FileManagement> CheckIfFileExist(Guid id)
     {
-        var file = await _context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
+        var file = await context.FileManagements.FirstOrDefaultAsync(t => t.Id == id);
 
         if (file == null)
             throw new NotFoundException(ErrorMessages.FileNotFound(id));

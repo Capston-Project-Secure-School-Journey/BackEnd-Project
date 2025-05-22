@@ -18,7 +18,7 @@ public partial class AuthenticationService(
 {
     public async Task<AuthenticateResponse> Login(AuthenticateRequest request)
     {
-        var user = await context.Users.Where(u => u.UserName == request.UserName).FirstOrDefaultAsync();
+        var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == request.UserName);
 
         if (user != null)
             await userBanService.CheckUserBaned(user.Id, BanType.Login, true);
