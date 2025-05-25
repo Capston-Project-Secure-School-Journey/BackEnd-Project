@@ -104,6 +104,15 @@ public class DriverSchoolTripService(
         await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
     }
 
+    public async Task SkipStudentByDriver(Guid shuttleScheduleId, Guid studentId, string cancelReason)
+    {
+        var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
+        if (shuttleSchedule.JourneyStatus != JourneyStatus.InProgress)
+            throw new BadRequestException("Chuyến đi chưa bắt đầu.");
+
+        await SkipStudent(shuttleScheduleId, studentId, cancelReason);
+    }
+
     public async Task SkipStudent(Guid shuttleScheduleId, Guid studentId, string cancelReason)
     {
         await SkipLock.WaitAsync();
@@ -115,12 +124,35 @@ public class DriverSchoolTripService(
 
             if (studentOnBus == null)
                 throw new BadRequestException("Học sinh không tồn tại trên chuyến này.");
-            if (shuttleSchedule.JourneyStatus != JourneyStatus.InProgress)
-                throw new BadRequestException("Chuyến đi chưa bắt đầu.");
 
             studentOnBus.SkipPickup = true;
             studentOnBus.IsSkipUpReason = cancelReason;
             shuttleSchedule.NumberOfStudents -= 1;
+
+            await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
+            await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
+        }
+        finally
+        {
+            SkipLock.Release();
+        }
+    }
+
+    public async Task UndoSkipStudent(Guid shuttleScheduleId, Guid studentId)
+    {
+        await SkipLock.WaitAsync();
+
+        try
+        {
+            var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
+            var studentOnBus = shuttleSchedule.Students.FirstOrDefault(st => st.StudentId == studentId);
+
+            if (studentOnBus == null)
+                throw new BadRequestException("Học sinh không tồn tại trên chuyến này.");
+
+            studentOnBus.SkipPickup = false;
+            studentOnBus.IsSkipUpReason = string.Empty;
+            shuttleSchedule.NumberOfStudents += 1;
 
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
             await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
