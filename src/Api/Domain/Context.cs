@@ -9,6 +9,7 @@ namespace Api.Domain;
 public class Context(DbContextOptions options, IMongoDatabase mongoDatabase) : DbContext(options)
 {
     private const string MongoCollectionShuttleScheduleName = "shuttle_schedules";
+    private const string MongoCollectionJourneyNoteName = "journey_notes";
     public bool BypassSoftDelete { get; set; } = false;
     public DbSet<User> Users { get; set; }
     public DbSet<Parent> Parents { get; set; }
@@ -32,6 +33,8 @@ public class Context(DbContextOptions options, IMongoDatabase mongoDatabase) : D
 
     public IMongoCollection<ShuttleSchedule> ShuttleScheduleCollection =>
         MongoDatabase.GetCollection<ShuttleSchedule>(MongoCollectionShuttleScheduleName);
+    public IMongoCollection<JourneyNote> JourneyNoteCollection =>
+        MongoDatabase.GetCollection<JourneyNote>(MongoCollectionJourneyNoteName);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

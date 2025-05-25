@@ -49,7 +49,7 @@ public class DriverSchoolTripHandler(
     public async Task SkipStudent(Guid shuttleScheduleId, Guid driverId, Guid studentId, string cancelReason)
     {
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(shuttleScheduleId, driverId);
-        await driverSchoolTripService.SkipStudent(shuttleScheduleId, studentId, cancelReason);
+        await driverSchoolTripService.SkipStudentByDriver(shuttleScheduleId, studentId, cancelReason);
         BackgroundJob.Enqueue<SendStudentTripEventJob>(
             (job) => job.ExecuteAsync(shuttleScheduleId, StudentTripEvent.SkippedFromDriver, studentId));
     }

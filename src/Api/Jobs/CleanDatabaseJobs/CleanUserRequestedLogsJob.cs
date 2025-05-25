@@ -3,7 +3,6 @@ using Api.Attributes;
 using Api.Common.Enums;
 using Api.Domain;
 using Api.Extensions;
-using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,7 +10,6 @@ namespace Api.Jobs.CleanDatabaseJobs;
 
 public class CleanUserRequestedLogsJob(
     Context context,
-    IFileDeleter fileDeleter,
     ILogger<CleanUserRequestedLogsJob> logger) : IJob
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2139",
@@ -25,11 +23,11 @@ public class CleanUserRequestedLogsJob(
         try
         {
             context.BypassSoftDelete = true;
-            var requestedLogs = context
+            var requestedLogs = await context
                 .UserRequestedLogs
                 .IgnoreQueryFilters()
                 .Where(rq => rq.DatetimeRequested < thresholdTime)
-                .ToList();
+                .ToListAsync();
 
             if (requestedLogs.Count == 0)
             {
@@ -52,7 +50,7 @@ public class CleanUserRequestedLogsJob(
         }
     }
 
-    public static int GetMaxObservationWindow()
+    private static int GetMaxObservationWindow()
     {
         return Enum.GetValues(typeof(BanType))
             .Cast<BanType>()
