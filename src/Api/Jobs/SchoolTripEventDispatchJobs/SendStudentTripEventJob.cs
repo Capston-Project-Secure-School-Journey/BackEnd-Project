@@ -38,7 +38,7 @@ public class SendStudentTripEventJob(
             var studentOnBus = shuttleSchedule.Students.First(st => st.StudentId == studentId);
 
             var notificationSendToParent =
-                GetNotificationSendToParentDto(shuttleSchedule, studentTripEvent, studentOnBus);
+                GetNotificationSendToParentDto(studentTripEvent, studentOnBus);
             var notificationSendToDriver =
                 GetNotificationSendToDriverDto(shuttleSchedule, studentTripEvent, studentOnBus);
             var notificationSendToDriverId = Guid.Empty;
@@ -84,8 +84,7 @@ public class SendStudentTripEventJob(
         }
     }
 
-    private static List<CreateNotificationDto> GetNotificationSendToParentDto(ShuttleSchedule shuttleSchedule,
-        StudentTripEvent eventType, StudentOnBus studentOnBus)
+    private static List<CreateNotificationDto> GetNotificationSendToParentDto(StudentTripEvent eventType, StudentOnBus studentOnBus)
     {
         var title = "";
         var content = "";

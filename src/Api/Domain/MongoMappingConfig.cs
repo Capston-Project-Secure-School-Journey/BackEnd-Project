@@ -135,5 +135,42 @@ public static class MongoMappingConfig
                         .SetElementName("skipPickup");
                 });
         }
+
+        if (!BsonClassMap.IsClassMapRegistered(typeof(JourneyNote)))
+        {
+            BsonClassMap.RegisterClassMap<JourneyNote>(cm =>
+            {
+                cm.AutoMap();
+
+                cm.MapMember(x => x.Id)
+                    .SetSerializer(new GuidSerializer(BsonType.String))
+                    .SetElementName("id");
+
+                cm.MapMember(x => x.JourneyId)
+                    .SetSerializer(new GuidSerializer(BsonType.String))
+                    .SetElementName("journeyId");
+
+                cm.MapMember(x => x.ParentId)
+                    .SetSerializer(new GuidSerializer(BsonType.String))
+                    .SetElementName("parentId");
+                
+                cm.MapMember(x => x.StudentId)
+                    .SetSerializer(new GuidSerializer(BsonType.String))
+                    .SetElementName("studentId");
+
+                cm.MapMember(x => x.Description)
+                    .SetElementName("description");
+
+                cm.MapMember(x => x.RequestedDate)
+                    .SetElementName("requestedDate");
+
+                cm.MapMember(x => x.Type)
+                    .SetElementName("type")
+                    .SetSerializer(new EnumSerializer<JourneyNoteType>(BsonType.String));
+                
+                cm.MapMember(x => x.IsReadByDriver)
+                    .SetElementName("isReadByDriver");
+            });
+        }
     }
 }
