@@ -1,6 +1,7 @@
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
+using Api.Security.CurrentUserProvider;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Api.Attributes;
@@ -39,17 +40,10 @@ public class VerifiedEmailChecker : IVerifiedEmailChecker
 {
     public void Check(AuthorizationFilterContext context)
     {
-        var accountStatus = GetAccountStatus(context.HttpContext);
+        var currentUserProvider = context.HttpContext.RequestServices.GetService<ICurrentUserProvider>();
+        var user = currentUserProvider!.GetCurrentUser();
 
-        if (accountStatus != null && accountStatus.Value != AccountStatus.Verified)
+        if (user.AccountStatus != AccountStatus.Verified)
             throw new ForbiddenException(ErrorMessages.AccountNotVerified);
-    }
-
-    private static AccountStatus? GetAccountStatus(HttpContext context)
-    {
-        var accountStatus = context.Request.Headers["Authorization-AccountStatus"].FirstOrDefault();
-        if (Enum.TryParse(accountStatus, out AccountStatus status)) return status;
-
-        return null;
     }
 }

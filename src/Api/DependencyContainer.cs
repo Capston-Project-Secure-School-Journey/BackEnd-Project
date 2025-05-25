@@ -5,6 +5,7 @@ using Api.Services.TokenService;
 using Api.Domain.ModelSettings;
 using Api.Extensions;
 using Api.Scheduling;
+using Api.Security.CurrentUserProvider;
 using Api.Services;
 using Api.Services.ApplicationService;
 using Api.Services.ApprovalProcessor;
@@ -13,6 +14,7 @@ using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
 using Api.Services.DriverSchoolTripService;
 using Api.Services.JourneyNoteService;
+using Api.Services.MailService;
 using Api.Services.NotificationService;
 using Api.Services.ParentSchoolTripService;
 using Api.Services.ScanDeviceSchoolTripService;
@@ -107,6 +109,10 @@ public static class DependencyContainer
 
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
+
+        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
+        
         services.AddSingleton<ValidateModelAttribute>();
+        services.AddSingleton<IMailService, MailService>();
     }
 }

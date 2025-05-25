@@ -2,16 +2,34 @@ namespace Api.Extensions;
 
 public static class DateTimeHelper
 {
+    private static bool _test;
+    private static DateTime _testDateTime;
+
+    public static void Setup(bool test)
+    {
+        _test = test;
+    }
+
+    public static void TestTime(DateTime dateTime)
+    {
+        _testDateTime = dateTime;
+    }
+
     public static DateTime GetDateTimeUtc7()
     {
-        return DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime;
+        return !_test
+            ? DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime
+            : _testDateTime;
     }
 
     public static DateOnly GetDateTimeOnlyUtc7()
     {
-        return DateOnly.FromDateTime(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime);
+        return !_test
+                ? DateOnly.FromDateTime(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime)
+                : DateOnly.FromDateTime(_testDateTime)
+            ;
     }
-    
+
     public static string ConvertSecondsToTimeString(int totalSeconds)
     {
         var days = totalSeconds / 86400;
@@ -64,7 +82,7 @@ public static class DateTimeHelper
 
         return (nextWeekStart, nextWeekEnd);
     }
-    
+
     private static (DateOnly StartOfMonth, DateOnly EndOfMonth) GetMonthRange(DateTime date)
     {
         var startOfMonth =
@@ -77,7 +95,7 @@ public static class DateTimeHelper
     {
         return GetMonthRange(new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc));
     }
-    
+
     public static List<DateTime> GetNextWeek246Dates()
     {
         var today = GetDateTimeUtc7();

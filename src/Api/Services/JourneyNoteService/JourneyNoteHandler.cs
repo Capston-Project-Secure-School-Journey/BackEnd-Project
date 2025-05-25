@@ -1,4 +1,5 @@
 using Api.Common.Enums;
+using Api.Common.Exceptions;
 using Api.Domain.Models;
 using Api.DTOs.JourneyNoteService;
 using Api.Extensions;
@@ -25,10 +26,13 @@ public class JourneyNoteHandler(
         return journeyNote;
     }
 
-    public async Task<Pagination<JourneyNote>> GetAllJourneyNotes(GetJourneyNoteByDriverRequest request, Guid driverId)
+    public async Task<Pagination<JourneyNote>> GetAllJourneyNotesByDriver(GetJourneyNoteRequest request, Guid driverId)
     {
-        await driverSchoolTripService.IsOwnerOfShuttleSchedule(request.ShuttleId, driverId);
-        var journeyNotes = await journeyNoteService.GetAllJourneyNotes(request.ShuttleId);
+        if (request.ShuttleId == null)
+            throw new BadRequestException("Mã hành trình không thể trống.");
+        
+        await driverSchoolTripService.IsOwnerOfShuttleSchedule(request.ShuttleId.Value, driverId);
+        var journeyNotes = await journeyNoteService.GetAllJourneyNotes(request.ShuttleId.Value);
         var data = journeyNotes
             .Pagination(request.Page, request.Limit)
             .ToList();
@@ -36,7 +40,7 @@ public class JourneyNoteHandler(
         return response;
     }
 
-    public async Task<Pagination<JourneyNote>> GetAllJourneyNotesByParent(GetJourneyNoteByParentRequest request,
+    public async Task<Pagination<JourneyNote>> GetAllJourneyNotesByParent(GetJourneyNoteRequest request,
         Guid parentId)
     {
         var journeyNotes = await journeyNoteService.GetAllJourneyNotesByParent(request.ShuttleId, parentId);

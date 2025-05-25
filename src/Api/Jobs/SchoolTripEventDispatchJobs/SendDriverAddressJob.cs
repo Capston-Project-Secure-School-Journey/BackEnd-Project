@@ -50,6 +50,7 @@ public class SendDriverAddressJob(
             }
 
             var data = new Dictionary<string, string>();
+            data.Add("Message", "DriverAddress");
             data.Add("ShuttleScheduleId", shuttleScheduleId.ToString());
             data.Add("Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture));
             data.Add("Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture));

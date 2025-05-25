@@ -28,7 +28,8 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
     [Authorize(UserType.Parent)]
     [CheckVerifiedEmail]
     [ValidateModel]
-    public async Task<JourneyNote> UpdateJourneyNote([FromRoute] Guid journeyNote, [FromBody] UpdateJourneyNoteDto request)
+    public async Task<JourneyNote> UpdateJourneyNote([FromRoute] Guid journeyNote,
+        [FromBody] UpdateJourneyNoteDto request)
     {
         var userId = this.GetUserId();
         request.JourneyNoteId = journeyNote;
@@ -44,26 +45,25 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
         await handler.DeleteJourneyNote(journeyNoteId, userId);
     }
 
-    [HttpGet("by-driver")]
-    [Authorize(UserType.Driver)]
+    [HttpGet]
+    [Authorize(UserType.Driver, UserType.Parent)]
     [CheckVerifiedEmail]
-    public async Task<Pagination<JourneyNote>> GetAllJourneyNotes([FromQuery] GetJourneyNoteByDriverRequest request)
+    public async Task<Pagination<JourneyNote>> GetAllJourneyNotes([FromQuery] GetJourneyNoteRequest request)
     {
         var userId = this.GetUserId();
-        return await handler.GetAllJourneyNotes(request, userId);
+        var userType = this.GetUserType();
+        switch (userType)
+        {
+            case UserType.Driver:
+                return await handler.GetAllJourneyNotesByDriver(request, userId);
+            case UserType.Parent:
+                return await handler.GetAllJourneyNotesByParent(request, userId);
+            default:
+                return new Pagination<JourneyNote>([], 0, 0, 0);
+        }
     }
 
-    [HttpGet("by-parent")]
-    [Authorize(UserType.Parent)]
-    [CheckVerifiedEmail]
-    public async Task<Pagination<JourneyNote>> GetAllJourneyNotesByParent(
-        [FromQuery] GetJourneyNoteByParentRequest request)
-    {
-        var userId = this.GetUserId();
-        return await handler.GetAllJourneyNotesByParent(request, userId);
-    }
-
-    [HttpPut("read/{journeyNoteId}")]
+    [HttpPut("{journeyNoteId}/read")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task ReadJourneyNote([FromRoute] Guid journeyNoteId)
@@ -72,7 +72,7 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
         await handler.ReadJourneyNote(journeyNoteId, userId);
     }
 
-    [HttpPut("read")]
+    [HttpPut("mark-read")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task ReadAllJourneyNote([FromBody] ReadAllJourneyNoteRequest request)

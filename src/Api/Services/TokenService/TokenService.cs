@@ -4,7 +4,6 @@ using Api.Domain.ModelSettings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using Api.Domain.Models;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
@@ -18,45 +17,31 @@ public enum TokenType
     Login
 }
 
-public class TokenService : ITokenService
+public static class ClaimType
 {
-    private readonly TokenSettings _tokenSettings;
+    public const string AccountStatus = "AccountStatus";
+    public const string SchoolId = "SchoolId";
+    public const string TokenType = "TokenType";
+    public const string UserName = "UserName";
+    public const string VerificationMethod = "VerificationMethod";
+}
 
-    public TokenService(IOptions<TokenSettings> tokenSettings)
-    {
-        _tokenSettings = tokenSettings.Value;
-    }
+public record TokenValidationResult(
+    Guid? UserId,
+    UserType? UserType,
+    AccountStatus? AccountStatus,
+    Guid? SchoolId,
+    string Email
+);
 
-    public string GenerateAccessToken(IEnumerable<Claim> claims)
-    {
-        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
-        var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
+public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
+{
+    private readonly TokenSettings _tokenSettings = tokenSettings.Value;
 
-        var tokeOptions = new JwtSecurityToken(
-            _tokenSettings.Issuer,
-            _tokenSettings.Audience,
-            claims,
-            expires: DateTime.UtcNow.AddHours(Convert.ToInt16(_tokenSettings.AccessTokenExpirationHours)),
-            signingCredentials: signinCredentials
-        );
-
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-        return tokenString;
-    }
-
-    public string GenerateAccessToken(User data, int expireHours = 48)
+    public string GenerateAccessToken(IEnumerable<Claim> claims, int expireHours)
     {
         var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key));
         var signinCredentials = new SigningCredentials(secretKey, _tokenSettings.SigninCredentials);
-        var claims = new List<Claim>();
-        claims.AddRange(new[]
-        {
-            new Claim("Id", data.Id.ToString()),
-            new Claim("Email", data.Email),
-            new Claim("Phone", data.PhoneNumber),
-            new Claim("UserType", data.UserType.ToString()),
-            new Claim("UserTypeName", data.UserTypeName)
-        });
 
         var tokeOptions = new JwtSecurityToken(
             _tokenSettings.Issuer,
@@ -65,45 +50,64 @@ public class TokenService : ITokenService
             expires: DateTime.UtcNow.AddHours(expireHours),
             signingCredentials: signinCredentials
         );
-        return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+        return tokenString;
     }
 
-    public (Guid?, string?, AccountStatus?, Guid? schoolId) ValidateToken(string token,
-        TokenType type = TokenType.Login)
+    public TokenValidationResult ValidateToken(string token,
+        TokenType type)
     {
         if (string.IsNullOrEmpty(token)) throw new UnAuthorizedException(ErrorMessages.InvalidToken);
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = _tokenSettings.Issuer,
-            ValidAudience = _tokenSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key))
-        };
+        var tokenValidationParameters = GetTokenValidationParameters(_tokenSettings);
 
         tokenHandler.ValidateToken(token,
             tokenValidationParameters
             , out var validatedToken);
         var jwtToken = (JwtSecurityToken)validatedToken;
-        var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-        var userType = jwtToken.Claims.First(x => x.Type == ClaimTypes.Role).Value.ToString();
-        var accountStatus =
-            Enum.Parse<AccountStatus>(jwtToken.Claims.First(x => x.Type == "AccountStatus").Value.ToString());
-        Guid? schoolId = null;
-        if (jwtToken.Claims.Any(x => x.Type == "SchoolId"))
-            schoolId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "SchoolId").Value);
-        var typeInToken = jwtToken.Claims.First(x => x.Type == "TokenType").Value;
+        var userId = GetClaim(jwtToken.Claims, ClaimTypes.NameIdentifier);
+        var userType = GetClaim(jwtToken.Claims, ClaimTypes.Role);
+        var accountStatus = GetClaim(jwtToken.Claims, ClaimType.AccountStatus);
+        var schoolId = GetClaim(jwtToken.Claims, ClaimType.SchoolId);
+        var email = GetClaim(jwtToken.Claims, ClaimTypes.Email);
+        var tokenType = GetClaim(jwtToken.Claims, ClaimType.TokenType);
 
-        if (typeInToken == null) throw new UnAuthorizedException(ErrorMessages.InvalidToken);
-
-        if ((TokenType)Enum.Parse(typeof(TokenType), typeInToken) != type)
+        if (tokenType == null) throw new UnAuthorizedException(ErrorMessages.InvalidToken);
+        if ((TokenType)Enum.Parse(typeof(TokenType), tokenType) != type)
             throw new UnAuthorizedException(ErrorMessages.InvalidToken);
 
-        return (userId, userType, accountStatus, schoolId);
+        return new TokenValidationResult(
+            UserId: Guid.TryParse(userId, result: out var uid) ? uid : null,
+            UserType: string.IsNullOrEmpty(userType) ? null : (UserType)Convert.ToInt16(userType),
+            AccountStatus: string.IsNullOrEmpty(userType) ? null : (AccountStatus)Convert.ToInt16(accountStatus),
+            SchoolId: Guid.TryParse(schoolId, result: out var scId) ? scId : null,
+            Email: email
+        );
+    }
+
+        private static string GetClaim(IEnumerable<Claim> claims, string key)
+    {
+        var value = string.Empty;
+        var enumerable = claims as Claim[] ?? claims.ToArray();
+        if (enumerable.Any(x => x.Type == key))
+            value = enumerable.First(x => x.Type == key).Value;
+        return value;
+    }
+
+    public static TokenValidationParameters GetTokenValidationParameters(TokenSettings tokenSettings)
+    {
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = tokenSettings.Issuer,
+            ValidAudience = tokenSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings.Key))
+        };
     }
 }
