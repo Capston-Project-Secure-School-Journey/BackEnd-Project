@@ -63,7 +63,7 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
         return await handler.GetAllJourneyNotesByParent(request, userId);
     }
 
-    [HttpPut("read/{journeyNoteId}")]
+    [HttpPut("{journeyNoteId}/read")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task ReadJourneyNote([FromRoute] Guid journeyNoteId)
@@ -72,7 +72,7 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
         await handler.ReadJourneyNote(journeyNoteId, userId);
     }
 
-    [HttpPut("read")]
+    [HttpPut("mark-read")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task ReadAllJourneyNote([FromBody] ReadAllJourneyNoteRequest request)
