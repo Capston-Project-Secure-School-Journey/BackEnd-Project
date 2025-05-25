@@ -55,9 +55,9 @@ public class UserController(IUserHandler userHandler) : ControllerBase
     [HttpPut("add-device-tokens")]
     [ValidateModel]
     [Authorize()]
-    public async Task<ActionResult> AddDeviceToken([FromBody] string deviceToken)
+    public async Task<ActionResult> AddDeviceToken([FromBody] AddDeviceTokenRequest request)
     {
-        await userHandler.AddDeviceToken(this.GetUserId(), deviceToken);
+        await userHandler.AddDeviceToken(this.GetUserId(), request.DeviceToken);
         return Ok();
     }
 
