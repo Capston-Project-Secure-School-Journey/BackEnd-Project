@@ -9,6 +9,7 @@ public interface IShuttleScheduleManagementService
     Task UpdateShuttleSchedule(ShuttleSchedule shuttleSchedule);
     Task UpdateStudentOnShuttleSchedule(Guid shuttleScheduleId, StudentOnBus studentOnBus);
     Task<List<ShuttleSchedule>> AddShuttleSchedule(List<CreateShuttleScheduleDto> requests);
+    Task DeleteShuttleSchedule(Guid schoolId, DateOnly startDate, DateOnly endDate);
     Task<ShuttleScheduleView> GetShuttleScheduleView(DateOnly date, Guid schoolId);
     Task<List<ShuttleScheduleResponse>> GetShuttleScheduleByDate(DateOnly date, Guid schoolId);
     Task<ShuttleSchedule> GetShuttleSchedule(Guid shuttleScheduleId);
