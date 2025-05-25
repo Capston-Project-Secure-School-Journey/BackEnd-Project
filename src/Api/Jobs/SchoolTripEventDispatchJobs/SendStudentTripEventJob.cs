@@ -68,6 +68,7 @@ public class SendStudentTripEventJob(
             {
                 var data = new Dictionary<string, string>
                 {
+                    { "Message", "StudentTripEvent" },
                     { "shuttleScheduleId", shuttleScheduleId.ToString() },
                     { "StudentInfo", JsonConvert.SerializeObject(studentOnBus) }
                 };
