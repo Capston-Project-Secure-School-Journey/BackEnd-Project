@@ -12,13 +12,13 @@ public class NotificationFcmSender : INotificationSender
     private readonly INotificationService _notificationService;
     private readonly FirebaseMessaging _messaging;
     private readonly IUserService _userService;
-    private static readonly object firebaseAppLock = new();
+    private static readonly object FirebaseAppLock = new();
 
     public NotificationFcmSender(IConfiguration config, INotificationService notificationService,
         IUserService userService)
     {
         _notificationService = notificationService;
-        lock (firebaseAppLock)
+        lock (FirebaseAppLock)
         {
             if (FirebaseApp.DefaultInstance == null)
             {
