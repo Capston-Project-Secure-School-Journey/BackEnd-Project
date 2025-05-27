@@ -46,6 +46,10 @@ public class DriverSchoolTripService(
             throw new BadRequestException(
                 $"Chuyến đi không thể bắt đầu. Vì trạng thái hiện tại là: {shuttleSchedule.JourneyStatus.GetEnumDisplayName()}");
 
+        if (!shuttleSchedule.IsAllNotesRead)
+            throw new BadRequestException(
+                $"Chuyến đi không thể bắt đầu. Vì vẫn còn ghi chú từ phụ huynh chưa được đọc.");
+
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
 
         if (DateOnly.FromDateTime(currentTime) != shuttleSchedule.Date)
@@ -95,7 +99,7 @@ public class DriverSchoolTripService(
     {
         var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
 
-        if (shuttleSchedule.JourneyStatus == JourneyStatus.Completed)
+        if (shuttleSchedule.JourneyStatus is JourneyStatus.Completed or JourneyStatus.Cancelled)
             throw new BadRequestException(
                 $"Chuyến đi không thể hủy. Vì trạng thái hiện tại là: {shuttleSchedule.JourneyStatus.GetEnumDisplayName()}");
 
