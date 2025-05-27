@@ -211,6 +211,7 @@ public class ShuttleScheduleManagementService(
             Type = shuttleScheduleDto.Type,
             PickupStartTime = GetPickupStartTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
             PickupEndTime = GetPickupEndTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
+            StartJourneyTime = null,
             EndJourneyTime = null,
             NumberOfStudents = shuttleScheduleDto.Students.Count,
             NumberOfPickedUpStudents = 0,

@@ -61,6 +61,7 @@ public class DriverSchoolTripService(
             currentTime.TimeOfDay <= shuttleSchedule.PickupEndTime)
         {
             shuttleSchedule.JourneyStatus = JourneyStatus.InProgress;
+            shuttleSchedule.StartJourneyTime = currentTime.TimeOfDay;
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
         }
         else
@@ -85,8 +86,8 @@ public class DriverSchoolTripService(
 
         if (studentNotPickedUp != null)
             throw new BadRequestException($"Vẫn còn học sinh {studentNotPickedUp.FullName} chưa được đón hoặc trả.\n" +
-                                          $" Nếu học sinh quên quét qr thì hãy đánh dấu đã đón." +
-                                          $" Nếu không phải hãy thực hiện đưa đón đầy đủ tất cả học sinh.");
+                                          $"Nếu học sinh quên quét qr thì hãy bấm bỏ quả học sinh và kèm lí do quên quét qr." +
+                                          $"Nếu không phải hãy thực hiện đưa đón đầy đủ tất cả học sinh.");
 
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
 

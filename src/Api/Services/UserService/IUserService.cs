@@ -13,4 +13,8 @@ public interface IUserService
     Task<User> UpdateDriverInformation(Guid id, UpdateDriverInformationRequest request);
     Task AddDeviceToken(Guid userId, string deviceToken);
     Task<string[]> GetDeviceTokens(Guid userId);
+    Task SendVerifyEmail(Guid userId);
+    Task VerifyEmail(string token);
+    Task SendForgetPasswordEmail(SendForgetPasswordEmailDto dto);
+    Task ResetPassword(ResetPasswordDto dto);
 }

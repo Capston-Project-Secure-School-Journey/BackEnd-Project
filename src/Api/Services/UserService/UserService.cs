@@ -1,18 +1,31 @@
+using System.Security.Claims;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
+using Api.Domain.ModelSettings;
+using Api.DTOs;
 using Api.DTOs.UploadFileService;
 using Api.DTOs.User;
 using Api.Extensions;
+using Api.Services.MailService;
+using Api.Services.TokenService;
 using Api.Services.UploadFileService;
+using Api.Services.UserBanService;
 using Api.TransferDTOs.Requests;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Api.Services.UserService;
 
-public class UserService(Context context, IFileUploadService uploadFileService) : IUserService
+public class UserService(
+    Context context,
+    IFileUploadService uploadFileService,
+    IMailService mailService,
+    IUserBanService userBanService,
+    IOptions<AppSettings> appSettings,
+    ITokenService tokenService) : IUserService
 {
     public async Task<User> GetUser(Guid id, UserType userType)
     {
@@ -163,10 +176,99 @@ public class UserService(Context context, IFileUploadService uploadFileService) 
             .FirstOrDefaultAsync()) ?? [];
     }
 
+    public async Task SendVerifyEmail(Guid userId)
+    {
+        await userBanService.CheckUserBaned(userId, BanType.SendVerifyEmail, true);
+
+        var user = await context
+            .Users
+            .FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null)
+            throw new NotFoundException(ErrorMessages.UserNotFound);
+        if (user.AccountStatus != AccountStatus.New)
+            throw new BadRequestException("Bạn không thể xác thực email.");
+        if (string.IsNullOrEmpty(user.Email))
+            throw new BadRequestException("Bạn chưa nhập thông tin email.");
+
+        var mailContent = new SendMailDto();
+        using (var str = new StreamReader(Constants.RootPathMailTemplate + "/VerifyEmail.html"))
+        {
+            mailContent.Body = await str.ReadToEndAsync();
+        }
+
+        var claims = new List<Claim>();
+        claims.AddRange([
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimType.TokenType, TokenType.VerifyEmail.ToString())
+        ]);
+
+        var verifyUrl =
+            $"{appSettings.Value.ClientPath}/registrationConfirm?token={tokenService.GenerateAccessToken(claims, 24)}";
+        mailContent.Body = mailContent.Body.Replace("{{userName}}", user.FirstName + user.LastName);
+        mailContent.Body = mailContent.Body.Replace("{{verifyUrl}}", verifyUrl);
+        mailContent.To = user.Email;
+        mailContent.Subject = "Xác thực email";
+
+        await mailService.SendEmail(mailContent);
+
+        await userBanService.AddErrorRequest(userId, BanType.SendVerifyEmail);
+    }
+
+    public async Task VerifyEmail(string token)
+    {
+        var tokenValidationResult = tokenService.ValidateToken(token, TokenType.VerifyEmail);
+
+        var user = await context
+            .Users.FirstOrDefaultAsync(x => x.Id == tokenValidationResult.UserId);
+
+        if (user == null)
+            throw new NotFoundException(ErrorMessages.UserNotFound);
+
+        user.AccountStatus = AccountStatus.Verified;
+        user.VerificationMethod = VerificationMethod.Email;
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task SendForgetPasswordEmail(SendForgetPasswordEmailDto dto)
+    {
+        var user = await context
+            .Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserName == dto.Username);
+
+        if (user == null)
+            throw new BadRequestException("Không thể gửi email quên mật khẩu.");
+        var mailContent = new SendMailDto();
+        using (var str = new StreamReader(Constants.RootPathMailTemplate + "/ForgotPasswordEmail.html"))
+        {
+            mailContent.Body = await str.ReadToEndAsync();
+        }
+
+        var claims = new List<Claim>();
+        claims.AddRange([
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimType.TokenType, TokenType.ForgotEmail.ToString())
+        ]);
+
+        var verifyUrl =
+            $"{appSettings.Value.ClientPath}/registrationConfirm?token={tokenService.GenerateAccessToken(claims, 24)}";
+        mailContent.Body = mailContent.Body.Replace("{{userName}}", user.FirstName + user.LastName);
+        mailContent.Body = mailContent.Body.Replace("{{verifyUrl}}", verifyUrl);
+        mailContent.To = user.Email;
+        mailContent.Subject = "Xác thực email";
+
+        await mailService.SendEmail(mailContent);
+    }
+
+    public Task ResetPassword(ResetPasswordDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
     private static bool IsVerified(User user)
     {
-        return user.AccountStatus == AccountStatus.Verified &&
-               user.UserType is UserType.Parent or UserType.Driver;
+        return user is { AccountStatus: AccountStatus.Verified, UserType: UserType.Parent or UserType.Driver };
     }
 
     private async Task ValidateUserInput(UpdateUserInfoDto dto, User user)

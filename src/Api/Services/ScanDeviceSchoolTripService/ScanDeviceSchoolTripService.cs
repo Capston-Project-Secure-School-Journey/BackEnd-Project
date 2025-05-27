@@ -90,7 +90,7 @@ public class ScanDeviceSchoolTripService(
             .Find(ss => ss.Date == DateOnly.FromDateTime(currentTime)
                         && ss.SchoolId == student.SchoolId
                         && ss.JourneyStatus == JourneyStatus.InProgress
-                        && ss.Students.Any(st => st.StudentId == student.Id && st.IsPickedUp))
+                        && ss.Students.Any(st => st.StudentId == student.Id && !st.SkipPickup))
             .FirstOrDefaultAsync();
 
         if (shuttleSchedule == null)
