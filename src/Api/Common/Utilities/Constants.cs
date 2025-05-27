@@ -83,4 +83,7 @@ public static class Constants
                 return "Bạn đã bị ban";
         }
     }
+
+
+    public const string RootPathMailTemplate = "Common/MailTemplates/";
 }
