@@ -16,7 +16,7 @@ namespace Api.Controllers;
 public class UserController(IUserHandler userHandler) : ControllerBase
 {
     [HttpGet]
-    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize]
     public async Task<UserProfile> GetProfile()
     {
         return await userHandler.GetProfile(this.GetUserId(), this.GetUserType());
@@ -24,7 +24,7 @@ public class UserController(IUserHandler userHandler) : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize]
     public async Task<UserProfile> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         return await userHandler.UpdateProfile(this.GetUserId(), request);
@@ -32,7 +32,7 @@ public class UserController(IUserHandler userHandler) : ControllerBase
 
     [HttpPost("upload-avatar")]
     [ValidateModel]
-    [Authorize(UserType.Admin, UserType.SchoolAdmin, UserType.SchoolSuperVisor, UserType.Parent, UserType.Driver)]
+    [Authorize]
     public async Task<string> UploadAvatar(
         [AllowedFile([
             ContentType.ImagePng,
@@ -54,7 +54,7 @@ public class UserController(IUserHandler userHandler) : ControllerBase
 
     [HttpPut("add-device-tokens")]
     [ValidateModel]
-    [Authorize()]
+    [Authorize]
     public async Task<ActionResult> AddDeviceToken([FromBody] AddDeviceTokenRequest request)
     {
         await userHandler.AddDeviceToken(this.GetUserId(), request.DeviceToken);

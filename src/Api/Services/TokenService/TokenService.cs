@@ -62,16 +62,7 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = _tokenSettings.Issuer,
-            ValidAudience = _tokenSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Key))
-        };
+        var tokenValidationParameters = GetTokenValidationParameters(_tokenSettings);
 
         tokenHandler.ValidateToken(token,
             tokenValidationParameters
@@ -104,5 +95,20 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
         if (enumerable.Any(x => x.Type == key))
             value = enumerable.First(x => x.Type == key).Value;
         return value;
+    }
+
+
+    public static TokenValidationParameters GetTokenValidationParameters(TokenSettings tokenSettings)
+    {
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = tokenSettings.Issuer,
+            ValidAudience = tokenSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings.Key))
+        };
     }
 }
