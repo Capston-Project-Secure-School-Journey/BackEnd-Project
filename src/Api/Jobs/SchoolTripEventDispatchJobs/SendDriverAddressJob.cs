@@ -8,6 +8,7 @@ using Api.Services.ShuttleScheduleManagementService;
 using Api.Services.UserService;
 using Hangfire;
 using Microsoft.Extensions.Caching.Memory;
+using MongoDB.Driver.Linq;
 
 namespace Api.Jobs.SchoolTripEventDispatchJobs;
 
@@ -16,6 +17,9 @@ public class SendDriverAddressJob(
     ILogger<SendDriverAddressJob> logger,
     IMemoryCache cache) : IJob
 {
+    private const string CacheKey = "SendDriverAddressJob";
+    private const int NotificationTriggerDistance = 200;
+
     public async Task ExecuteAsync(params object[] args)
     {
         try
@@ -49,31 +53,32 @@ public class SendDriverAddressJob(
                 deviceTokens = deviceTokens.Concat(await userService.GetDeviceTokens(parentId)).Distinct().ToArray();
             }
 
-            var data = new Dictionary<string, string>();
-            data.Add("Message", "DriverAddress");
-            data.Add("ShuttleScheduleId", shuttleScheduleId.ToString());
-            data.Add("Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture));
-            data.Add("Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture));
+            var data = new Dictionary<string, string>
+            {
+                { "Message", "DriverAddress" },
+                { "ShuttleScheduleId", shuttleScheduleId.ToString() },
+                { "Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture) },
+                { "Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture) }
+            };
 
-            var task = notificationSender.SendDataManyAsync(deviceTokens, data, new TimeSpan(0, 0, 15));
+            if (deviceTokens.Length > 0)
+                _ = notificationSender.SendDataManyAsync(deviceTokens, data, new TimeSpan(0, 0, 15));
 
             var notifications = new List<CreateNotificationDto>();
             var notificationIds = new List<Guid>();
-            foreach (var student in shuttleSchedule.Students)
+            foreach (var student in shuttleSchedule.Students
+                         .Where(st => IStudentGroupingAlgorithm.Haversine(
+                             shuttleSchedule.CurrentLat,
+                             shuttleSchedule.CurrentLng,
+                             st.PickupLat,
+                             st.PickupLng) < NotificationTriggerDistance))
             {
-                if (!cache.TryGetValue(shuttleScheduleId.ToString() + student.StudentId.ToString(), out _))
+                var cacheKey = $"{CacheKey}_{shuttleScheduleId}_{student.StudentId}";
+                if (!cache.TryGetValue(cacheKey, out _))
                 {
-                    var distance = IStudentGroupingAlgorithm.Haversine(shuttleSchedule.CurrentLat,
-                        shuttleSchedule.CurrentLng,
-                        student.PickupLat,
-                        student.PickupLng);
-
-                    if (distance < 200)
-                    {
-                        notifications.AddRange(GetNotificationDto(student));
-                        cache.Set(shuttleScheduleId.ToString() + student.StudentId.ToString(), 1,
-                            TimeSpan.FromHours(3));
-                    }
+                    notifications.AddRange(GetNotificationDto(student));
+                    cache.Set(cacheKey, 1,
+                        TimeSpan.FromHours(1));
                 }
             }
 
@@ -93,7 +98,6 @@ public class SendDriverAddressJob(
                 throw;
             }
 
-            await task;
             logger.LogInformation("Sending driver address job successfully");
             BackgroundJob.Enqueue<SendNotificationJob>(
                 (job) => job.ExecuteAsync(notificationIds));
@@ -106,8 +110,10 @@ public class SendDriverAddressJob(
 
     private static List<CreateNotificationDto> GetNotificationDto(StudentOnBus studentOnBus)
     {
-        var title = "Tài xế đã đang đến gần nhà.";
-        var content = "Hiện tại tài xế sắp đến gần, hãy đưa con để lên xe.";
+        var title = "Tài xế đang đến gần nhà.";
+        var content = studentOnBus.IsPickedUp
+            ? "Hiện tại tài xế đã đến gần nhà, hãy ra đón con."
+            : "Hiện tại tài xế sắp đến gần nhà, hãy đưa con ra để lên xe đúng giờ.";
         var recipientIds = studentOnBus.Parents.Select(x => x.ParentId);
         return recipientIds.Select(x => new CreateNotificationDto()
         {

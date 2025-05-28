@@ -93,11 +93,11 @@ public class SendStudentTripEventJob(
         switch (eventType)
         {
             case StudentTripEvent.PickedUp:
-                title += $"Con của bạn lên xe";
+                title += $"Con của bạn đã lên xe";
                 content += $"Con của bạn lên xe lúc: {studentOnBus.PickedUpTime}";
                 break;
             case StudentTripEvent.DroppedOff:
-                title += $"Con của bạn xuống xe";
+                title += $"Con của bạn đã xuống xe";
                 content += $"Con của bạn xuống xe lúc: {studentOnBus.DroppedOffTime}";
                 break;
             case StudentTripEvent.SkippedFromDriver:

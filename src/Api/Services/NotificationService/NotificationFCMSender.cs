@@ -46,6 +46,8 @@ public class NotificationFcmSender : INotificationSender
     public async Task SendByNotificationAsync(Guid notificationId, IReadOnlyDictionary<string, string>? data)
     {
         var messages = await GetMessageAsync(notificationId, data);
+        if (messages.Count == 0) return;
+        
         var result = await _messaging.SendEachAsync(messages);
 
         ThrowIfSentFailed(result);
@@ -59,7 +61,8 @@ public class NotificationFcmSender : INotificationSender
         {
             messages.AddRange(await GetMessageAsync(notificationId, data));
         }
-
+        
+        if (messages.Count == 0) return;
         var result = await _messaging.SendEachAsync(messages);
         ThrowIfSentFailed(result);
     }

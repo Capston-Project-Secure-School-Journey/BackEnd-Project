@@ -17,7 +17,7 @@ public static class JobRegister
         RecurringJob.AddOrUpdate<SchoolJobSubscriber>(
             "school-subscribe-job",
             job => job.ExecuteAsync(),
-            "0 2 * * 6",
+            "0 2 * * 1",
             options);
 
         RecurringJob.AddOrUpdate<CleanFileJob>(

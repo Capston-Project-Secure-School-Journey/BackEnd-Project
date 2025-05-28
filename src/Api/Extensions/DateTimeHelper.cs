@@ -1,3 +1,4 @@
+
 namespace Api.Extensions;
 
 public static class DateTimeHelper
@@ -96,27 +97,28 @@ public static class DateTimeHelper
         return GetMonthRange(new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
-    public static List<DateTime> GetNextWeek246Dates()
+    public static List<DateTime> Get246DatesOfCurrentWeek()
     {
         var today = GetDateTimeUtc7();
-
-        var daysUntilNextMonday = ((int)DayOfWeek.Monday - (int)today.DayOfWeek + 7) % 7;
-        var nextMonday = today.AddDays(daysUntilNextMonday + 7);
+        var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var startOfWeek = today.AddDays(-diff);
+        startOfWeek = new DateTime(startOfWeek.Year, startOfWeek.Month, startOfWeek.Day, 0, 0, 0, startOfWeek.Kind);
 
         return
         [
-            nextMonday,
-            nextMonday.AddDays(2),
-            nextMonday.AddDays(4)
+            startOfWeek,
+            startOfWeek.AddDays(2),
+            startOfWeek.AddDays(4)
         ];
     }
 
-    public static DateTime GetSaturdayNextWeek()
+    public static DateTime GetSaturdayOfCurrentWeek()
     {
         var today = GetDateTimeUtc7();
-        var daysUntilNextMonday = ((int)DayOfWeek.Monday - (int)today.DayOfWeek + 7) % 7;
-        var nextMonday = today.AddDays(daysUntilNextMonday + 7);
+        var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var startOfWeek = today.AddDays(-diff);
+        startOfWeek = new DateTime(startOfWeek.Year, startOfWeek.Month, startOfWeek.Day, 0, 0, 0, startOfWeek.Kind);
 
-        return nextMonday.AddDays(5);
+        return startOfWeek.AddDays(5);
     }
 }

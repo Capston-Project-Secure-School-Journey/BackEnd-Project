@@ -148,7 +148,9 @@ public class UserService(
             throw new NotFoundException(ErrorMessages.UserNotFound);
 
         var oldUser = await context.Users
-            .FirstOrDefaultAsync(u => EF.Functions.JsonContains(u.DeviceTokens, $"[\"{deviceToken}\"]"));
+            .FirstOrDefaultAsync(u =>
+                EF.Functions.JsonContains(u.DeviceTokens, $"[\"{deviceToken}\"]")
+                && u.Id != userId);
 
         if (oldUser != null)
         {
