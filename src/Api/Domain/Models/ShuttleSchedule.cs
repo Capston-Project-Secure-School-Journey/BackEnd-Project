@@ -19,6 +19,7 @@ public class ShuttleSchedule
     public bool IsAllNotesRead { get; set; }
     public TimeSpan PickupStartTime { get; set; }
     public TimeSpan PickupEndTime { get; set; }
+    public TimeSpan? StartJourneyTime { get; set; }
     public TimeSpan? EndJourneyTime { get; set; }
     public JourneyStatus JourneyStatus { get; set; }
     public string CancelReason { get; set; } = string.Empty;

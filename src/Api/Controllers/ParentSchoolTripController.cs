@@ -10,9 +10,9 @@ namespace Api.Controllers;
 [Route("parent/school-trips")]
 public class ParentSchoolTripController(IParentSchoolTripHandler handler) : ControllerBase
 {
-    [HttpGet("pick-up")]
+    [HttpGet]
     [Authorize(UserType.Parent)]
-    public async Task<List<ParentShuttleScheduleResponse>> PickUpStudent([FromQuery] Guid studentId,
+    public async Task<List<ParentShuttleScheduleResponse>> GetShuttleSchedulesByStudent([FromQuery] Guid studentId,
         [FromQuery] DateOnly date)
     {
         var userId = this.GetUserId();

@@ -1,5 +1,4 @@
 using System.Globalization;
-using Accord;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
@@ -51,6 +50,7 @@ public class SendDriverAddressJob(
             }
 
             var data = new Dictionary<string, string>();
+            data.Add("Message", "DriverAddress");
             data.Add("ShuttleScheduleId", shuttleScheduleId.ToString());
             data.Add("Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture));
             data.Add("Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture));
@@ -70,7 +70,7 @@ public class SendDriverAddressJob(
 
                     if (distance < 200)
                     {
-                        notifications.AddRange(GetNotificationDto(shuttleSchedule, student));
+                        notifications.AddRange(GetNotificationDto(student));
                         cache.Set(shuttleScheduleId.ToString() + student.StudentId.ToString(), 1,
                             TimeSpan.FromHours(3));
                     }
@@ -104,8 +104,7 @@ public class SendDriverAddressJob(
         }
     }
 
-    private static List<CreateNotificationDto> GetNotificationDto(ShuttleSchedule shuttleSchedule,
-        StudentOnBus studentOnBus)
+    private static List<CreateNotificationDto> GetNotificationDto(StudentOnBus studentOnBus)
     {
         var title = "Tài xế đã đang đến gần nhà.";
         var content = "Hiện tại tài xế sắp đến gần, hãy đưa con để lên xe.";

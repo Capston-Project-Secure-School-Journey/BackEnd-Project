@@ -114,6 +114,7 @@ builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("Toke
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoSettings"));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.UseHttpClientMetrics();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
@@ -135,6 +136,7 @@ MongoMappingConfig.RegisterMappings();
 var app = builder.Build();
 
 app.UsePathBase("/api");
+app.UseMiddleware<RemoveUnauthorizedHeaderMiddleware>();
 app.UseMiddleware<TimeMeasuringMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMetricServer();

@@ -45,18 +45,17 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
         if (string.IsNullOrEmpty(token))
             throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
 
-        var userInfo = tokenService.ValidateToken(token);
+        var tokenValidationResult = tokenService.ValidateToken(token, TokenType.Login);
 
-        if (userInfo is { Item1: not null, Item2: not null, Item3: not null })
+        if (tokenValidationResult is { UserId: not null, UserType: not null, AccountStatus: not null })
         {
-            RemoveHeader(context.HttpContext);
-            AddHeader(context.HttpContext, userInfo);
+            AddHeader(context.HttpContext, tokenValidationResult);
 
-            if (userInfo.Item3.Value == AccountStatus.DeActive)
+            if (tokenValidationResult.AccountStatus.Value == AccountStatus.DeActive)
                 throw new ForbiddenException(ErrorMessages.AccountLocked);
 
             if (userTypeFilter is { Length: > 0 } &&
-                !userTypeFilter.Contains((UserType)Convert.ToInt16(userInfo.Item2))
+                !userTypeFilter.Contains(tokenValidationResult.UserType.Value)
                )
                 throw new ForbiddenException(ErrorMessages.AccessDenied);
         }
@@ -65,27 +64,12 @@ public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationCh
             throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
         }
     }
-
-    private static void RemoveHeader(HttpContext context)
+    
+    private static void AddHeader(HttpContext context, TokenValidationResult result)
     {
-        if (context.Request.Headers.Any(x => x.Key == "Authorization-UserId"))
-            context.Request.Headers.Remove("Authorization-UserId");
-
-        if (context.Request.Headers.Any(x => x.Key == "Authorization-UserType"))
-            context.Request.Headers.Remove("Authorization-UserType");
-
-        if (context.Request.Headers.Any(x => x.Key == "Authorization-AccountStatus"))
-            context.Request.Headers.Remove("Authorization-AccountStatus");
-
-        if (context.Request.Headers.Any(x => x.Key == "Authorization-SchoolId"))
-            context.Request.Headers.Remove("Authorization-SchoolId");
-    }
-
-    private static void AddHeader(HttpContext context, (Guid?, string?, AccountStatus?, Guid? schoolId) userInfo)
-    {
-        context.Request.Headers.TryAdd("Authorization-UserId", userInfo.Item1?.ToString());
-        context.Request.Headers.TryAdd("Authorization-UserType", userInfo.Item2);
-        context.Request.Headers.TryAdd("Authorization-AccountStatus", userInfo.Item3.ToString());
-        context.Request.Headers.TryAdd("Authorization-SchoolId", userInfo.Item4?.ToString());
+        context.Request.Headers.TryAdd("Authorization-UserId", result.UserId.ToString());
+        context.Request.Headers.TryAdd("Authorization-UserType", Convert.ToInt16(result.UserType).ToString());
+        context.Request.Headers.TryAdd("Authorization-AccountStatus", Convert.ToInt16(result.AccountStatus).ToString());
+        context.Request.Headers.TryAdd("Authorization-SchoolId", result.SchoolId.ToString());
     }
 }

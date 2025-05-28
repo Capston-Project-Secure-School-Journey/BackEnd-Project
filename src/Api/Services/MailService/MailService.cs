@@ -11,7 +11,7 @@ public class MailService(IOptions<MailSettings> mailSettings) : IMailService
 {
     private readonly MailSettings _mailSettings = mailSettings.Value;
 
-    public async Task<bool> SendConfirmEmail(SendMailDto sendMailDto)
+    public async Task<bool> SendEmail(SendMailDto sendMailDto)
     {
         var validationResults = new List<ValidationResult>();
         var context = new ValidationContext(sendMailDto, null, null);

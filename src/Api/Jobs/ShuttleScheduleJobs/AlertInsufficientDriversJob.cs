@@ -1,5 +1,4 @@
 using System.Text;
-using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Domain;
 using Api.Domain.Models;
@@ -114,7 +113,7 @@ public class AlertInsufficientDriversJob(
         writer.WriteLine("DriverId,FullName,SeatingCapacity,ExpiredAt");
 
         foreach (var d in drivers)
-            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver?.FirstName + d.Driver?.LastName)},{d.SeatingCapacity},{d.ExpiredAt}");
+            writer.WriteLine($"{d.DriverId},{EscapeCsv(d.Driver.FirstName + d.Driver.LastName)},{d.SeatingCapacity},{d.ExpiredAt}");
 
         writer.WriteLine($"Số lượng xe hiện tại:,{drivers.Count}");
         writer.WriteLine($"Số chỗ ngồi hiện tại:,{drivers.Sum(x => x.SeatingCapacity)}");

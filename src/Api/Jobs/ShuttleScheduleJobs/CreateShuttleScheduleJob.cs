@@ -36,11 +36,15 @@ public class CreateShuttleScheduleJob(
                 return;
             if (Convert.ToDateTime(startDate.Value) >= DateTimeHelper.GetDateTimeUtc7())
                 return;
-            
+
             await HasStudentMissingAddress(db, schoolId);
             await IsDriverCapacityInsufficient(db, schoolId);
 
             var nextWeekRange = DateTimeHelper.GetNextWeekRange(DateTimeHelper.GetDateTimeOnlyUtc7());
+
+            await shuttleScheduleManagementService.DeleteShuttleSchedule(schoolId, nextWeekRange.StartOfWeek,
+                nextWeekRange.EndOfWeek);
+
             var schedules = await db.ClassSchedules
                 .AsNoTracking()
                 .AsQueryable()
@@ -101,9 +105,10 @@ public class CreateShuttleScheduleJob(
                     db.ActiveDrivers.Update(activeDriver);
                 }
             }
+
             await db.SaveChangesAsync();
             await shuttleScheduleManagementService.AddShuttleSchedule(requests);
-            
+
             logger.LogInformation("CreateShuttleScheduleJob successfully");
         }
         catch (Exception e)

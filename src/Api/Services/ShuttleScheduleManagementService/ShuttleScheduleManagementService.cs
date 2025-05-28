@@ -31,6 +31,7 @@ public class ShuttleScheduleManagementService(
         var filter = Builders<ShuttleSchedule>.Filter.Eq(s => s.Id, shuttleSchedule.Id);
         var update = Builders<ShuttleSchedule>.Update
             .Set(s => s.JourneyStatus, shuttleSchedule.JourneyStatus)
+            .Set(s => s.IsAllNotesRead, shuttleSchedule.IsAllNotesRead)
             .Set(s => s.EndJourneyTime, shuttleSchedule.EndJourneyTime)
             .Set(s => s.CancelReason, shuttleSchedule.CancelReason)
             .Set(s => s.NumberOfPickedUpStudents, shuttleSchedule.NumberOfPickedUpStudents)
@@ -60,15 +61,12 @@ public class ShuttleScheduleManagementService(
     public async Task<List<ShuttleSchedule>> AddShuttleSchedule(List<CreateShuttleScheduleDto> requests)
     {
         var shuttleSchedules = new List<ShuttleSchedule>();
-        var tasks = new List<Task>();
         foreach (var request in requests)
         {
-            tasks.Add(DeleteShuttleSchedule(request));
             var shuttleSchedule = await CreateShuttleScheduleFromDto(request);
             shuttleSchedules.Add(shuttleSchedule);
         }
 
-        await Task.WhenAll(tasks);
         await context.ShuttleScheduleCollection.InsertManyAsync(shuttleSchedules);
 
         return shuttleSchedules;
@@ -213,6 +211,7 @@ public class ShuttleScheduleManagementService(
             Type = shuttleScheduleDto.Type,
             PickupStartTime = GetPickupStartTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
             PickupEndTime = GetPickupEndTime(shuttleScheduleDto.Type, shuttleScheduleDto.SessionType, school),
+            StartJourneyTime = null,
             EndJourneyTime = null,
             NumberOfStudents = shuttleScheduleDto.Students.Count,
             NumberOfPickedUpStudents = 0,
@@ -257,13 +256,14 @@ public class ShuttleScheduleManagementService(
         return shuttleSchedule;
     }
 
-    private async Task DeleteShuttleSchedule(CreateShuttleScheduleDto shuttleScheduleDto)
+    public async Task DeleteShuttleSchedule(Guid schoolId, DateOnly startDate, DateOnly endDate)
     {
-        var shuttleScheduleCollection = context.MongoDatabase.GetCollection<ShuttleSchedule>("pickup_schedules");
-        await shuttleScheduleCollection.DeleteManyAsync(pk =>
-            pk.SchoolId == shuttleScheduleDto.SchoolId
-            && pk.Date == shuttleScheduleDto.Date
-            && pk.SessionType == shuttleScheduleDto.SessionType);
+        var filter = Builders<ShuttleSchedule>.Filter.And(
+            Builders<ShuttleSchedule>.Filter.Eq(t => t.SchoolId, schoolId),
+            Builders<ShuttleSchedule>.Filter.Gte(t => t.Date, startDate),
+            Builders<ShuttleSchedule>.Filter.Lte(t => t.Date, endDate)
+        );
+        await context.ShuttleScheduleCollection.DeleteManyAsync(filter);
     }
 
     private static TimeSpan GetPickupStartTime(ShuttleScheduleType shuttleScheduleType, SessionType sessionType,

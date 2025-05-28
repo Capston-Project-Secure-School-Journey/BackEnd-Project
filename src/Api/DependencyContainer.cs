@@ -12,6 +12,8 @@ using Api.Services.ChildrenManagementService;
 using Api.Services.UserManagementService;
 using Api.Services.ClassManagementService;
 using Api.Services.DriverSchoolTripService;
+using Api.Services.JourneyNoteService;
+using Api.Services.MailService;
 using Api.Services.NotificationService;
 using Api.Services.ParentSchoolTripService;
 using Api.Services.ScanDeviceSchoolTripService;
@@ -101,8 +103,12 @@ public static class DependencyContainer
         services.AddScoped<IScanDeviceSchoolTripHandler, ScanDeviceSchoolTripHandler>();
         services.AddScoped<IScanDeviceSchoolTripService, ScanDeviceSchoolTripService>();
 
+        services.AddScoped<IJourneyNoteHandler, JourneyNoteHandler>();
+        services.AddScoped<IJourneyNoteService, JourneyNoteService>();
+
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
         services.AddSingleton<ValidateModelAttribute>();
+        services.AddSingleton<IMailService, MailService>();
     }
 }

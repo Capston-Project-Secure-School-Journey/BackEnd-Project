@@ -9,7 +9,9 @@ public interface IDriverSchoolTripService
     Task StartJourney(Guid shuttleScheduleId);
     Task EndJourney(Guid shuttleScheduleId);
     Task CancelJourney(Guid shuttleScheduleId, string cancelReason);
+    Task SkipStudentByDriver(Guid shuttleScheduleId, Guid studentId, string cancelReason);
     Task SkipStudent(Guid shuttleScheduleId, Guid studentId, string cancelReason);
+    Task UndoSkipStudent(Guid shuttleScheduleId, Guid studentId);
     Task<bool> HasInProgressShuttle(Guid driverId);
     Task<ShuttleSchedule> GetCurrentShuttleScheduleByDriver(Guid driverId);
     Task<bool> HasUpcomingShuttle(Guid driverId);

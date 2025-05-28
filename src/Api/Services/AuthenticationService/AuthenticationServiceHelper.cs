@@ -10,18 +10,17 @@ public partial class AuthenticationService
     {
         var claims = new List<Claim>
         {
-            new Claim("Id", user.Id.ToString()),
-            new Claim("UserName", user.UserName),
-            new Claim(ClaimTypes.Role, Convert.ToInt16(user.UserType).ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Id.ToString()),
-            new Claim("AccountStatus", user.AccountStatus.ToString())
+            new(ClaimType.UserName, user.UserName),
+            new(ClaimTypes.Role, Convert.ToInt16(user.UserType).ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimType.AccountStatus, Convert.ToInt16(user.AccountStatus).ToString())
         };
         if (user.VerificationMethod != null)
-            claims.Add(new Claim("VerificationMethod", user.VerificationMethod.ToString()!));
-        claims.Add(new Claim("TokenType", TokenType.Login.ToString()));
-        if (user is SchoolPerson schoolPerson) claims.Add(new Claim("SchoolId", schoolPerson.SchoolId.ToString()));
+            claims.Add(new Claim(ClaimType.VerificationMethod, Convert.ToInt16(user.VerificationMethod).ToString()));
+        claims.Add(new Claim(ClaimType.TokenType, TokenType.Login.ToString()));
+        if (user is SchoolPerson schoolPerson)
+            claims.Add(new Claim(ClaimType.SchoolId, schoolPerson.SchoolId.ToString()));
 
-        return tokenService.GenerateAccessToken(claims);
+        return tokenService.GenerateAccessToken(claims, tokenSettings.Value.AccessTokenExpirationHours);
     }
 }

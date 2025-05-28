@@ -46,6 +46,10 @@ public class DriverSchoolTripService(
             throw new BadRequestException(
                 $"Chuyến đi không thể bắt đầu. Vì trạng thái hiện tại là: {shuttleSchedule.JourneyStatus.GetEnumDisplayName()}");
 
+        if (!shuttleSchedule.IsAllNotesRead)
+            throw new BadRequestException(
+                $"Chuyến đi không thể bắt đầu. Vì vẫn còn ghi chú từ phụ huynh chưa được đọc.");
+
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
 
         if (DateOnly.FromDateTime(currentTime) != shuttleSchedule.Date)
@@ -57,6 +61,7 @@ public class DriverSchoolTripService(
             currentTime.TimeOfDay <= shuttleSchedule.PickupEndTime)
         {
             shuttleSchedule.JourneyStatus = JourneyStatus.InProgress;
+            shuttleSchedule.StartJourneyTime = currentTime.TimeOfDay;
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
         }
         else
@@ -81,8 +86,8 @@ public class DriverSchoolTripService(
 
         if (studentNotPickedUp != null)
             throw new BadRequestException($"Vẫn còn học sinh {studentNotPickedUp.FullName} chưa được đón hoặc trả.\n" +
-                                          $" Nếu học sinh quên quét qr thì hãy đánh dấu đã đón." +
-                                          $" Nếu không phải hãy thực hiện đưa đón đầy đủ tất cả học sinh.");
+                                          $"Nếu học sinh quên quét qr thì hãy bấm bỏ quả học sinh và kèm lí do quên quét qr." +
+                                          $"Nếu không phải hãy thực hiện đưa đón đầy đủ tất cả học sinh.");
 
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
 
@@ -95,13 +100,22 @@ public class DriverSchoolTripService(
     {
         var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
 
-        if (shuttleSchedule.JourneyStatus == JourneyStatus.Completed)
+        if (shuttleSchedule.JourneyStatus is JourneyStatus.Completed or JourneyStatus.Cancelled)
             throw new BadRequestException(
                 $"Chuyến đi không thể hủy. Vì trạng thái hiện tại là: {shuttleSchedule.JourneyStatus.GetEnumDisplayName()}");
 
         shuttleSchedule.JourneyStatus = JourneyStatus.Cancelled;
         shuttleSchedule.CancelReason = cancelReason;
         await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
+    }
+
+    public async Task SkipStudentByDriver(Guid shuttleScheduleId, Guid studentId, string cancelReason)
+    {
+        var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
+        if (shuttleSchedule.JourneyStatus != JourneyStatus.InProgress)
+            throw new BadRequestException("Chuyến đi chưa bắt đầu.");
+
+        await SkipStudent(shuttleScheduleId, studentId, cancelReason);
     }
 
     public async Task SkipStudent(Guid shuttleScheduleId, Guid studentId, string cancelReason)
@@ -115,12 +129,35 @@ public class DriverSchoolTripService(
 
             if (studentOnBus == null)
                 throw new BadRequestException("Học sinh không tồn tại trên chuyến này.");
-            if (shuttleSchedule.JourneyStatus != JourneyStatus.InProgress)
-                throw new BadRequestException("Chuyến đi chưa bắt đầu.");
 
             studentOnBus.SkipPickup = true;
             studentOnBus.IsSkipUpReason = cancelReason;
             shuttleSchedule.NumberOfStudents -= 1;
+
+            await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
+            await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
+        }
+        finally
+        {
+            SkipLock.Release();
+        }
+    }
+
+    public async Task UndoSkipStudent(Guid shuttleScheduleId, Guid studentId)
+    {
+        await SkipLock.WaitAsync();
+
+        try
+        {
+            var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
+            var studentOnBus = shuttleSchedule.Students.FirstOrDefault(st => st.StudentId == studentId);
+
+            if (studentOnBus == null)
+                throw new BadRequestException("Học sinh không tồn tại trên chuyến này.");
+
+            studentOnBus.SkipPickup = false;
+            studentOnBus.IsSkipUpReason = string.Empty;
+            shuttleSchedule.NumberOfStudents += 1;
 
             await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
             await shuttleScheduleManagementService.UpdateStudentOnShuttleSchedule(shuttleSchedule.Id, studentOnBus);
