@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Transactions;
 using Api.Domain;
@@ -6,8 +7,10 @@ using Api;
 using Api.DashboardAuthorizationFilters;
 using Api.Jobs;
 using Api.Pipeline.Middlewares;
+using Api.Services.TokenService;
 using Hangfire;
 using Hangfire.MySql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -57,6 +60,31 @@ DependencyContainer.RegisterServices(builder.Services);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+var tokenSettings = builder.Configuration.GetSection("TokenSettings").Get<TokenSettings>();
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = TokenService.GetTokenValidationParameters(tokenSettings!);
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(authHeader))
+                {
+                    context.Token = authHeader;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+
 builder.Services.AddSwaggerDocument(config =>
 {
     config.PostProcess = document =>
@@ -118,6 +146,7 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("AppSe
 builder.Services.UseHttpClientMetrics();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -136,7 +165,7 @@ MongoMappingConfig.RegisterMappings();
 var app = builder.Build();
 
 app.UsePathBase("/api");
-app.UseMiddleware<RemoveUnauthorizedHeaderMiddleware>();
+app.UseAuthentication();
 app.UseMiddleware<TimeMeasuringMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMetricServer();

@@ -5,6 +5,7 @@ using Api.Services.TokenService;
 using Api.Domain.ModelSettings;
 using Api.Extensions;
 using Api.Scheduling;
+using Api.Security.CurrentUserProvider;
 using Api.Services;
 using Api.Services.ApplicationService;
 using Api.Services.ApprovalProcessor;
@@ -108,6 +109,9 @@ public static class DependencyContainer
 
         services.AddScoped<IScheduleManagementService, ScheduleManagementService>();
         services.AddScoped<IScheduleManagementHandler, ScheduleManagementHandler>();
+
+        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
+        
         services.AddSingleton<ValidateModelAttribute>();
         services.AddSingleton<IMailService, MailService>();
     }

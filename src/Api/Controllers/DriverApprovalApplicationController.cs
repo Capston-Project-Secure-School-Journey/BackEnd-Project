@@ -12,8 +12,6 @@ namespace Api.Controllers;
 [Route("driver-approval-applications")]
 public class DriverApprovalApplicationController(IApplicationHandler applicationHandler) : ControllerBase
 {
-    private readonly IApplicationHandler _applicationHandler = applicationHandler;
-
     [HttpGet("{applicationId}")]
     [Authorize(UserType.Driver, UserType.SchoolAdmin)]
     public async Task<ApplicationResponse> GetApplication([FromRoute] Guid applicationId)
@@ -23,15 +21,15 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
         if (userType == UserType.Driver)
         {
-            await _applicationHandler.IsDriverOwnerOfApplication(applicationId, userId);
+            await applicationHandler.IsDriverOwnerOfApplication(applicationId, userId);
         }
         else
         {
             var schoolId = this.GetSchoolId();
-            await _applicationHandler.IsSchoolOwnerOfApplication(applicationId, schoolId);
+            await applicationHandler.IsSchoolOwnerOfApplication(applicationId, schoolId);
         }
 
-        return await _applicationHandler.GetApplication(applicationId);
+        return await applicationHandler.GetApplication(applicationId);
     }
 
     [HttpGet]
@@ -43,12 +41,12 @@ public class DriverApprovalApplicationController(IApplicationHandler application
 
         if (userType == UserType.Driver)
         {
-            return await _applicationHandler.GetApplicationsByDriver(userId, request);
+            return await applicationHandler.GetApplicationsByDriver(userId, request);
         }
         else
         {
             var schoolId = this.GetSchoolId();
-            return await _applicationHandler.GetApplicationsBySchool(schoolId, request);
+            return await applicationHandler.GetApplicationsBySchool(schoolId, request);
         }
     }
 
@@ -60,9 +58,9 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         var userType = this.GetUserType();
 
         if (userType == UserType.Driver)
-            return await _applicationHandler.GetActionCanDoByDriver(applicationId, userId);
+            return await applicationHandler.GetActionCanDoByDriver(applicationId, userId);
         else
-            return await _applicationHandler.GetActionCanDoByReviewer(applicationId, userId);
+            return await applicationHandler.GetActionCanDoByReviewer(applicationId, userId);
     }
 
     [HttpPost]
@@ -71,7 +69,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     public async Task<ApplicationResponse> CreateApplication([FromBody] Guid schoolId)
     {
         var userId = this.GetUserId();
-        return await _applicationHandler.CreateApplication(userId, schoolId);
+        return await applicationHandler.CreateApplication(userId, schoolId);
     }
 
     [HttpPut("{applicationId}")]
@@ -80,7 +78,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     public async Task<ApplicationResponse> UpdateApplication([FromRoute] Guid applicationId)
     {
         var userId = this.GetUserId();
-        return await _applicationHandler.UpdateApplication(applicationId, userId);
+        return await applicationHandler.UpdateApplication(applicationId, userId);
     }
 
     [HttpPut("{applicationId}/submit")]
@@ -89,7 +87,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     public async Task<ActionResult> SubmitApplication([FromRoute] Guid applicationId)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.SubmitApplication(applicationId, userId);
+        await applicationHandler.SubmitApplication(applicationId, userId);
         return Ok();
     }
 
@@ -99,7 +97,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     public async Task<ActionResult> DeleteApplication([FromRoute] Guid applicationId)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.DeleteApplicationByDriver(applicationId, userId);
+        await applicationHandler.DeleteApplicationByDriver(applicationId, userId);
         return Ok();
     }
 
@@ -110,7 +108,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         [FromBody] RejectApplicationRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.RejectApplication(applicationId, userId, request.Reason);
+        await applicationHandler.RejectApplication(applicationId, userId, request.Reason);
         return Ok();
     }
 
@@ -121,7 +119,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         [FromBody] ApproveApplicationRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.ApproveApplication(applicationId, userId);
+        await applicationHandler.ApproveApplication(applicationId, userId);
         return Ok();
     }
 
@@ -132,7 +130,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         [FromBody] RequestMoreInfoRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.RequireAdditionalDetails(applicationId, userId, request.Reason);
+        await applicationHandler.RequireAdditionalDetails(applicationId, userId, request.Reason);
         return Ok();
     }
 
@@ -145,9 +143,9 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         var userId = this.GetUserId();
         var userType = this.GetUserType();
         if (userType == UserType.Driver)
-            await _applicationHandler.RequestCancellationByDriver(applicationId, userId, request.Reason);
+            await applicationHandler.RequestCancellationByDriver(applicationId, userId, request.Reason);
         else
-            await _applicationHandler.RequestCancellationByReviewer(applicationId, userId, request.Reason);
+            await applicationHandler.RequestCancellationByReviewer(applicationId, userId, request.Reason);
         return Ok();
     }
 
@@ -158,7 +156,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
         [FromBody] CancelApplicationRequest request)
     {
         var userId = this.GetUserId();
-        await _applicationHandler.CancelApplication(applicationId, userId);
+        await applicationHandler.CancelApplication(applicationId, userId);
         return Ok();
     }
 }

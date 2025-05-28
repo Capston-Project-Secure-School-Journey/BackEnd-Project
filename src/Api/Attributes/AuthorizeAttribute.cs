@@ -1,6 +1,7 @@
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
+using Api.Security.CurrentUserProvider;
 using Api.Services.TokenService;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -36,40 +37,19 @@ public interface IAuthorizationChecker
     void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter);
 }
 
-public class AuthorizationChecker(ITokenService tokenService) : IAuthorizationChecker
+public class AuthorizationChecker() : IAuthorizationChecker
 {
     public void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter)
     {
-        var token = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
+        var currentUserProvider = context.HttpContext.RequestServices.GetService<ICurrentUserProvider>();
+        var user = currentUserProvider!.GetCurrentUser();
 
-        if (string.IsNullOrEmpty(token))
-            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
+        if (user.AccountStatus == AccountStatus.DeActive)
+            throw new ForbiddenException(ErrorMessages.AccountLocked);
 
-        var tokenValidationResult = tokenService.ValidateToken(token, TokenType.Login);
-
-        if (tokenValidationResult is { UserId: not null, UserType: not null, AccountStatus: not null })
-        {
-            AddHeader(context.HttpContext, tokenValidationResult);
-
-            if (tokenValidationResult.AccountStatus.Value == AccountStatus.DeActive)
-                throw new ForbiddenException(ErrorMessages.AccountLocked);
-
-            if (userTypeFilter is { Length: > 0 } &&
-                !userTypeFilter.Contains(tokenValidationResult.UserType.Value)
-               )
-                throw new ForbiddenException(ErrorMessages.AccessDenied);
-        }
-        else
-        {
-            throw new UnAuthorizedException(ErrorMessages.NotLoggedIn);
-        }
-    }
-    
-    private static void AddHeader(HttpContext context, TokenValidationResult result)
-    {
-        context.Request.Headers.TryAdd("Authorization-UserId", result.UserId.ToString());
-        context.Request.Headers.TryAdd("Authorization-UserType", Convert.ToInt16(result.UserType).ToString());
-        context.Request.Headers.TryAdd("Authorization-AccountStatus", Convert.ToInt16(result.AccountStatus).ToString());
-        context.Request.Headers.TryAdd("Authorization-SchoolId", result.SchoolId.ToString());
+        if (userTypeFilter is { Length: > 0 } &&
+            !userTypeFilter.Contains(user.UserType)
+           )
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
     }
 }
