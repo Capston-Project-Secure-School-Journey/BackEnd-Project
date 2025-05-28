@@ -4,6 +4,7 @@ using Api.Domain.ModelSettings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Api.Domain.Models;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
@@ -96,7 +97,6 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
             value = enumerable.First(x => x.Type == key).Value;
         return value;
     }
-
 
     public static TokenValidationParameters GetTokenValidationParameters(TokenSettings tokenSettings)
     {
