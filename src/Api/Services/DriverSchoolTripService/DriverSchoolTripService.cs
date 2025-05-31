@@ -200,8 +200,8 @@ public class DriverSchoolTripService(
         var currentTime = DateTimeHelper.GetDateTimeUtc7().TimeOfDay;
         return await context.ShuttleScheduleCollection
             .Find(ss => ss.Date == DateOnly.FromDateTime(DateTimeHelper.GetDateTimeUtc7())
-                        && ss.PickupStartTime >= currentTime
-                        && ss.PickupEndTime <= currentTime
+                        && ss.PickupStartTime <= currentTime
+                        && ss.PickupEndTime >= currentTime
                         && ss.JourneyStatus == JourneyStatus.NotStarted
                         && ss.DriverId == driverId)
             .AnyAsync();
@@ -212,8 +212,8 @@ public class DriverSchoolTripService(
         var currentTime = DateTimeHelper.GetDateTimeUtc7().TimeOfDay;
         var shuttleSchedule = await context.ShuttleScheduleCollection
             .Find(ss => ss.Date == DateOnly.FromDateTime(DateTimeHelper.GetDateTimeUtc7())
-                        && ss.PickupStartTime >= currentTime
-                        && ss.PickupEndTime <= currentTime
+                        && ss.PickupStartTime <= currentTime
+                        && ss.PickupEndTime >= currentTime
                         && ss.JourneyStatus == JourneyStatus.NotStarted
                         && ss.DriverId == driverId)
             .FirstOrDefaultAsync();
