@@ -6,17 +6,11 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("scan-device/school-trips")]
-public class ScanDeviceSchoolTripController(IScanDeviceSchoolTripHandler handler): ControllerBase
+public class ScanDeviceSchoolTripController(IScanDeviceSchoolTripHandler handler) : ControllerBase
 {
-    [HttpPut("pick-up")]
-    public async Task PickUpStudent([FromBody] PickUpStudentRequest request)
+    [HttpPut("check-action")]
+    public async Task CheckAction([FromBody] CheckActionRequest request)
     {
-        await handler.PickUpStudent(request.SecretCode);
-    }
-    
-    [HttpPut("drop-off")]
-    public async Task DropOffStudent([FromBody] DropOffStudentRequest request)
-    {
-        await handler.DropOffStudent(request.SecretCode);
+        await handler.CheckAction(request.SecretCode);
     }
 }

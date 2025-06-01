@@ -122,15 +122,9 @@ public class TestController(
         await handler.UpdateCurrentAddress(shuttleScheduleId, _driverId, request.Latitude, request.Longitude);
     }
 
-    [HttpPut("scan-device/school-trips/pick-up")]
-    public async Task PickUpStudent([FromBody] PickUpStudentRequest request)
+    [HttpPut("scan-device/school-trips/check-action")]
+    public async Task PickUpStudent([FromBody] CheckActionRequest request)
     {
-        await scanDeviceSchoolTripHandler.PickUpStudent(request.SecretCode);
-    }
-
-    [HttpPut("scan-device/school-trips/drop-off")]
-    public async Task DropOffStudent([FromBody] DropOffStudentRequest request)
-    {
-        await scanDeviceSchoolTripHandler.DropOffStudent(request.SecretCode);
+        await scanDeviceSchoolTripHandler.CheckAction(request.SecretCode);
     }
 }

@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Services.TokenService;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Api.Security.CurrentUserProvider;
 

@@ -30,6 +30,7 @@ public class ShuttleSchedule
     public double CurrentLng { get; set; } = 0;
     public BestRoute BestRoute { get; set; } = null!;
     public List<StudentOnBus> Students { get; set; } = new();
+    public double TotalDistanceKm { get; set; }
 }
 
 public class BestRoute

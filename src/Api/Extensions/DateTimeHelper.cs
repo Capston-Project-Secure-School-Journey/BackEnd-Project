@@ -1,4 +1,3 @@
-
 namespace Api.Extensions;
 
 public static class DateTimeHelper
@@ -20,6 +19,13 @@ public static class DateTimeHelper
     {
         return !_test
             ? DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime
+            : _testDateTime;
+    }
+
+    public static DateTimeOffset GetDateTimeOffSetUtc7()
+    {
+        return !_test
+            ? DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7))
             : _testDateTime;
     }
 

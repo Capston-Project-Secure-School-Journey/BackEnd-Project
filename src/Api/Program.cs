@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using System.Transactions;
 using Api.Domain;

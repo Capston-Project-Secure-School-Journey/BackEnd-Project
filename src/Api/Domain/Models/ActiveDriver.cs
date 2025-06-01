@@ -11,6 +11,7 @@ public class ActiveDriver: BaseModel
     public int SeatingCapacity { get; set; }
     
     public int Used { get; set; }
+    public double TotalDistanceKm { get; set; }
     public DateTime? ExpiredAt { get; set; }
     
     public Driver Driver { get; set; } = null!;

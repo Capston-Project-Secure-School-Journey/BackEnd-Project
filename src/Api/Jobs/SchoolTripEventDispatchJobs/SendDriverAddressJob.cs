@@ -8,7 +8,6 @@ using Api.Services.ShuttleScheduleManagementService;
 using Api.Services.UserService;
 using Hangfire;
 using Microsoft.Extensions.Caching.Memory;
-using MongoDB.Driver.Linq;
 
 namespace Api.Jobs.SchoolTripEventDispatchJobs;
 

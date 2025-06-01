@@ -545,7 +545,12 @@ public class ScheduleManagementService(
                              && sc.SessionType != SessionType.FullDay
                              && sc.SessionType != sessionType)
                 .AsEnumerable()
-                .FirstOrDefault(x => x.ClassSchedules.Select(cs => cs.ClassId).Order().SequenceEqual(classes.Order()));
+                .FirstOrDefault(x => x
+                    .ClassSchedules
+                    .Select(cs => cs.ClassId)
+                    .Order()
+                    .SequenceEqual(classes.Order())
+                );
 
             if (group != null)
                 isFullDay = true;

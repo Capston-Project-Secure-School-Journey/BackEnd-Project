@@ -35,8 +35,8 @@ public class ParentSchoolTripService(
             var student = shuttleSchedule.Students.First(x => x.StudentId == studentId);
             shuttleScheduleResponse.IsPickedUp = student.IsPickedUp;
             shuttleScheduleResponse.IsDroppedOff = student.IsDroppedOff;
-            shuttleScheduleResponse.PickedUpTime = student.PickedUpTime;
-            shuttleScheduleResponse.DroppedOffTime = student.DroppedOffTime;
+            shuttleScheduleResponse.PickedUpTime = student.PickedUpTime?.DateTime;
+            shuttleScheduleResponse.DroppedOffTime = student.DroppedOffTime?.DateTime;
             shuttleScheduleResponse.SkipPickup = student.SkipPickup;
             shuttleScheduleResponse.IsSkipUpReason = student.IsSkipUpReason;
             response.Add(shuttleScheduleResponse);

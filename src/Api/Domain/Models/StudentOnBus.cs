@@ -15,9 +15,9 @@ public class StudentOnBus
     public Guid ClassId { get; set; }
     public string FullName { get; set; } = string.Empty;
     public bool IsPickedUp { get; set; } = false;
-    public DateTime? PickedUpTime { get; set; } = null;
+    public DateTimeOffset? PickedUpTime { get; set; } = null;
     public bool IsDroppedOff { get; set; } = false;
-    public DateTime? DroppedOffTime { get; set; } = null;
+    public DateTimeOffset? DroppedOffTime { get; set; } = null;
     public bool SkipPickup { get; set; } = false;
     public string IsSkipUpReason { get; set; } = string.Empty;
 }

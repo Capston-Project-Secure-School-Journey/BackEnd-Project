@@ -237,6 +237,7 @@ public class ApprovalProcessor(
                 SchoolId = application.SchoolId,
                 SeatingCapacity = application.SeatingCapacity,
                 Used = 0,
+                TotalDistanceKm = 0
             };
             await context.ActiveDrivers.AddAsync(activeDriver);
 

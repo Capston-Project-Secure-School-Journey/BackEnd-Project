@@ -6,6 +6,7 @@ using Api.DTOs.ShuttleScheduleService;
 using Api.DTOs.Scheduling;
 using Api.Extensions;
 using Api.Scheduling;
+using Api.Services;
 using Api.Services.ShuttleScheduleManagementService;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,8 @@ public class CreateShuttleScheduleJob(
     IServiceProvider serviceProvider,
     ILogger<CreateShuttleScheduleJob> logger,
     IStudentGroupingAlgorithm groupingAlgorithm,
-    IShuttleScheduleManagementService shuttleScheduleManagementService) : IJob
+    IShuttleScheduleManagementService shuttleScheduleManagementService,
+    GoogleMapsService googleMapsService) : IJob
 {
     public async Task ExecuteAsync(params object[] args)
     {
@@ -45,6 +47,7 @@ public class CreateShuttleScheduleJob(
             await shuttleScheduleManagementService.DeleteShuttleSchedule(schoolId, nextWeekRange.StartOfWeek,
                 nextWeekRange.EndOfWeek);
 
+            var school = await db.Schools.FirstAsync(x => x.Id == schoolId);
             var schedules = await db.ClassSchedules
                 .AsNoTracking()
                 .AsQueryable()
@@ -60,7 +63,7 @@ public class CreateShuttleScheduleJob(
                 {
                     Id = x.DriverId,
                     SeatingCapacity = x.SeatingCapacity,
-                    Used = x.Used
+                    Used = x.TotalDistanceKm
                 })
                 .ToListAsync();
 
@@ -73,7 +76,7 @@ public class CreateShuttleScheduleJob(
 
                 foreach (var group in groups)
                 {
-                    requests.Add(new CreateShuttleScheduleDto()
+                    var pickUpShuttleScheduleDto = new CreateShuttleScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
@@ -81,8 +84,8 @@ public class CreateShuttleScheduleJob(
                         SessionType = key.Item2,
                         Students = group.Value,
                         Type = ShuttleScheduleType.PickUp,
-                    });
-                    requests.Add(new CreateShuttleScheduleDto()
+                    };
+                    var dropOffShuttleScheduleDto = new CreateShuttleScheduleDto()
                     {
                         DriverId = group.Key.Id,
                         Date = key.Item1,
@@ -90,22 +93,17 @@ public class CreateShuttleScheduleJob(
                         SessionType = key.Item2,
                         Students = group.Value,
                         Type = ShuttleScheduleType.DropOff,
-                    });
+                    };
+                    requests.Add(pickUpShuttleScheduleDto);
+                    requests.Add(dropOffShuttleScheduleDto);
+
+                    drivers.First(d => d.Id == group.Key.Id).Used +=
+                        await GetTotalDistance(pickUpShuttleScheduleDto, school);
+                    drivers.First(d => d.Id == group.Key.Id).Used +=
+                        await GetTotalDistance(dropOffShuttleScheduleDto, school);
                 }
             }
-
-            foreach (var driver in drivers)
-            {
-                var activeDriver = await db.ActiveDrivers
-                    .FirstOrDefaultAsync(ad => ad.DriverId == driver.Id && ad.SchoolId == schoolId);
-                if (activeDriver != null)
-                {
-                    activeDriver.Used += driver.Used;
-                    activeDriver.UpdatedAt = DateTimeHelper.GetDateTimeUtc7();
-                    db.ActiveDrivers.Update(activeDriver);
-                }
-            }
-
+            
             await db.SaveChangesAsync();
             await shuttleScheduleManagementService.AddShuttleSchedule(requests);
 
@@ -200,5 +198,46 @@ public class CreateShuttleScheduleJob(
         }
 
         return students;
+    }
+
+    private async Task<double> GetTotalDistance(CreateShuttleScheduleDto dto, School school)
+    {
+        string origin;
+        string destination;
+        var nearestStudent = dto
+            .Students
+            .OrderByDescending(x =>
+                IStudentGroupingAlgorithm.Haversine(x.PickUpLat, x.PickUpLng, school.AddressLat,
+                    school.AddressLng))
+            .FirstOrDefault();
+        if (nearestStudent == null)
+            throw new InvalidDataException("No first student found");
+
+        var wayPoints = dto
+            .Students
+            .Where(x => x.Id != nearestStudent.Id)
+            .Select(x => x.PickUpLat + "," + x.PickUpLng
+            )
+            .ToList();
+
+        var nearestStudentPoint = nearestStudent.PickUpLat + "," + nearestStudent.PickUpLng;
+        var schoolPoint = school.AddressLat + "," + school.AddressLng;
+
+        if (dto.Type == ShuttleScheduleType.PickUp)
+        {
+            origin = nearestStudentPoint;
+            destination = schoolPoint;
+        }
+        else
+        {
+            origin = schoolPoint;
+            destination = nearestStudentPoint;
+        }
+
+        return (await googleMapsService
+                .GetOptimizedRouteAsync(origin
+                    , destination
+                    , wayPoints)
+            ).Item1.Routes[0].Legs.Sum(l => l.Distance.Value) / 1000.0;
     }
 }

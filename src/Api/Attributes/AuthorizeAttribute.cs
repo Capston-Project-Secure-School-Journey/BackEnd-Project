@@ -2,7 +2,6 @@ using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
 using Api.Security.CurrentUserProvider;
-using Api.Services.TokenService;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Api.Attributes;
@@ -37,7 +36,7 @@ public interface IAuthorizationChecker
     void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter);
 }
 
-public class AuthorizationChecker() : IAuthorizationChecker
+public class AuthorizationChecker : IAuthorizationChecker
 {
     public void Check(AuthorizationFilterContext context, UserType[]? userTypeFilter)
     {

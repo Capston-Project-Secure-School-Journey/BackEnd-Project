@@ -22,7 +22,8 @@ public class ShuttleScheduleManagementService(
     IFileUploadService fileUploadService,
     IMapper mapper,
     ISchoolManagement schoolManagement,
-    IMemoryCache cache) : IShuttleScheduleManagementService
+    IMemoryCache cache,
+    GoogleMapsService googleMapsService) : IShuttleScheduleManagementService
 {
     private const string CreateShuttleCacheKey = "CreateShuttleCacheKey";
 
@@ -252,7 +253,7 @@ public class ShuttleScheduleManagementService(
             shuttleSchedule.Students.Add(studentOnBus);
         }
 
-        GetBestRoute(shuttleSchedule, school);
+        await GetBestRoute(shuttleSchedule, school);
         return shuttleSchedule;
     }
 
@@ -302,7 +303,7 @@ public class ShuttleScheduleManagementService(
         }
     }
 
-    private void GetBestRoute(ShuttleSchedule shuttleSchedule, School school)
+    private async Task GetBestRoute(ShuttleSchedule shuttleSchedule, School school)
     {
         Point origin;
         Point destination;
@@ -363,6 +364,11 @@ public class ShuttleScheduleManagementService(
             Destination = destination,
             WayPoints = wayPoints
         };
+        shuttleSchedule.TotalDistanceKm = (await googleMapsService
+                .GetOptimizedRouteAsync(origin.Latitude + "," + origin.Longitude
+                    , destination.Latitude + "," + destination.Longitude
+                    , wayPoints.Select(x => x.Latitude + "," + x.Longitude).ToList())
+            ).Item1.Routes[0].Legs.Sum(l => l.Distance.Value) / 1000.0;
     }
 
     private string GetParentName(Guid parentId)

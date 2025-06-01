@@ -6,6 +6,7 @@ using Api.Extensions;
 using Api.Services.ShuttleScheduleManagementService;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 namespace Api.Services.DriverSchoolTripService;
@@ -94,6 +95,13 @@ public class DriverSchoolTripService(
         shuttleSchedule.JourneyStatus = JourneyStatus.Completed;
         shuttleSchedule.EndJourneyTime = currentTime.TimeOfDay;
         await shuttleScheduleManagementService.UpdateShuttleSchedule(shuttleSchedule);
+
+        var activeDriver = await context.ActiveDrivers.FirstOrDefaultAsync(ad =>
+            ad.DriverId == shuttleSchedule.DriverId && ad.SchoolId == shuttleSchedule.SchoolId);
+
+        activeDriver!.TotalDistanceKm += shuttleSchedule.TotalDistanceKm;
+        context.ActiveDrivers.Update(activeDriver);
+        await context.SaveChangesAsync();
     }
 
     public async Task CancelJourney(Guid shuttleScheduleId, string cancelReason)

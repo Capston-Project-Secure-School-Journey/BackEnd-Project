@@ -4,7 +4,6 @@ using Api.Common.Exceptions;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.Extensions;
-using Api.Services.ChildrenManagementService;
 using Api.Services.ShuttleScheduleManagementService;
 using MongoDB.Driver;
 
@@ -12,15 +11,14 @@ namespace Api.Services.ScanDeviceSchoolTripService;
 
 public class ScanDeviceSchoolTripService(
     Context context,
-    IShuttleScheduleManagementService shuttleScheduleManagementService,
-    IChildrenManagementService childrenManagementService) : IScanDeviceSchoolTripService
+    IShuttleScheduleManagementService shuttleScheduleManagementService
+) : IScanDeviceSchoolTripService
 {
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> JourneyLocks = new();
 
-    public async Task<(ShuttleSchedule, StudentOnBus)> PickUpStudent(string studentHash)
+    public async Task<(ShuttleSchedule, StudentOnBus)> PickUpStudent(Student student)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
-        var student = await childrenManagementService.FindStudentWithHash(studentHash);
         var shuttleSchedule = await GetCurrentShuttleScheduleByStudent(student);
         var studentOnBus = shuttleSchedule.Students.First(st => st.StudentId == student.Id);
         if (studentOnBus.IsPickedUp)
@@ -49,10 +47,9 @@ public class ScanDeviceSchoolTripService(
         return (shuttleSchedule, studentOnBus);
     }
 
-    public async Task<(ShuttleSchedule, StudentOnBus)> DropOffStudent(string studentHash)
+    public async Task<(ShuttleSchedule, StudentOnBus)> DropOffStudent(Student student)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
-        var student = await childrenManagementService.FindStudentWithHash(studentHash);
         var shuttleSchedule = await GetCurrentShuttleScheduleByStudent(student);
         var studentOnBus = shuttleSchedule.Students.First(st => st.StudentId == student.Id);
 
@@ -83,7 +80,7 @@ public class ScanDeviceSchoolTripService(
         return (shuttleSchedule, studentOnBus);
     }
 
-    private async Task<ShuttleSchedule> GetCurrentShuttleScheduleByStudent(Student student)
+    public async Task<ShuttleSchedule> GetCurrentShuttleScheduleByStudent(Student student)
     {
         var currentTime = DateTimeHelper.GetDateTimeUtc7();
         var shuttleSchedule = await context.ShuttleScheduleCollection
