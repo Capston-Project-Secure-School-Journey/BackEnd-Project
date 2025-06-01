@@ -15,10 +15,16 @@ public class ParentShuttleScheduleResponse
     public Gender DriverGender { get; set; }
     public string LicenseNumber { get; set; } = string.Empty;
     public JourneyStatus JourneyStatus { get; set; }
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan? EndTime { get; set; }
+    public TimeSpan PickupStartTime { get; set; }
+    public TimeSpan PickupEndTime { get; set; }
+    public TimeSpan? StartJourneyTime { get; set; }
+    public TimeSpan? EndJourneyTime { get; set; }
     public double CurrentLat { get; set; } = 0;
     public double CurrentLng { get; set; } = 0;
+    public Guid StudentId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public Guid ClassId { get; set; }
+    public string FullName { get; set; } = string.Empty;
     public bool IsPickedUp { get; set; } = false;
     public DateTime? PickedUpTime { get; set; } = null;
     public bool IsDroppedOff { get; set; } = false;

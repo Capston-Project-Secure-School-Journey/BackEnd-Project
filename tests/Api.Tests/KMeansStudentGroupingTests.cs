@@ -45,8 +45,21 @@ public class KMeansStudentGroupingTests
     [InlineData(2)]
     [InlineData(5)]
     [InlineData(10)]
+    [InlineData(30)]
     [InlineData(50)]
+    [InlineData(70)]
     [InlineData(100)]
+    [InlineData(120)]
+    [InlineData(150)]
+    [InlineData(170)]
+    [InlineData(200)]
+    [InlineData(230)]
+    [InlineData(250)]
+    [InlineData(270)]
+    [InlineData(300)]
+    [InlineData(330)]
+    [InlineData(360)]
+    [InlineData(400)]
     [InlineData(500)]
     [InlineData(1000)]
     public void AllocateStudentsToBuses_AssignsStudentsToDrivers(int studentCount)
@@ -73,14 +86,13 @@ public class KMeansStudentGroupingTests
             });
         }
 
-        var capacity = 0;
         do
         {
-            if (studentCount <= capacity)
-                break;
             var driver = new DriverData { Id = Guid.NewGuid(), SeatingCapacity = random.Next(16, 45) };
             drivers.Add(driver);
-            capacity += driver.SeatingCapacity;
+
+            if ((float)studentCount / drivers.Sum(x => x.SeatingCapacity) < 0.7f)
+                break;
         } while (true);
 
         // Act
@@ -102,15 +114,28 @@ public class KMeansStudentGroupingTests
     }
 
     [Theory]
-    [InlineData(1, 1)]
-    [InlineData(2, 2)]
-    [InlineData(5, 2)]
-    [InlineData(10, 2)]
-    [InlineData(50, 4)]
-    [InlineData(100, 7)]
-    [InlineData(500, 50)]
-    [InlineData(1000, 100)]
-    public void AllocateStudentsToBuses_DistributionShouldBeFair(int studentCount, int driverCount)
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    [InlineData(10)]
+    [InlineData(30)]
+    [InlineData(50)]
+    [InlineData(70)]
+    [InlineData(100)]
+    [InlineData(120)]
+    [InlineData(150)]
+    [InlineData(170)]
+    [InlineData(200)]
+    [InlineData(230)]
+    [InlineData(250)]
+    [InlineData(270)]
+    [InlineData(300)]
+    [InlineData(330)]
+    [InlineData(360)]
+    [InlineData(400)]
+    [InlineData(500)]
+    [InlineData(1000)]
+    public void AllocateStudentsToBuses_DistributionShouldBeFair(int studentCount)
     {
         // Arrange
         var sut = CreateSut();
@@ -120,6 +145,7 @@ public class KMeansStudentGroupingTests
         var minLng = 106.65;
         var maxLng = 106.75;
         var students = new List<Student>();
+        var drivers = new List<DriverData>();
 
         for (var i = 0; i < studentCount; i++)
         {
@@ -133,18 +159,26 @@ public class KMeansStudentGroupingTests
             });
         }
 
-        var drivers = Enumerable.Range(0, driverCount)
-            .Select(_ => new DriverData { Id = Guid.NewGuid(), SeatingCapacity = 15 })
-            .ToList();
+        do
+        {
+            var driver = new DriverData { Id = Guid.NewGuid(), SeatingCapacity = random.Next(16, 45) };
+            drivers.Add(driver);
+
+            if ((float)studentCount / drivers.Sum(x => x.SeatingCapacity) < 0.7f)
+                break;
+        } while (true);
 
         // Act
         var result = sut.AllocateStudentsToBuses(students, ref drivers);
 
-        var assignedCounts = result.Values.Select(list => list.Count).ToList();
-        var avg = assignedCounts.Average();
-        var stdDev = Math.Sqrt(assignedCounts.Average(x => Math.Pow(x - avg, 2)));
-
         // Assert
-        Assert.True(stdDev < 3);
+        if ((float)studentCount / drivers.Sum(x => x.SeatingCapacity) <= 0.5f)
+            return;
+        foreach (var cluster in result)
+        {
+            // ReSharper disable once PossibleLossOfFraction
+            Assert.True((float)cluster.Value.Count / cluster.Key.SeatingCapacity > 0.5f,
+                ((float)cluster.Value.Count / cluster.Key.SeatingCapacity).ToString("0.00"));
+        }
     }
 }

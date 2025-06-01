@@ -33,6 +33,7 @@ public class ShuttleScheduleManagementService(
         var update = Builders<ShuttleSchedule>.Update
             .Set(s => s.JourneyStatus, shuttleSchedule.JourneyStatus)
             .Set(s => s.IsAllNotesRead, shuttleSchedule.IsAllNotesRead)
+            .Set(s => s.StartJourneyTime, shuttleSchedule.StartJourneyTime)
             .Set(s => s.EndJourneyTime, shuttleSchedule.EndJourneyTime)
             .Set(s => s.CancelReason, shuttleSchedule.CancelReason)
             .Set(s => s.NumberOfPickedUpStudents, shuttleSchedule.NumberOfPickedUpStudents)

@@ -4,6 +4,7 @@ using Api.DTOs.NotificationService;
 using Api.Extensions;
 using Api.Services.DriverSchoolTripService;
 using Api.Services.NotificationService;
+using Api.Services.ParentSchoolTripService;
 using Api.Services.ScanDeviceSchoolTripService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
@@ -17,11 +18,13 @@ public class TestController(
     INotificationSender notificationSender,
     INotificationService notificationService,
     IDriverSchoolTripHandler handler,
-    IScanDeviceSchoolTripHandler scanDeviceSchoolTripHandler)
+    IScanDeviceSchoolTripHandler scanDeviceSchoolTripHandler,
+    IParentSchoolTripHandler parentSchoolTripHandler)
     : ControllerBase
 {
     private static Guid _driverId;
-
+    private static Guid _parentId;
+    
     [HttpPost("send-notification")]
     [ValidateModel]
     [Authorize()]
@@ -47,9 +50,11 @@ public class TestController(
     [HttpPut("set-up-testing")]
     public IActionResult SettingTest([FromForm] bool isTesting,
         [FromForm] DateTime dateTime,
-        [FromForm] Guid driverId)
+        [FromForm] Guid driverId,
+        [FromForm] Guid parentId)
     {
         _driverId = driverId;
+        _parentId = parentId;
         DateTimeHelper.Setup(isTesting);
         DateTimeHelper.TestTime(dateTime);
         return Ok();
@@ -126,5 +131,29 @@ public class TestController(
     public async Task PickUpStudent([FromBody] CheckActionRequest request)
     {
         await scanDeviceSchoolTripHandler.CheckAction(request.SecretCode);
+    }
+    
+    [HttpGet("parent/school-trips/has-in-progress-shuttle")]
+    public async Task<bool> HasInProgressShuttleByParent()
+    {
+        return await parentSchoolTripHandler.HasInProgressShuttle(_parentId);
+    }
+
+    [HttpGet("parent/school-trips/current-shuttle")]
+    public async Task<List<ParentShuttleScheduleResponse>> GetCurrentShuttleScheduleByParent()
+    {
+        return await parentSchoolTripHandler.GetCurrentShuttleSchedule(_parentId);
+    }
+
+    [HttpGet("parent/school-trips/has-up-coming-shuttle")]
+    public async Task<bool> HasUpcomingShuttleByParent()
+    {
+        return await parentSchoolTripHandler.HasUpcomingShuttle(_parentId);
+    }
+
+    [HttpGet("parent/school-trips/up-coming-shuttle")]
+    public async Task<List<ParentShuttleScheduleResponse>> GetUpcomingShuttleScheduleByParent()
+    {
+        return await parentSchoolTripHandler.GetUpcomingShuttleSchedule(_parentId);
     }
 }
