@@ -11,7 +11,7 @@ public class SendNotificationJob(IServiceProvider serviceProvider, ILogger<SendN
         try
         {
             if (args[0] is not List<Guid> notificationIds || notificationIds.Count == 0)
-                throw new InvalidDataException(ErrorMessages.InvalidArgumentType);
+                return;
             var data = args.Length >= 2 ? args[1] as Dictionary<string, string> : null;
             
             using var scope = serviceProvider.CreateScope();
