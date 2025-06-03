@@ -11,7 +11,8 @@ namespace Api.Services.TeacherManagementService;
 
 public class TeacherManagementService(
     Context context,
-    IFileUploadService uploadService) : ITeacherManagementService
+    IFileUploadService uploadService,
+    ILogger<TeacherManagementService> logger) : ITeacherManagementService
 {
     public async Task<IEnumerable<Teacher>> GetTeachers(Guid schoolId)
     {
@@ -153,7 +154,17 @@ public class TeacherManagementService(
         }
         catch (Exception)
         {
-            _ = uploadService.RollBackAsync();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await uploadService.RollBackAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "UploadFileService.RollBackAsync");
+                }
+            });
             throw;
         }
 

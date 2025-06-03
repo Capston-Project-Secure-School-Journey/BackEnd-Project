@@ -1,4 +1,5 @@
 using Api.Common.Enums;
+using Api.Common.Exceptions;
 using Api.Domain.Models;
 using Api.Extensions;
 using Api.Jobs.SchoolTripEventDispatchJobs;
@@ -37,5 +38,7 @@ public class ScanDeviceSchoolTripHandler(
             await PickUpStudent(student);
         else if (!studentOnBus.IsDroppedOff && (currentTime - studentOnBus.PickedUpTime) >= TimeSpan.FromMinutes(5))
             await DropOffStudent(student);
+        else
+            throw new BadRequestException("Không thể quét qr.");
     }
 }

@@ -25,7 +25,8 @@ public class UserService(
     IMailService mailService,
     IUserBanService userBanService,
     IOptions<AppSettings> appSettings,
-    ITokenService tokenService) : IUserService
+    ITokenService tokenService,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<User> GetUser(Guid id, UserType userType)
     {
@@ -104,7 +105,17 @@ public class UserService(
         }
         catch (Exception)
         {
-            _ = uploadFileService.RollBackAsync();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await uploadFileService.RollBackAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "UploadFileService.RollBackAsync");
+                }
+            });
             throw;
         }
 

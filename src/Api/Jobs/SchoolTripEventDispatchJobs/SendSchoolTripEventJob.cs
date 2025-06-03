@@ -84,8 +84,8 @@ public class SendSchoolTripEventJob(
                 break;
             case SchoolTripEvent.CommandCompletedEvent:
                 title += "Chuyến " + shuttleScheduleType + " đã hoàn thành.";
-                content += $"Con bạn đã được đón vào lúc: {studentOnBus.PickedUpTime?.DateTime.ToShortDateString()}.\n"
-                           + $"Con bạn đã được trả vào lúc: {studentOnBus.DroppedOffTime?.DateTime.ToShortDateString()}.";
+                content += $"Con bạn đã được đón vào lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}.\n"
+                           + $"Con bạn đã được trả vào lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}.";
                 break;
             case SchoolTripEvent.CommandCancelledEvent:
                 title += "Chuyến " + shuttleScheduleType + " đã bị hủy.";

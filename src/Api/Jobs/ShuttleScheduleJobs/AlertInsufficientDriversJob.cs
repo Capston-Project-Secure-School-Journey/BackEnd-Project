@@ -90,7 +90,17 @@ public class AlertInsufficientDriversJob(
                 catch (Exception)
                 {
                     await trans.RollbackAsync();
-                    _ = uploadFileService.RollBackAsync();
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await uploadFileService.RollBackAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "UploadFileService.RollBackAsync");
+                        }
+                    });
                     throw;
                 }
                 finally

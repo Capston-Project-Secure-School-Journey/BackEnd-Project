@@ -94,11 +94,11 @@ public class SendStudentTripEventJob(
         {
             case StudentTripEvent.PickedUp:
                 title += $"Con của bạn đã lên xe";
-                content += $"Con của bạn lên xe lúc: {studentOnBus.PickedUpTime}";
+                content += $"Con của bạn lên xe lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}";
                 break;
             case StudentTripEvent.DroppedOff:
                 title += $"Con của bạn đã xuống xe";
-                content += $"Con của bạn xuống xe lúc: {studentOnBus.DroppedOffTime}";
+                content += $"Con của bạn xuống xe lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}";
                 break;
             case StudentTripEvent.SkippedFromDriver:
                 title += "Con của bạn được xác nhận không cần đón.";

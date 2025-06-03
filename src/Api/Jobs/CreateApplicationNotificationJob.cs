@@ -44,7 +44,7 @@ public class CreateApplicationNotificationJob(IServiceProvider serviceProvider) 
                 : application.DriverId;
             var createNotificationDto = new CreateNotificationDto()
             {
-                Title = "Có thay đổi mới về đơn yêu cầu chấp nhận nhà trường",
+                Title = "Có thay đổi mới về đơn yêu cầu chấp nhận từ nhà trường",
                 Content = ApplicationService.GetApplicationNotificationMessage(application),
                 RecipientId = recipientId,
                 Navigation = string.Empty

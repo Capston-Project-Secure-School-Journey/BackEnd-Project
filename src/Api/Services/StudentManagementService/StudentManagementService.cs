@@ -15,7 +15,8 @@ public class StudentManagementService(
     Context context,
     IClassManagementService classManagementService,
     IFileUploadService uploadFileService,
-    IQrCodeGenerator qrCodeGenerator)
+    IQrCodeGenerator qrCodeGenerator,
+    ILogger<StudentManagementService> logger)
     : IStudentManagementService
 {
     public async Task<IEnumerable<Student>> GetStudents(Guid schoolId)
@@ -95,7 +96,17 @@ public class StudentManagementService(
         catch (Exception)
         {
             await trans.RollbackAsync();
-            _ = uploadFileService.RollBackAsync();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await uploadFileService.RollBackAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "UploadFileService.RollBackAsync");
+                }
+            });
             throw;
         }
     }
@@ -179,7 +190,17 @@ public class StudentManagementService(
         }
         catch (Exception)
         {
-            _ = uploadFileService.RollBackAsync();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await uploadFileService.RollBackAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "UploadFileService.RollBackAsync");
+                }
+            });
             throw;
         }
 

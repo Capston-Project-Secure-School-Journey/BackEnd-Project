@@ -12,7 +12,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Jobs.ShuttleScheduleJobs;
 
-public class AlertMissingAddressJob(IServiceProvider serviceProvider, 
+public class AlertMissingAddressJob(
+    IServiceProvider serviceProvider,
     ILogger<AlertMissingAddressJob> logger) : IJob
 {
     public async Task ExecuteAsync(params object[] args)
@@ -74,7 +75,8 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider,
                         {
                             Title = $"Địa chỉ đón học sinh: {student.FullName} chưa được cập nhập",
                             Content =
-                                "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\nVui lòng cập nhập trong thời gian sớm nhất!",
+                                "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\n" +
+                                "Vui lòng cập nhập trong thời gian sớm nhất!",
                             RecipientId = parentId,
                             Navigation = string.Empty
                         };
@@ -98,7 +100,17 @@ public class AlertMissingAddressJob(IServiceProvider serviceProvider,
             catch (Exception)
             {
                 await trans.RollbackAsync();
-                _ = uploadFileService.RollBackAsync();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await uploadFileService.RollBackAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "UploadFileService.RollBackAsync");
+                    }
+                });
                 throw;
             }
             finally

@@ -39,14 +39,13 @@ public class JourneyNoteService(
             RequestedDate = DateTimeHelper.GetDateTimeUtc7(),
             IsReadByDriver = false
         };
-
-        await UpdateStudentTripInfoWhenChangeNote(journey, journeyNote);
-
-
+        await context.JourneyNoteCollection.InsertOneAsync(journeyNote);
+        
         var journeyLock = JourneyLocks.GetOrAdd(journey.Id, _ => new SemaphoreSlim(1, 1));
         await journeyLock.WaitAsync();
         try
         {
+            await UpdateStudentTripInfoWhenChangeNote(journey, journeyNote);
             journey.IsAllNotesRead = false;
             await shuttleScheduleManagementService.UpdateShuttleSchedule(journey);
         }
@@ -54,9 +53,6 @@ public class JourneyNoteService(
         {
             journeyLock.Release();
         }
-
-        await context.JourneyNoteCollection.InsertOneAsync(journeyNote);
-
         return journeyNote;
     }
 
@@ -66,6 +62,12 @@ public class JourneyNoteService(
         var journey = await shuttleScheduleManagementService.GetShuttleSchedule(journeyNote.JourneyId);
         CanInsertOrUpdateNote(journey);
 
+        var filter = Builders<JourneyNote>.Filter.Eq(s => s.Id, journeyNote.Id);
+        var update = Builders<JourneyNote>.Update
+            .Set(s => s.Description, updateJourneyNoteDto.Description)
+            .Set(s => s.IsReadByDriver, false);
+        await context.JourneyNoteCollection.UpdateOneAsync(filter, update);
+        
         var journeyLock = JourneyLocks.GetOrAdd(journey.Id, _ => new SemaphoreSlim(1, 1));
         await journeyLock.WaitAsync();
         try
@@ -77,12 +79,6 @@ public class JourneyNoteService(
         {
             journeyLock.Release();
         }
-
-        var filter = Builders<JourneyNote>.Filter.Eq(s => s.Id, journeyNote.Id);
-        var update = Builders<JourneyNote>.Update
-            .Set(s => s.Description, updateJourneyNoteDto.Description);
-        await context.JourneyNoteCollection.UpdateOneAsync(filter, update);
-
         return journeyNote;
     }
 
