@@ -60,6 +60,7 @@ public class ClassManagementController(IClassManagementHandler classManagementHa
 
     [HttpDelete]
     [Authorize(UserType.SchoolAdmin)]
+    [ValidateModel]
     public async Task<IActionResult> DeleteClasses([FromBody] List<Guid> classIds)
     {
         var schoolId = this.GetSchoolId();

@@ -75,6 +75,7 @@ public class JourneyNoteController(IJourneyNoteHandler handler) : ControllerBase
     [HttpPut("mark-read")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
+    [ValidateModel]
     public async Task ReadAllJourneyNote([FromBody] ReadAllJourneyNoteRequest request)
     {
         var userId = this.GetUserId();

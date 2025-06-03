@@ -3,10 +3,10 @@ using Api.Common.Enums;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
+using Api.Extensions;
 using Api.Scheduling;
 using Api.Services.NotificationService;
 using Api.Services.ShuttleScheduleManagementService;
-using Api.Services.UserService;
 using Hangfire;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -33,46 +33,34 @@ public class SendDriverAddressJob(
             var db = scope.ServiceProvider.GetRequiredService<Context>();
             var shuttleScheduleManagementService =
                 scope.ServiceProvider.GetRequiredService<IShuttleScheduleManagementService>();
-            var userService =
-                scope.ServiceProvider.GetRequiredService<IUserService>();
             var notificationService =
                 scope.ServiceProvider.GetRequiredService<INotificationService>();
             var notificationSender =
                 scope.ServiceProvider.GetRequiredService<INotificationSender>();
 
             var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
-            var parentIds = shuttleSchedule
-                .Students
-                .SelectMany(st => st.Parents)
-                .Select(p => p.ParentId)
-                .ToList();
-            string[] deviceTokens = [];
-
-            foreach (var parentId in parentIds)
-            {
-                deviceTokens = deviceTokens.Concat(await userService.GetDeviceTokens(parentId)).Distinct().ToArray();
-            }
 
             var data = new Dictionary<string, string>
             {
                 { "Message", "DriverAddress" },
                 { "ShuttleScheduleId", shuttleScheduleId.ToString() },
                 { "Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture) },
-                { "Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture) }
+                { "Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture) },
+                { "SendAt", DateTimeHelper.GetDateTimeUtc7().ToString(CultureInfo.InvariantCulture) }
             };
 
-            if (deviceTokens.Length > 0)
-                _ = Task.Run(async () =>
+            _ = Task.Run(async () =>
+            {
+                try
                 {
-                    try
-                    {
-                        await notificationSender.SendDataManyAsync(deviceTokens, data, TimeSpan.FromSeconds(15));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "SendDataMany error");
-                    }
-                });
+                    await notificationSender.SendDataToTopicAsync(shuttleScheduleId.ToString(),
+                        data);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "SendDataMany error");
+                }
+            });
 
             var notifications = new List<CreateNotificationDto>();
             var notificationIds = new List<Guid>();

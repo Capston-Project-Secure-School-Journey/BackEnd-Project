@@ -44,6 +44,7 @@ public class SchoolManagementController(ISchoolManagementHandler schoolManagemen
 
     [HttpDelete("")]
     [Authorize(UserType.Admin)]
+    [ValidateModel]
     public async Task<IActionResult> DeleteSchool([FromBody] List<Guid> schoolIds)
     {
         await schoolManagementHandler.DeleteSchool(schoolIds);

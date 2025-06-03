@@ -29,6 +29,7 @@ public class NotificationFcmSender : INotificationSender
                 FirebaseApp.Create(options);
             }
         }
+
         _messaging = FirebaseMessaging.DefaultInstance;
         _userService = userService;
     }
@@ -47,7 +48,7 @@ public class NotificationFcmSender : INotificationSender
     {
         var messages = await GetMessageAsync(notificationId, data);
         if (messages.Count == 0) return;
-        
+
         var result = await _messaging.SendEachAsync(messages);
 
         ThrowIfSentFailed(result);
@@ -61,7 +62,7 @@ public class NotificationFcmSender : INotificationSender
         {
             messages.AddRange(await GetMessageAsync(notificationId, data));
         }
-        
+
         if (messages.Count == 0) return;
         var result = await _messaging.SendEachAsync(messages);
         ThrowIfSentFailed(result);
@@ -77,23 +78,28 @@ public class NotificationFcmSender : INotificationSender
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string> data,
-        TimeSpan? timeToLive)
+    public async Task SendDataAsync(string deviceToken, IReadOnlyDictionary<string, string> data)
     {
         ThrowIfDeviceTokensAreEmpty(deviceToken);
-        var message = GetDataMessage(deviceToken, data, timeToLive);
+        var message = GetDataMessage(deviceToken, data);
         var result = await _messaging.SendAsync(message);
 
         ThrowIfSentFailed(result);
     }
 
-    public async Task SendDataManyAsync(string[] deviceTokens, IReadOnlyDictionary<string, string> data,
-        TimeSpan? timeToLive)
+    public async Task SendDataManyAsync(string[] deviceTokens, IReadOnlyDictionary<string, string> data)
     {
         ThrowIfDeviceTokensAreEmpty(deviceTokens);
-        var message = GetDataMessage(deviceTokens, data, timeToLive);
+        var message = GetDataMessage(deviceTokens, data);
         var result = await _messaging.SendEachAsync(message);
 
+        ThrowIfSentFailed(result);
+    }
+
+    public async Task SendDataToTopicAsync(string topic, IReadOnlyDictionary<string, string> data)
+    {
+        var message = GetDataMessageTopic(topic, data);
+        var result = await _messaging.SendAsync(message);
         ThrowIfSentFailed(result);
     }
 
@@ -103,7 +109,6 @@ public class NotificationFcmSender : INotificationSender
         var messages = new List<Message>();
         var notification = await _notificationService.GetNotificationAsync(notificationId);
         var deviceTokens = await _userService.GetDeviceTokens(notification.RecipientId);
-        // ThrowIfDeviceTokensAreEmpty(deviceTokens);
         foreach (var token in deviceTokens)
             messages.Add(GetMessage(token, notification.Title, notification.Content, data));
 
@@ -135,41 +140,40 @@ public class NotificationFcmSender : INotificationSender
     }
 
     private static Message GetDataMessage(string token
-        , IReadOnlyDictionary<string, string> data
-        , TimeSpan? timeToLive)
+        , IReadOnlyDictionary<string, string> data)
     {
-        timeToLive ??= TimeSpan.FromDays(10);
-        var expirationUnixTimestamp = DateTimeOffset.UtcNow.Add(timeToLive.Value).ToUnixTimeSeconds();
         return new Message()
         {
+            Notification = new Notification
+            {
+                Title = "SSAST_Data",
+                Body = ""
+            },
             Token = token,
+            Data = data
+        };
+    }
+
+    private static Message GetDataMessageTopic(string topic
+        , IReadOnlyDictionary<string, string> data)
+    {
+        return new Message()
+        {
+            Notification = new Notification
+            {
+                Title = "SSAST_Data",
+                Body = ""
+            },
             Data = data,
-            Android = new AndroidConfig
-            {
-                Priority = Priority.High,
-                TimeToLive = timeToLive.Value
-            },
-            Apns = new ApnsConfig
-            {
-                Headers = new Dictionary<string, string>
-                {
-                    { "apns-priority", "10" },
-                    { "apns-expiration", expirationUnixTimestamp.ToString() }
-                },
-                Aps = new Aps
-                {
-                    ContentAvailable = true
-                }
-            },
+            Topic = topic,
         };
     }
 
     private static List<Message> GetDataMessage(string[] tokens
-        , IReadOnlyDictionary<string, string> data
-        , TimeSpan? timeToLive)
+        , IReadOnlyDictionary<string, string> data)
     {
         var messages = new List<Message>();
-        foreach (var token in tokens) messages.Add(GetDataMessage(token, data, timeToLive));
+        foreach (var token in tokens) messages.Add(GetDataMessage(token, data));
         return messages;
     }
 

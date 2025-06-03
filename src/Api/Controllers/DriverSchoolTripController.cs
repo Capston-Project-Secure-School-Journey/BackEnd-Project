@@ -49,6 +49,7 @@ public class DriverSchoolTripController(IDriverSchoolTripHandler handler) : Cont
     }
 
     [HttpPut("{shuttleScheduleId}/cancel-journey")]
+    [ValidateModel]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task CancelJourney([FromRoute] Guid shuttleScheduleId, [FromBody] CancelJourneyRequest request)
@@ -58,6 +59,7 @@ public class DriverSchoolTripController(IDriverSchoolTripHandler handler) : Cont
     }
 
     [HttpPut("{shuttleScheduleId}/skip-student")]
+    [ValidateModel]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
     public async Task SkipStudent([FromRoute] Guid shuttleScheduleId, [FromBody] SkipStudentRequest request)
@@ -105,6 +107,7 @@ public class DriverSchoolTripController(IDriverSchoolTripHandler handler) : Cont
     [HttpPut("{shuttleScheduleId}/update-current-location")]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
+    [ValidateModel]
     public async Task UpdateCurrentLocation([FromRoute] Guid shuttleScheduleId,
         [FromBody] UpdateCurrentLocationRequest request)
     {

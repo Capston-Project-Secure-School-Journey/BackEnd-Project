@@ -1,4 +1,3 @@
-using Api.Common.Utilities;
 using Api.Services.NotificationService;
 
 namespace Api.Jobs;

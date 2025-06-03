@@ -7,6 +7,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("users")]
+[ValidateModel]
 public class UserManagementController(IUserManagementHandler userManagementHandler) : ControllerBase
 {
     [HttpPost("register")]

@@ -66,6 +66,7 @@ public class DriverApprovalApplicationController(IApplicationHandler application
     [HttpPost]
     [Authorize(UserType.Driver)]
     [CheckVerifiedEmail]
+    [ValidateModel]
     public async Task<ApplicationResponse> CreateApplication([FromBody] Guid schoolId)
     {
         var userId = this.GetUserId();

@@ -85,12 +85,14 @@ public class TestController(
     }
 
     [HttpPut("driver/school-trips/{shuttleScheduleId}/cancel-journey")]
+    [ValidateModel]
     public async Task CancelJourney([FromRoute] Guid shuttleScheduleId, [FromBody] CancelJourneyRequest request)
     {
         await handler.CancelJourney(shuttleScheduleId, _driverId, request.Reason);
     }
 
     [HttpPut("driver/school-trips/{shuttleScheduleId}/skip-student")]
+    [ValidateModel]
     public async Task SkipStudent([FromRoute] Guid shuttleScheduleId, [FromBody] SkipStudentRequest request)
     {
         await handler.SkipStudent(shuttleScheduleId, _driverId, request.StudentId, request.Reason);
@@ -121,6 +123,7 @@ public class TestController(
     }
 
     [HttpPut("driver/school-trips/{shuttleScheduleId}/update-current-location")]
+    [ValidateModel]
     public async Task UpdateCurrentLocation([FromRoute] Guid shuttleScheduleId,
         [FromBody] UpdateCurrentLocationRequest request)
     {
@@ -128,6 +131,7 @@ public class TestController(
     }
 
     [HttpPut("scan-device/school-trips/check-action")]
+    [ValidateModel]
     public async Task PickUpStudent([FromBody] CheckActionRequest request)
     {
         await scanDeviceSchoolTripHandler.CheckAction(request.SecretCode);

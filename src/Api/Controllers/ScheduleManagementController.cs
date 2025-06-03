@@ -49,6 +49,7 @@ public class ScheduleManagementController(IScheduleManagementHandler scheduleMan
 
     [HttpDelete]
     [Authorize(UserType.SchoolAdmin)]
+    [ValidateModel]
     public async Task<IActionResult> DeleteSchedule([FromBody] List<Guid> ids)
     {
         var schoolId = this.GetSchoolId();
