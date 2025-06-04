@@ -1,15 +1,19 @@
 using Api.Common.Enums;
 using Api.Domain.Models;
+using Api.Hubs;
 using Api.Jobs.SchoolTripEventDispatchJobs;
 using Api.Services.ShuttleScheduleManagementService;
 using Api.TransferDTOs.Responses;
 using Hangfire;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Api.Services.DriverSchoolTripService;
 
 public class DriverSchoolTripHandler(
     IDriverSchoolTripService driverSchoolTripService,
-    IShuttleScheduleManagementService shuttleScheduleManagementService) : IDriverSchoolTripHandler
+    IShuttleScheduleManagementService shuttleScheduleManagementService,
+    IHubContext<TripHub, ITypedHubClient> hubContext,
+    ILogger<DriverSchoolTripHandler> logger) : IDriverSchoolTripHandler
 {
     public async Task<List<ShuttleScheduleResponse>> GetShuttleScheduleByDate(Guid driverId, DateOnly date)
     {
@@ -77,7 +81,21 @@ public class DriverSchoolTripHandler(
     public async Task UpdateCurrentAddress(Guid shuttleScheduleId, Guid driverId, double lat, double lng)
     {
         await driverSchoolTripService.UpdateCurrentAddress(shuttleScheduleId, driverId, lat, lng);
-        BackgroundJob.Enqueue<SendDriverAddressJob>(
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await hubContext
+                    .Clients
+                    .Group(shuttleScheduleId.ToString())
+                    .SendDriverAddress(shuttleScheduleId, lat, lng);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "SendDriverAddress error");
+            }
+        });
+        BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
             (job) => job.ExecuteAsync(shuttleScheduleId));
     }
 }

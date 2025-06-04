@@ -1,26 +1,21 @@
-using System.Globalization;
 using Api.Common.Enums;
 using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
-using Api.Extensions;
-using Api.Hubs;
 using Api.Scheduling;
 using Api.Services.NotificationService;
 using Api.Services.ShuttleScheduleManagementService;
 using Hangfire;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Jobs.SchoolTripEventDispatchJobs;
 
-public class SendDriverAddressJob(
+public class SendDriverAddressNotificationJob(
     IServiceProvider serviceProvider,
-    ILogger<SendDriverAddressJob> logger,
-    IMemoryCache cache,
-    IHubContext<TripHub, ITypedHubClient> hubContext) : IJob
+    ILogger<SendDriverAddressNotificationJob> logger,
+    IMemoryCache cache) : IJob
 {
-    private const string CacheKey = "SendDriverAddressJob";
+    private const string CacheKey = "SendDriverAddressNotificationJob";
     private const int NotificationTriggerDistance = 200;
 
     public async Task ExecuteAsync(params object[] args)
@@ -38,34 +33,8 @@ public class SendDriverAddressJob(
                 scope.ServiceProvider.GetRequiredService<IShuttleScheduleManagementService>();
             var notificationService =
                 scope.ServiceProvider.GetRequiredService<INotificationService>();
-            var notificationSender =
-                scope.ServiceProvider.GetRequiredService<INotificationSender>();
 
             var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
-
-            var data = new Dictionary<string, string>
-            {
-                { "Message", "DriverAddress" },
-                { "ShuttleScheduleId", shuttleScheduleId.ToString() },
-                { "Lat", shuttleSchedule.CurrentLat.ToString(CultureInfo.InvariantCulture) },
-                { "Lng", shuttleSchedule.CurrentLng.ToString(CultureInfo.InvariantCulture) },
-                { "SendAt", DateTimeHelper.GetDateTimeUtc7().ToString(CultureInfo.InvariantCulture) }
-            };
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await hubContext
-                        .Clients
-                        .Group(shuttleScheduleId.ToString())
-                        .SendDriverAddress(shuttleScheduleId, shuttleSchedule.CurrentLat, shuttleSchedule.CurrentLng);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "SendDriverAddress error");
-                }
-            });
 
             var notifications = new List<CreateNotificationDto>();
             var notificationIds = new List<Guid>();
