@@ -42,6 +42,16 @@ public class ParentSchoolTripService(
         ).AnyAsync();
     }
 
+    public async Task<bool> HasInProgressShuttle(Guid parentId, Guid shuttleScheduleId)
+    {
+        return await context.ShuttleScheduleCollection.Find(ss =>
+            ss.Date == DateTimeHelper.GetDateTimeOnlyUtc7() &&
+            ss.JourneyStatus == JourneyStatus.InProgress &&
+            ss.Id == shuttleScheduleId &&
+            ss.Students.Any(st => st.Parents.Any(pr => pr.ParentId == parentId) && !st.SkipPickup)
+        ).AnyAsync();
+    }
+
     public async Task<List<ParentShuttleScheduleResponse>> GetCurrentShuttleSchedule(Guid parentId)
     {
         var projection = Builders<ShuttleSchedule>.Projection

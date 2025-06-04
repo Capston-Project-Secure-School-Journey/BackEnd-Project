@@ -4,10 +4,12 @@ using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.NotificationService;
 using Api.Extensions;
+using Api.Hubs;
 using Api.Scheduling;
 using Api.Services.NotificationService;
 using Api.Services.ShuttleScheduleManagementService;
 using Hangfire;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Jobs.SchoolTripEventDispatchJobs;
@@ -15,7 +17,8 @@ namespace Api.Jobs.SchoolTripEventDispatchJobs;
 public class SendDriverAddressJob(
     IServiceProvider serviceProvider,
     ILogger<SendDriverAddressJob> logger,
-    IMemoryCache cache) : IJob
+    IMemoryCache cache,
+    IHubContext<TripHub, ITypedHubClient> hubContext) : IJob
 {
     private const string CacheKey = "SendDriverAddressJob";
     private const int NotificationTriggerDistance = 200;
@@ -53,12 +56,14 @@ public class SendDriverAddressJob(
             {
                 try
                 {
-                    await notificationSender.SendDataToTopicAsync(shuttleScheduleId.ToString(),
-                        data);
+                    await hubContext
+                        .Clients
+                        .Group(shuttleScheduleId.ToString())
+                        .SendDriverAddress(shuttleScheduleId, shuttleSchedule.CurrentLat, shuttleSchedule.CurrentLng);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "SendDataMany error");
+                    logger.LogError(ex, "SendDriverAddress error");
                 }
             });
 

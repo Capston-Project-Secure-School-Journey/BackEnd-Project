@@ -6,6 +6,7 @@ public interface IParentSchoolTripService
 {
     Task<List<ParentShuttleScheduleResponse>> GetShuttleSchedulesByStudent(Guid studentId, DateOnly date);
     Task<bool> HasInProgressShuttle(Guid parentId);
+    Task<bool> HasInProgressShuttle(Guid parentId, Guid shuttleScheduleId);
     Task<List<ParentShuttleScheduleResponse>> GetCurrentShuttleSchedule(Guid parentId);
     Task<bool> HasUpcomingShuttle(Guid parentId);
     Task<List<ParentShuttleScheduleResponse>> GetUpcomingShuttleSchedule(Guid parentId);

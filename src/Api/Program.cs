@@ -4,6 +4,7 @@ using Api.Domain;
 using Api.Domain.ModelSettings;
 using Api;
 using Api.DashboardAuthorizationFilters;
+using Api.Hubs;
 using Api.Jobs;
 using Api.Pipeline.Middlewares;
 using Api.Services.TokenService;
@@ -76,7 +77,7 @@ builder.Services.AddAuthentication(options =>
 
                 if (!string.IsNullOrEmpty(authHeader))
                 {
-                    context.Token = authHeader;
+                    context.Token = authHeader.StartsWith("Bearer ") ? authHeader.Substring(7) : authHeader;;
                 }
                 return Task.CompletedTask;
             }
@@ -146,6 +147,7 @@ builder.Services.UseHttpClientMetrics();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSignalR();
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -180,6 +182,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
         new DashboardAuthorizationFilter()
     ]
 });
+app.MapHub<TripHub>("/trip-hub");
 
 using (var scope = app.Services.CreateScope())
 {
