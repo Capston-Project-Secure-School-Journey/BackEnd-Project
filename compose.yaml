@@ -14,7 +14,7 @@
       - api
 
   api:
-    image: tpham1467/api
+    image: tpham1467/api:latest
     container_name: api
     build:
       context: ./src/Api
@@ -23,7 +23,7 @@
       - app-network
 
   prometheus:
-    image: tpham1467/prometheus
+    image: tpham1467/prometheus:latest
     build:
       context: ./src/DashboardSystem
       dockerfile: prometheus.Dockerfile
@@ -35,7 +35,7 @@
       - app-network
 
   grafana:
-    image: tpham1467/grafana
+    image: tpham1467/grafana:latest
     build:
       context: ./src/DashboardSystem
       dockerfile: grafana.Dockerfile
