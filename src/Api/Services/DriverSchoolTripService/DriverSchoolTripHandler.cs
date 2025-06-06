@@ -1,5 +1,6 @@
 using Api.Common.Enums;
 using Api.Domain.Models;
+using Api.Extensions;
 using Api.Hubs;
 using Api.Jobs.SchoolTripEventDispatchJobs;
 using Api.Services.ShuttleScheduleManagementService;
@@ -81,20 +82,13 @@ public class DriverSchoolTripHandler(
     public async Task UpdateCurrentAddress(Guid shuttleScheduleId, Guid driverId, double lat, double lng)
     {
         await driverSchoolTripService.UpdateCurrentAddress(shuttleScheduleId, driverId, lat, lng);
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await hubContext
-                    .Clients
-                    .Group(shuttleScheduleId.ToString())
-                    .SendDriverAddress(shuttleScheduleId, lat, lng);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "SendDriverAddress error");
-            }
-        });
+
+        hubContext
+            .Clients
+            .Group(shuttleScheduleId.ToString())
+            .SendDriverAddress(shuttleScheduleId, lat, lng)
+            .FireAndForget((ex) => logger.LogError(ex, "SendDriverAddress"));
+
         BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
             (job) => job.ExecuteAsync(shuttleScheduleId));
     }

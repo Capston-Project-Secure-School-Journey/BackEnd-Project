@@ -25,6 +25,6 @@ public class SocketIdentity(Guid id, UserType type)
 
     public override string ToString()
     {
-        return "Connection: " + Id.ToString() + "_" + Type.GetEnumDisplayName().ToString();
+        return "Connection: " + Id.ToString() + "_" + Type.GetEnumDisplayName();
     }
 }

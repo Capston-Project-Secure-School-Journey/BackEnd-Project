@@ -87,8 +87,17 @@ public class SchoolManagementHandler(
 
     public async Task DeleteSchool(Guid schoolId)
     {
-        await schoolManagement.DeleteSchool(schoolId);
-        await userManagement.DeleteSchoolAdmin(schoolId);
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            await schoolManagement.DeleteSchool(schoolId);
+            await userManagement.DeleteSchoolAdmin(schoolId);
+        }
+        catch (Exception)
+        {
+            await trans.DisposeAsync();
+            throw;
+        }
     }
 
     public async Task DeleteSchool(List<Guid> schoolIds)
@@ -109,11 +118,11 @@ public class SchoolManagementHandler(
 
     public async Task<Pagination<SchoolResponse>> GetSchools(GetSchoolRequest request)
     {
-        var query = await schoolManagement.GetSchoolsQueryAble();
+        var query = await schoolManagement.GetSchoolsQueryAble(request.SchoolType, request.SchoolName);
         var total = await query.CountAsync();
 
         var data = await query
-            .OrderBy(sc => sc.SchoolName)
+            .SortByProperty(request.SortBy, request.Direction)
             .Select(x => mapper.Map<SchoolResponse>(x))
             .Pagination(request.Page, request.Limit)
             .ToListAsync();

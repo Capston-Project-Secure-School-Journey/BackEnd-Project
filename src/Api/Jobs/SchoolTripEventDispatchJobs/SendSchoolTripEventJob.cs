@@ -80,12 +80,12 @@ public class SendSchoolTripEventJob(
         {
             case SchoolTripEvent.CommandStartedEvent:
                 title += "Chuyến " + shuttleScheduleType + " đã bắt đầu.";
-                content += "Hãy chú ý thời gian và vị trí của tài xế để đưa đón con được thuận lợi.";
+                content += "Hãy chú ý thời gian và vị trí của tài xế để đưa đón học sinh được thuận lợi.";
                 break;
             case SchoolTripEvent.CommandCompletedEvent:
                 title += "Chuyến " + shuttleScheduleType + " đã hoàn thành.";
-                content += $"Con bạn đã được đón vào lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}.\n"
-                           + $"Con bạn đã được trả vào lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}.";
+                content += $"Học sinh {studentOnBus.FullName} đã được đón vào lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}.\n"
+                           + $"Và đã được trả vào lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}.";
                 break;
             case SchoolTripEvent.CommandCancelledEvent:
                 title += "Chuyến " + shuttleScheduleType + " đã bị hủy.";

@@ -19,7 +19,6 @@ public class ApplicationService(
             .AsNoTracking()
             .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created)
             .Where(x => status == null || x.RequestStatus == status.Value)
-            .OrderBy(x => x.RequestedDate)
             .AsQueryable();
 
         return Task.FromResult(applications);
@@ -34,7 +33,6 @@ public class ApplicationService(
             .AsNoTracking()
             .Where(x => x.DriverId == driverId)
             .Where(x => status == null || x.RequestStatus == status.Value)
-            .OrderBy(x => x.RequestedDate)
             .AsQueryable();
 
         return Task.FromResult(applications);

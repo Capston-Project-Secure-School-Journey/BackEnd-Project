@@ -19,13 +19,15 @@ public class StudentManagementHandler(
 {
     public async Task<Pagination<StudentResponse>> GetStudents(Guid schoolId, GetStudentRequest request)
     {
-        var query = await studentManagementService.GetStudentsByFilterQueryAble(schoolId, request.Name,
-            request.ClassId);
+        var query = await studentManagementService.GetStudentsByFilterQueryAble(schoolId,
+            request.StudentId,
+            request.Name,
+            request.ClassId,
+            request.ClassName);
         var total = await query.CountAsync();
 
         var data = await query
-            .Include(x => x.Class)
-            .OrderBy(x => x.FullName)
+            .SortByProperty(request.SortBy, request.Direction)
             .Pagination(request.Page, request.Limit)
             .Select(x => mapper.Map<StudentResponse>(x))
             .ToListAsync();

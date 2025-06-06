@@ -4,6 +4,6 @@ namespace Api.TransferDTOs.Requests;
 
 public class GetSchoolRequest : QueryTemplate
 {
-    public SchoolType? SchoolType { get; set; }
-    public string? SchoolName { get; set; } = string.Empty;
+    public SchoolType? SchoolType { get; set; } = null;
+    public string? SchoolName { get; set; } = null;
 }

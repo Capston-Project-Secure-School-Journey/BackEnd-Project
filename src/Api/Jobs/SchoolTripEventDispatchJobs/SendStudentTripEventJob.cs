@@ -75,7 +75,7 @@ public class SendStudentTripEventJob(
                 BackgroundJob.Enqueue<SendNotificationJob>(
                     (job) => job.ExecuteAsync(new List<Guid>() { notificationSendToDriverId }, data));
             }
-            
+
             BackgroundJob.Enqueue<SendNotificationJob>(
                 (job) => job.ExecuteAsync(notificationIds));
         }
@@ -85,7 +85,8 @@ public class SendStudentTripEventJob(
         }
     }
 
-    private static List<CreateNotificationDto> GetNotificationSendToParentDto(StudentTripEvent eventType, StudentOnBus studentOnBus)
+    private static List<CreateNotificationDto> GetNotificationSendToParentDto(StudentTripEvent eventType,
+        StudentOnBus studentOnBus)
     {
         var title = "";
         var content = "";
@@ -93,17 +94,17 @@ public class SendStudentTripEventJob(
         switch (eventType)
         {
             case StudentTripEvent.PickedUp:
-                title += $"Con của bạn đã lên xe";
-                content += $"Con của bạn lên xe lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}";
+                title += $"Học sinh {studentOnBus.FullName} đã lên xe";
+                content += $"Học sinh lên xe lúc: {studentOnBus.PickedUpTime?.ToString("HH:mm:ss") ?? ""}";
                 break;
             case StudentTripEvent.DroppedOff:
-                title += $"Con của bạn đã xuống xe";
-                content += $"Con của bạn xuống xe lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}";
+                title += $"Học sinh {studentOnBus.FullName} đã xuống xe";
+                content += $"Học sinh xuống xe lúc: {studentOnBus.DroppedOffTime?.ToString("HH:mm:ss") ?? ""}";
                 break;
             case StudentTripEvent.SkippedFromDriver:
-                title += "Con của bạn được xác nhận không cần đón.";
+                title += $"Học sinh {studentOnBus.FullName} được xác nhận không cần đón.";
                 content +=
-                    $"Con của bạn được xác nhận không cần đón từ tài xế. Lí do: {studentOnBus.IsSkipUpReason}\n" +
+                    $"Tài xế đã xác nhận bỏ qua việc đưa đón học sinh. Lí do: {studentOnBus.IsSkipUpReason}\n" +
                     $"Nếu có bất kì nhầm lẫn nào hãy liên hệ tài xế.";
                 break;
             default:
@@ -128,17 +129,16 @@ public class SendStudentTripEventJob(
         {
             case StudentTripEvent.PickedUp:
                 title += $"Học sinh {studentOnBus.FullName} vừa lên xe.";
-                content += $"Học sinh {studentOnBus.FullName} vừa lên xe. Hãy xác nhận lại thông qua ảnh và thông tin.";
+                content += $"Hãy xác nhận lại thông qua hình ảnh và thông tin của học sinh.";
                 break;
             case StudentTripEvent.DroppedOff:
                 title += $"Học sinh {studentOnBus.FullName} vừa xuống xe.";
                 content +=
-                    $"Học sinh {studentOnBus.FullName} vừa xuống xe. Hãy xác nhận lại thông qua ảnh và thông tin.";
+                    $"Hãy xác nhận lại thông qua hình ảnh và thông tin của học sinh.";
                 break;
             case StudentTripEvent.SkippedFromParent:
-                title += "Có học sinh đã được yêu cầu không cần đón từ phụ huynh.";
-                content += $"Học sinh {studentOnBus.FullName} đã được yêu cầu không cần đón từ phụ huynh.\n" +
-                           $"Xác nhận thông tin và bỏ qua việc đưa đón học sinh này.";
+                title += $"Học sinh {studentOnBus.FullName} đã được yêu cầu không cần đón từ phụ huynh.";
+                content += $"Xác nhận thông tin và bỏ qua việc đưa đón học sinh này.";
                 break;
             default:
                 return null;

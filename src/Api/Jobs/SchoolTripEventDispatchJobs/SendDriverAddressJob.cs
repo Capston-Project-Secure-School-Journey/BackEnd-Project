@@ -89,10 +89,10 @@ public class SendDriverAddressNotificationJob(
         switch (shuttleSchedule.Type)
         {
             case ShuttleScheduleType.PickUp:
-                content = "Hiện tại tài xế sắp đến gần nhà, hãy đưa con ra để lên xe đúng giờ.";
+                content = "Hiện tại tài xế sắp đến gần nhà, học sinh hãy ra địa điểm đón để lên xe đúng giờ.";
                 break;
             case ShuttleScheduleType.DropOff:
-                content = "Hiện tại tài xế đã đến gần nhà, hãy ra đón con.";
+                content = "Hiện tại tài xế đã đến gần nhà, hãy ra chủ động ra đón học sinh.";
                 break;
         }
 

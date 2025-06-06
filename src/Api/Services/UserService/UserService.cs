@@ -105,17 +105,9 @@ public class UserService(
         }
         catch (Exception)
         {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await uploadFileService.RollBackAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "UploadFileService.RollBackAsync");
-                }
-            });
+            uploadFileService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
         }
 

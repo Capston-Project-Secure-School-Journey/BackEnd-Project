@@ -77,7 +77,7 @@ builder.Services.AddAuthentication(options =>
 
                 if (!string.IsNullOrEmpty(authHeader))
                 {
-                    context.Token = authHeader.StartsWith("Bearer ") ? authHeader.Substring(7) : authHeader;;
+                    context.Token = authHeader.StartsWith("Bearer ") ? authHeader[7..] : authHeader;
                 }
                 return Task.CompletedTask;
             }

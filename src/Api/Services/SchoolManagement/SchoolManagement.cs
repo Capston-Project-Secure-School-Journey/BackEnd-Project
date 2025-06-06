@@ -59,7 +59,7 @@ public class SchoolManagement(
     {
         var school = await GetById(data.Id);
         ValidateSchoolTime(data.MorningStartTime, data.MorningEndTime, data.AfternoonStartTime, data.AfternoonEndTime);
-        
+
         school.SchoolType = data.SchoolType;
         school.SchoolName = data.SchoolName;
         school.SchoolDescription = data.SchoolDescription;
@@ -99,22 +99,10 @@ public class SchoolManagement(
 
         await dbContext.SaveChangesAsync();
     }
-
-    public async Task<IEnumerable<School>> GetSchools()
-    {
-        return await dbContext.Schools.ToListAsync();
-    }
-
+    
     public async Task<IEnumerable<School>> GetSchoolsByFilter(SchoolType? schoolType = null, string? schoolName = null)
     {
-        var query = dbContext.Schools
-            .AsQueryable()
-            .AsNoTracking();
-        if (schoolType != null) query = query.Where(s => s.SchoolType == schoolType);
-
-        if (!string.IsNullOrEmpty(schoolName))
-            query = query.Where(s => EF.Functions.Like(s.SchoolName, schoolName + "%"));
-
+        var query = await GetSchoolsQueryAble(schoolType, schoolName);
         return await query.ToListAsync();
     }
 
@@ -124,9 +112,10 @@ public class SchoolManagement(
             .AsQueryable()
             .AsNoTracking();
 
-        if (schoolType != null) query = query.Where(s => s.SchoolType == schoolType);
+        if (schoolType.HasValue) query = query.Where(s => s.SchoolType == schoolType);
 
-        if (!string.IsNullOrEmpty(schoolName)) query = query.Where(s => s.SchoolName.Contains(schoolName));
+        if (!string.IsNullOrWhiteSpace(schoolName))
+            query = query.Where(sc => EF.Functions.Like(sc.SchoolName, schoolName + "%"));
 
         return Task.FromResult(query);
     }

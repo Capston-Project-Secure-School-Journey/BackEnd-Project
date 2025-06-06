@@ -75,7 +75,7 @@ public class AlertMissingAddressJob(
                         {
                             Title = $"Địa chỉ đón học sinh: {student.FullName} chưa được cập nhập",
                             Content =
-                                "Hiện tại địa chỉ đón con bạn vẫn chưa được cập nhập.\n" +
+                                "Hiện tại địa chỉ đón học sinh vẫn chưa được cập nhập.\n" +
                                 "Vui lòng cập nhập trong thời gian sớm nhất!",
                             RecipientId = parentId,
                             Navigation = string.Empty
@@ -88,7 +88,8 @@ public class AlertMissingAddressJob(
                 {
                     Title = "Vẫn còn học sinh chưa được cập nhập địa chỉ",
                     Content = $"Hiện tại địa chỉ đón đưa của một số học sinh vẫn chưa được cập nhập.<br>" +
-                              $"Hãy yêu cầu học sinh cập nhập trước ngày bắt đầu chạy.<br>" +
+                              $"Hãy yêu cầu học sinh cập nhập trước " +
+                              $"ngày bắt đầu chạy ({Convert.ToDateTime(startDate.Value):dd/MM/yyy}).<br>" +
                               $"Danh sách chi tiết: <a href=\"{fileLink}\" target=\"_blank\">Link</a>",
                     RecipientId = admin.Id,
                     Navigation = string.Empty
@@ -100,17 +101,9 @@ public class AlertMissingAddressJob(
             catch (Exception)
             {
                 await trans.RollbackAsync();
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await uploadFileService.RollBackAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "UploadFileService.RollBackAsync");
-                    }
-                });
+                uploadFileService
+                    .RollBackAsync()
+                    .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
                 throw;
             }
             finally
@@ -131,7 +124,7 @@ public class AlertMissingAddressJob(
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream, Encoding.UTF8);
 
-        writer.WriteLine("Id,FullName,ClassId,ClassName");
+        writer.WriteLine("Mã học sinh,Họ và tên,Mã lớp,Tên lớp");
 
         foreach (var s in students)
             writer.WriteLine($"{s.Id},{EscapeCsv(s.FullName)},{s.ClassId},{EscapeCsv(s.Class.ClassName)}");

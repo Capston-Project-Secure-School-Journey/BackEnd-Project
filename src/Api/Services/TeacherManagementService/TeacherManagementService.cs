@@ -4,6 +4,7 @@ using Api.Domain;
 using Api.Domain.Models;
 using Api.DTOs.TeacherManagement;
 using Api.DTOs.UploadFileService;
+using Api.Extensions;
 using Api.Services.UploadFileService;
 using Microsoft.EntityFrameworkCore;
 
@@ -154,17 +155,9 @@ public class TeacherManagementService(
         }
         catch (Exception)
         {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await uploadService.RollBackAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "UploadFileService.RollBackAsync");
-                }
-            });
+            uploadService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
         }
 

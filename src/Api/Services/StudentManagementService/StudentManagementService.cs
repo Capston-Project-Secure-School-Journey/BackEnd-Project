@@ -26,23 +26,33 @@ public class StudentManagementService(
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsByFilter(Guid schoolId, string? name, Guid? classId)
+    public async Task<IEnumerable<Student>> GetStudentsByFilter(Guid schoolId, Guid? studentId, string? name,
+        Guid? classId,
+        string? className = null)
     {
-        var query = await GetStudentsByFilterQueryAble(schoolId, name, classId);
+        var query = await GetStudentsByFilterQueryAble(schoolId, studentId, name, classId, className);
 
         return await query.ToListAsync();
     }
 
-    public Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId, string? name, Guid? classId)
+    public Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId,
+        Guid? studentId, string? name, Guid? classId,
+        string? className = null)
     {
-        var query = context.Students.AsQueryable()
+        var query = context.Students
+            .Include(s => s.Class)
+            .AsQueryable()
             .AsNoTracking()
             .Where(s => s.SchoolId == schoolId);
 
+        if (studentId.HasValue)
+            query = query.Where(st => st.Id == studentId);
         if (!string.IsNullOrWhiteSpace(name))
             query = query.Where(st => EF.Functions.Like(st.FullName, name + "%"));
         if (classId.HasValue)
             query = query.Where(st => st.ClassId == classId);
+        if (!string.IsNullOrWhiteSpace(className))
+            query = query.Where(st => EF.Functions.Like(st.Class.ClassName, className + "%"));
 
         return Task.FromResult(query);
     }
@@ -96,17 +106,9 @@ public class StudentManagementService(
         catch (Exception)
         {
             await trans.RollbackAsync();
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await uploadFileService.RollBackAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "UploadFileService.RollBackAsync");
-                }
-            });
+            uploadFileService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
         }
     }
@@ -190,17 +192,9 @@ public class StudentManagementService(
         }
         catch (Exception)
         {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await uploadFileService.RollBackAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "UploadFileService.RollBackAsync");
-                }
-            });
+            uploadFileService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
         }
 
