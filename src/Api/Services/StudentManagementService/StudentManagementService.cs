@@ -28,7 +28,7 @@ public class StudentManagementService(
 
     public async Task<IEnumerable<Student>> GetStudentsByFilter(Guid schoolId, Guid? studentId, string? name,
         Guid? classId,
-        string? className = null)
+        string? className)
     {
         var query = await GetStudentsByFilterQueryAble(schoolId, studentId, name, classId, className);
 
@@ -37,7 +37,7 @@ public class StudentManagementService(
 
     public Task<IQueryable<Student>> GetStudentsByFilterQueryAble(Guid schoolId,
         Guid? studentId, string? name, Guid? classId,
-        string? className = null)
+        string? className)
     {
         var query = context.Students
             .Include(s => s.Class)

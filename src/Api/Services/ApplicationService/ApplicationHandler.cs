@@ -32,8 +32,8 @@ public class ApplicationHandler(
             .SortByProperty(request.SortBy, request.Direction)
             .Pagination(request.Page, request.Limit)
             .AsEnumerable()
-            .Select(mapper.Map<ApplicationResponse>)
-            .ToList();
+            .Select(mapper.Map<ApplicationResponse>);
+        
         var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
 
         return responses;
@@ -44,12 +44,11 @@ public class ApplicationHandler(
     {
         var queryable = await applicationService.GetApplicationsByDriver(driverId, request.Status);
         var count = await queryable.CountAsync();
-        var data = queryable
+        var data =  queryable
             .SortByProperty(request.SortBy, request.Direction)
             .Pagination(request.Page, request.Limit)
             .AsEnumerable()
-            .Select(mapper.Map<ApplicationResponse>)
-            .ToList();
+            .Select(mapper.Map<ApplicationResponse>);
 
         var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
 

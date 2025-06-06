@@ -205,18 +205,32 @@ public class ScheduleManagementService(
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<ClassSchedule>> GetScheduleByDate(Guid schoolId, DateOnly date)
+    public Task<IQueryable<ClassSchedule>> GetScheduleByDateQueryable(Guid schoolId,
+        DateOnly date,
+        SessionType? sessionType,
+        Guid? classId,
+        string? className,
+        Grade? grade)
     {
-        var schedules = await context.ClassSchedules
+        var query = context
+            .ClassSchedules
             .Include(c => c.Class)
             .AsNoTracking()
-            .Where(c => c.SchoolId == schoolId &&
-                        c.Date == date)
-            .OrderBy(c => c.Class.Grade)
-            .ThenByDescending(c => c.Class.ClassName)
-            .ToListAsync();
+            .Where(c => c.SchoolId == schoolId && c.Date == date);
 
-        return schedules;
+        if (classId.HasValue)
+            query = query.Where(c => c.ClassId == classId.Value);
+
+        if (!string.IsNullOrWhiteSpace(className))
+            query = query.Where(c => EF.Functions.Like(c.Class.ClassName, className + "%"));
+
+        if (sessionType.HasValue)
+            query = query.Where(c => c.SessionType == sessionType.Value);
+
+        if (grade.HasValue)
+            query = query.Where(c => c.Class.Grade == grade.Value);
+
+        return Task.FromResult(query);
     }
 
     public async Task<ClassSchedulePaginationResponse> GetScheduleView(Guid schoolId, DateOnly date)

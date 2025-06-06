@@ -41,10 +41,10 @@ public class ScheduleManagementController(IScheduleManagementHandler scheduleMan
 
     [HttpGet]
     [Authorize(UserType.SchoolAdmin)]
-    public async Task<List<ClassScheduleResponse>> GetScheduleByDate([FromQuery] DateOnly date)
+    public async Task<Pagination<ClassScheduleResponse>> GetScheduleByDate([FromQuery] GetScheduleByDateRequest request)
     {
         var schoolId = this.GetSchoolId();
-        return await scheduleManagementHandler.GetScheduleByDate(schoolId, date);
+        return await scheduleManagementHandler.GetScheduleByDate(schoolId, request);
     }
 
     [HttpDelete]

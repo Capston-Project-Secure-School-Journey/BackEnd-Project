@@ -2,20 +2,11 @@
 
 namespace Api.TransferDTOs.Responses;
 
-public class Pagination<T>
+public class Pagination<T>(IEnumerable<T> data, int pageSize, int currentPage, long total)
 {
-    public int CurrentPage { get; private set; }
-    public int Total { get; set; }
-    public int LastPage { get; private set; }
-    public IEnumerable<T> Data { get; private set; }
-    public int PageSize { get; set; }
-
-    public Pagination(IEnumerable<T> data, int pageSize, int currentPage, int total)
-    {
-        Data = data;
-        PageSize = pageSize;
-        CurrentPage = currentPage;
-        Total = total;
-        LastPage = (int)Math.Ceiling((double)total / pageSize);
-    }
+    public int CurrentPage { get; private set; } = currentPage;
+    public long Total { get; set; } = total;
+    public int LastPage { get; private set; } = (int)Math.Ceiling((double)total / pageSize);
+    public IEnumerable<T> Data { get; private set; } = data;
+    public int PageSize { get; set; } = pageSize;
 }

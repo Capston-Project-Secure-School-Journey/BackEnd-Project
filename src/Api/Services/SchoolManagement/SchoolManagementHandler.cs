@@ -121,11 +121,10 @@ public class SchoolManagementHandler(
         var query = await schoolManagement.GetSchoolsQueryAble(request.SchoolType, request.SchoolName);
         var total = await query.CountAsync();
 
-        var data = await query
+        var data = query
             .SortByProperty(request.SortBy, request.Direction)
             .Select(x => mapper.Map<SchoolResponse>(x))
-            .Pagination(request.Page, request.Limit)
-            .ToListAsync();
+            .Pagination(request.Page, request.Limit);
 
         var response = new Pagination<SchoolResponse>(data, request.Limit, request.Page, total);
         return response;

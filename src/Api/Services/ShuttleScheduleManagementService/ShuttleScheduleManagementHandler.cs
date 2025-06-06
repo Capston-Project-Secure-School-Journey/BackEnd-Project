@@ -1,24 +1,44 @@
 using Api.Domain.Models;
+using Api.Extensions;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
+using AutoMapper;
+using MongoDB.Driver;
 
 namespace Api.Services.ShuttleScheduleManagementService;
 
-public class ShuttleScheduleManagementHandler(IShuttleScheduleManagementService shuttleScheduleManagement)
+public class ShuttleScheduleManagementHandler(
+    IShuttleScheduleManagementService shuttleScheduleManagement,
+    IMapper mapper)
     : IShuttleScheduleManagementHandler
 {
-    public async Task<ShuttleScheduleView> GetShuttleScheduleView(DateOnly date, Guid schoolId)
+    public async Task<ShuttleScheduleView> GetShuttleScheduleView(Guid schoolId, DateOnly date)
     {
-        return await shuttleScheduleManagement.GetShuttleScheduleView(date, schoolId);
+        return await shuttleScheduleManagement.GetShuttleScheduleView(schoolId, date);
     }
 
-    public async Task<List<ShuttleScheduleResponse>> GetShuttleScheduleByDate(DateOnly date, Guid schoolId)
+    public async Task<Pagination<ShuttleScheduleResponse>> GetShuttleScheduleByDate(Guid schoolId,
+        GetShuttleScheduleByDateRequest request)
     {
-        return await shuttleScheduleManagement.GetShuttleScheduleByDate(date, schoolId);
+        var query = await shuttleScheduleManagement.GetShuttleScheduleByDate(schoolId, request);
+        var totalCount = await query.CountDocumentsAsync();
+
+        var data = (await query
+                .SortByDescending(x => x.SessionType)
+                .ThenBy(x => x.Type)
+                .ThenByDescending(x => x.NumberOfStudents)
+                .Pagination(request.Page, request.Limit)
+                .ToListAsync())
+            .Select(mapper.Map<ShuttleScheduleResponse>);
+
+        var response = new Pagination<ShuttleScheduleResponse>(data, request.Limit, request.Page, totalCount);
+
+        return response;
     }
 
-    public async Task<ShuttleSchedule> GetShuttleSchedule(Guid shuttleScheduleId, Guid schoolId)
+    public async Task<ShuttleSchedule> GetShuttleSchedule(Guid schoolId, Guid shuttleScheduleId)
     {
-        await shuttleScheduleManagement.IsOwnerOfShuttleSchedule(shuttleScheduleId, schoolId);
+        await shuttleScheduleManagement.IsOwnerOfShuttleSchedule(schoolId, shuttleScheduleId);
         return await shuttleScheduleManagement.GetShuttleSchedule(shuttleScheduleId);
     }
 }

@@ -26,11 +26,10 @@ public class StudentManagementHandler(
             request.ClassName);
         var total = await query.CountAsync();
 
-        var data = await query
+        var data = query
             .SortByProperty(request.SortBy, request.Direction)
             .Pagination(request.Page, request.Limit)
-            .Select(x => mapper.Map<StudentResponse>(x))
-            .ToListAsync();
+            .Select(x => mapper.Map<StudentResponse>(x));
 
         var response = new Pagination<StudentResponse>(data, request.Limit, request.Page, total);
 

@@ -5,6 +5,7 @@ using Api.Extensions;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Services.ScheduleManagementService;
 
@@ -45,12 +46,27 @@ public class ScheduleManagementHandler(
         return await scheduleManagementService.GetScheduleView(schoolId, date);
     }
 
-    public async Task<List<ClassScheduleResponse>> GetScheduleByDate(Guid schoolId, DateOnly date)
+    public async Task<Pagination<ClassScheduleResponse>> GetScheduleByDate(Guid schoolId,
+        GetScheduleByDateRequest request)
     {
-        var classSchedules = await scheduleManagementService.GetScheduleByDate(schoolId, date);
+        var query = await scheduleManagementService.GetScheduleByDateQueryable(schoolId,
+            request.Date,
+            request.SessionType,
+            request.ClassId,
+            request.ClassName,
+            request.Grade);
 
-        return classSchedules.Select(MapToClassScheduleResponse)
-            .ToList();
+        var total = await query.CountAsync();
+
+        var data = query
+            .SortByProperty(request.SortBy, request.Direction)
+            .Pagination(request.Page, request.Limit)
+            .AsEnumerable()
+            .Select(MapToClassScheduleResponse);
+        
+        var response = new Pagination<ClassScheduleResponse>(data, request.Limit, request.Page, total);
+
+        return response;
     }
 
     public async Task DeleteSchedule(Guid schoolId, Guid id)

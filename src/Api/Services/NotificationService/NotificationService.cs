@@ -24,9 +24,9 @@ public class NotificationService(
             .OrderByDescending(n => n.CreatedAt)
             .AsQueryable();
         var count = await query.CountAsync();
-        var notifications = await query
-            .Pagination(currentPage, PageSize)
-            .ToListAsync();
+        var notifications = query
+            .Pagination(currentPage, PageSize);
+
         var response = new Pagination<Notification>(notifications, PageSize, currentPage, count);
 
         return response;

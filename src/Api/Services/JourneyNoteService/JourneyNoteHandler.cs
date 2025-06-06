@@ -34,8 +34,8 @@ public class JourneyNoteHandler(
         await driverSchoolTripService.IsOwnerOfShuttleSchedule(request.ShuttleId.Value, driverId);
         var journeyNotes = await journeyNoteService.GetAllJourneyNotes(request.ShuttleId.Value);
         var data = journeyNotes
-            .Pagination(request.Page, request.Limit)
-            .ToList();
+            .Pagination(request.Page, request.Limit);
+
         var response = new Pagination<JourneyNote>(data, request.Limit, request.Page, journeyNotes.Count);
         return response;
     }
@@ -45,8 +45,8 @@ public class JourneyNoteHandler(
     {
         var journeyNotes = await journeyNoteService.GetAllJourneyNotesByParent(request.ShuttleId, parentId);
         var data = journeyNotes
-            .Pagination(request.Page, request.Limit)
-            .ToList();
+            .Pagination(request.Page, request.Limit);
+        
         var response = new Pagination<JourneyNote>(data, request.Limit, request.Page, journeyNotes.Count);
         return response;
     }

@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Domain.Models;
 using Api.DTOs.ScheduleManagement;
 using Api.TransferDTOs.Responses;
@@ -11,7 +12,14 @@ public interface IScheduleManagementService
     Task DeleteSchedule(Guid schoolId, Guid id);
     Task DeleteSchedule(Guid schoolId, List<Guid> ids);
     Task<IEnumerable<ClassSchedule>> GetScheduleByWeek(Guid schoolId, DateTime date);
-    Task<IEnumerable<ClassSchedule>> GetScheduleByDate(Guid schoolId, DateOnly date);
+
+    Task<IQueryable<ClassSchedule>> GetScheduleByDateQueryable(Guid schoolId,
+        DateOnly date,
+        SessionType? sessionType,
+        Guid? classId,
+        string? className,
+        Grade? grade);
+
     Task<ClassSchedulePaginationResponse> GetScheduleView(Guid schoolId, DateOnly date);
     Task<IEnumerable<ClassSchedule>> CloneMonthSchedule(Guid schoolId, DateOnly date);
     Task<IEnumerable<ClassSchedule>> CloneWeekSchedule(Guid schoolId, DateOnly date);

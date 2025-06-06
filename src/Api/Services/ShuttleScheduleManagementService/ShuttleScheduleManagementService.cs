@@ -9,8 +9,8 @@ using Api.Scheduling;
 using Api.Services.SchoolManagement;
 using Api.Services.UploadFileService;
 using Api.Services.UserService;
+using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
-using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using MongoDB.Driver;
 
@@ -20,7 +20,6 @@ public class ShuttleScheduleManagementService(
     Context context,
     IUserService userService,
     IFileUploadService fileUploadService,
-    IMapper mapper,
     ISchoolManagement schoolManagement,
     IMemoryCache cache,
     GoogleMapsService googleMapsService) : IShuttleScheduleManagementService
@@ -74,7 +73,7 @@ public class ShuttleScheduleManagementService(
         return shuttleSchedules;
     }
 
-    public async Task<ShuttleScheduleView> GetShuttleScheduleView(DateOnly date, Guid schoolId)
+    public async Task<ShuttleScheduleView> GetShuttleScheduleView(Guid schoolId, DateOnly date)
     {
         var monthRange = DateTimeHelper.GetMonthRange(date);
         var shuttleSchedules = (await context.ShuttleScheduleCollection
@@ -144,23 +143,46 @@ public class ShuttleScheduleManagementService(
         return response;
     }
 
-    public async Task<List<ShuttleScheduleResponse>> GetShuttleScheduleByDate(DateOnly date, Guid schoolId)
+    public Task<IFindFluent<ShuttleSchedule, ShuttleSchedule>> GetShuttleScheduleByDate(Guid schoolId,
+        GetShuttleScheduleByDateRequest request)
     {
         var projection = Builders<ShuttleSchedule>.Projection
             .Exclude(x => x.BestRoute)
             .Exclude(x => x.Students);
 
-        var shuttleSchedule = (await context.ShuttleScheduleCollection
-                .Find(sp => sp.Date == date && sp.SchoolId == schoolId)
-                .SortByDescending(x => x.SessionType)
-                .ThenBy(x => x.Type)
-                .ThenByDescending(x => x.NumberOfStudents)
-                .Project<ShuttleSchedule>(projection)
-                .ToListAsync())
-            .Select(mapper.Map<ShuttleScheduleResponse>)
-            .ToList();
+        var filter = Builders<ShuttleSchedule>.Filter.And(
+            Builders<ShuttleSchedule>.Filter.Eq(t => t.SchoolId, schoolId),
+            Builders<ShuttleSchedule>.Filter.Eq(t => t.Date, request.Date)
+        );
 
-        return shuttleSchedule;
+        if (request.SessionType.HasValue)
+            filter = Builders<ShuttleSchedule>.Filter.And(filter,
+                Builders<ShuttleSchedule>.Filter.Eq(t => t.SessionType, request.SessionType));
+
+        if (request.ShuttleScheduleType.HasValue)
+            filter = Builders<ShuttleSchedule>.Filter.And(filter,
+                Builders<ShuttleSchedule>.Filter.Eq(t => t.Type, request.ShuttleScheduleType));
+
+        if (request.JourneyStatus.HasValue)
+            filter = Builders<ShuttleSchedule>.Filter.And(filter,
+                Builders<ShuttleSchedule>.Filter.Eq(t => t.JourneyStatus, request.JourneyStatus));
+
+        if (request.DriverId.HasValue)
+            filter = Builders<ShuttleSchedule>.Filter.And(filter,
+                Builders<ShuttleSchedule>.Filter.Eq(t => t.DriverId, request.DriverId));
+
+        if (!string.IsNullOrWhiteSpace(request.DriverName))
+            filter = Builders<ShuttleSchedule>.Filter.And(filter,
+                Builders<ShuttleSchedule>.Filter.StringIn(t => t.DriverName, request.DriverName));
+
+        var query = context.ShuttleScheduleCollection
+            .Find(filter)
+            .SortByDescending(x => x.SessionType)
+            .ThenBy(x => x.Type)
+            .ThenByDescending(x => x.NumberOfStudents)
+            .Project<ShuttleSchedule>(projection);
+
+        return Task.FromResult(query);
     }
 
     public async Task<ShuttleSchedule> GetShuttleSchedule(Guid shuttleScheduleId)
@@ -175,7 +197,7 @@ public class ShuttleScheduleManagementService(
         return shuttleSchedule;
     }
 
-    public async Task IsOwnerOfShuttleSchedule(Guid shuttleScheduleId, Guid schoolId)
+    public async Task IsOwnerOfShuttleSchedule(Guid schoolId, Guid shuttleScheduleId)
     {
         var exist = await context.ShuttleScheduleCollection
             .Find(sp => sp.Id == shuttleScheduleId && sp.SchoolId == schoolId)

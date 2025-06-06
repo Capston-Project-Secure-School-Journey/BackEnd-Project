@@ -21,11 +21,11 @@ public class TeacherManagementHandler(
             request.Phone);
         var total = await query.CountAsync();
 
-        var data = await query
+        var data = query
             .OrderBy(t => t.FullName)
             .Pagination(request.Page, request.Limit)
-            .Select(x => mapper.Map<TeacherResponse>(x))
-            .ToListAsync();
+            .Select(x => mapper.Map<TeacherResponse>(x));
+
         var response = new Pagination<TeacherResponse>(data, request.Limit, request.Page, total);
 
         return response;
