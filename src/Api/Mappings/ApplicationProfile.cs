@@ -23,8 +23,14 @@ public class ApplicationProfile : Profile
                     opt.Ignore())
             .ForMember(x => x.DriverRequestStatusHistoryResponse,
                 opt =>
-                    opt.Ignore());
+                    opt.Ignore())
+            .ForMember(x => x.ApprovedByName,
+                opt =>
+                    opt.MapFrom(app => app.School != null && app.ApprovedBy != null ? app.School.SchoolName : ""));
 
-        CreateMap<DriverRequestStatusHistory, DriverRequestStatusHistoryResponse>();
+        CreateMap<DriverRequestStatusHistory, DriverRequestStatusHistoryResponse>()
+            .ForMember(x => x.ChangedByName,
+                opt =>
+                    opt.Ignore());
     }
 }

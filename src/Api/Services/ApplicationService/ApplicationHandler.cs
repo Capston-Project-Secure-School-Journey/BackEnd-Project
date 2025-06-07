@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Common.Utilities;
 using Api.Common.Exceptions;
 using Api.Domain;
@@ -5,6 +6,7 @@ using Api.Domain.Models;
 using Api.DTOs.ApprovalProcessor;
 using Api.Extensions;
 using Api.Jobs;
+using Api.Security.CurrentUserProvider;
 using Api.Services.ApprovalProcessor;
 using Api.Services.UploadFileService;
 using Api.TransferDTOs.Requests;
@@ -20,7 +22,8 @@ public class ApplicationHandler(
     IApplicationService applicationService,
     IApprovalProcessor approvalProcessor,
     IMapper mapper,
-    IFileUploadService fileUploadService)
+    IFileUploadService fileUploadService,
+    ICurrentUserProvider currentUserProvider)
     : IApplicationHandler
 {
     public async Task<Pagination<ApplicationResponse>> GetApplicationsBySchool(Guid schoolId,
@@ -33,7 +36,7 @@ public class ApplicationHandler(
             .Pagination(request.Page, request.Limit)
             .AsEnumerable()
             .Select(mapper.Map<ApplicationResponse>);
-        
+
         var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
 
         return responses;
@@ -44,14 +47,13 @@ public class ApplicationHandler(
     {
         var queryable = await applicationService.GetApplicationsByDriver(driverId, request.Status);
         var count = await queryable.CountAsync();
-        var data =  queryable
+        var data = queryable
             .SortByProperty(request.SortBy, request.Direction)
             .Pagination(request.Page, request.Limit)
             .AsEnumerable()
             .Select(mapper.Map<ApplicationResponse>);
 
         var responses = new Pagination<ApplicationResponse>(data, request.Page, request.Limit, count);
-
 
         return responses;
     }
@@ -177,6 +179,27 @@ public class ApplicationHandler(
 
         foreach (var history in request.DriverRequestStatusHistories)
             response.DriverRequestStatusHistoryResponse.Add(mapper.Map<DriverRequestStatusHistoryResponse>(history));
+
+        var currentUser = currentUserProvider.GetCurrentUser();
+        foreach (var change in response.DriverRequestStatusHistoryResponse)
+        {
+            if (change.ChangedBy == response.DriverId)
+            {
+                change.ChangedByName = currentUser.UserType == UserType.Driver
+                    ? $"Bạn"
+                    : $"Tài xế {response.DriverName}";
+            }
+            else
+            {
+                var schoolName = response.SchoolName.ToLower().StartsWith("trường")
+                    ? response.SchoolName
+                    : $"Trường {response.SchoolName}";
+
+                change.ChangedByName = currentUser.UserType == UserType.Driver
+                    ? schoolName
+                    : $"Nhà trường";
+            }
+        }
 
         return response;
     }
