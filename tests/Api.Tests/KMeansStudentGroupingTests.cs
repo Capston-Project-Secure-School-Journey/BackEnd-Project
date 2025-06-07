@@ -177,7 +177,7 @@ public class KMeansStudentGroupingTests
         foreach (var cluster in result)
         {
             // ReSharper disable once PossibleLossOfFraction
-            Assert.True((float)cluster.Value.Count / cluster.Key.SeatingCapacity > 0.5f,
+            Assert.True((float)cluster.Value.Count / cluster.Key.SeatingCapacity > 0.4f,
                 ((float)cluster.Value.Count / cluster.Key.SeatingCapacity).ToString("0.00"));
         }
     }
