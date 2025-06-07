@@ -85,7 +85,7 @@ public class ClassManagementHandler(
             if (!map.TryGetValue(managedTeacher.Id, out var value))
             {
                 var teacher = await teacherManagementService.GetTeacherById(managedTeacher.Id);
-                managedTeacher.Name = teacher.FirstName + " " + teacher.LastName;
+                managedTeacher.Name = teacher.FullName;
 
                 map[managedTeacher.Id] = managedTeacher.Name;
             }

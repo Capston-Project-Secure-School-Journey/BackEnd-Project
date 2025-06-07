@@ -11,6 +11,7 @@ public class ShuttleScheduleResponse
     public SessionType SessionType { get; set; }
     public DateOnly Date { get; set; }
     public Guid DriverId { get; set; }
+    public string DriverPhoneNumber { get; set; } = string.Empty;
     public string DriverName { get; set; } = string.Empty;
     public string DriverAvatar { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;

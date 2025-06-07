@@ -223,8 +223,9 @@ public class ShuttleScheduleManagementService(
             SchoolId = shuttleScheduleDto.SchoolId,
             SessionType = shuttleScheduleDto.SessionType,
             SchoolName = school.SchoolName,
+            DriverPhoneNumber = driver.PhoneNumber,
             Date = shuttleScheduleDto.Date,
-            DriverName = driver.FirstName + " " + driver.LastName,
+            DriverName = driver.FullName,
             DriverAvatar = driver.AvatarKey == null
                 ? ""
                 : await GetImageUrl(driver.AvatarKey.Value),
@@ -398,7 +399,7 @@ public class ShuttleScheduleManagementService(
     {
         var cacheKey = $"{parentId}_{CreateShuttleCacheKey}_Name";
         if (cache.TryGetValue(cacheKey, out string? parentName)) return parentName ?? string.Empty;
-        parentName = context.Parents.Where(p => p.Id == parentId).Select(p => p.FirstName + " " + p.LastName)
+        parentName = context.Parents.Where(p => p.Id == parentId).Select(p => p.FullName)
             .FirstOrDefault() ?? string.Empty;
         cache.Set(cacheKey, parentName, TimeSpan.FromDays(1));
         return parentName;

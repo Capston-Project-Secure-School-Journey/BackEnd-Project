@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Api.Common.Enums;
+using Newtonsoft.Json;
 
 namespace Api.Domain.Models;
 
@@ -12,6 +14,7 @@ public class User : BaseModel
     public string PhoneNumber { get; set; } = null!;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    [JsonIgnore] [NotMapped] public string FullName => $"{FirstName} {LastName}";
     public Gender Gender { get; set; }
     public string Email { get; set; } = null!;
     public DateOnly? DateOfBirth { get; set; }
