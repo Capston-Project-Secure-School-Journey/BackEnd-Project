@@ -55,6 +55,9 @@ public class CreateShuttleScheduleJob(
                 .Where(x => x.Date >= nextWeekRange.StartOfWeek && x.Date <= nextWeekRange.EndOfWeek)
                 .ToListAsync();
 
+            if (schedules.Count == 0)
+                return;
+
             var drivers = await db.ActiveDrivers
                 .AsQueryable()
                 .Where(d => d.SchoolId == schoolId)
@@ -103,7 +106,7 @@ public class CreateShuttleScheduleJob(
                         await GetTotalDistance(dropOffShuttleScheduleDto, school);
                 }
             }
-            
+
             await db.SaveChangesAsync();
             await shuttleScheduleManagementService.AddShuttleSchedule(requests);
 
