@@ -77,6 +77,18 @@ public class TeacherManagementService(
         return teacher;
     }
 
+    public async Task ImportTeachersFromExcel(Guid schoolId, List<Teacher> teachers)
+    {
+        foreach (var teacher in teachers)
+        {
+            teacher.SchoolId = schoolId;
+            teacher.Id = Guid.NewGuid();
+        }
+
+        await context.Teachers.AddRangeAsync(teachers);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<Teacher> UpdateTeacher(UpdateTeacherDto request)
     {
         var teacher = await GetTeacherById(request.Id);
@@ -113,23 +125,14 @@ public class TeacherManagementService(
 
     public async Task DeleteTeacher(List<Guid> ids)
     {
-        var trans = await context.Database.BeginTransactionAsync();
-        try
-        {
-            foreach (var id in ids)
-                await DeleteTeacher(id);
-            await trans.CommitAsync();
-        }
-        catch (Exception)
-        {
-            await trans.RollbackAsync();
-        }
+        foreach (var id in ids)
+            await DeleteTeacher(id);
     }
 
     public async Task CheckExistTeacher(Guid schoolId, Guid teacherId)
     {
         if (!await context.Teachers.AnyAsync(t => t.SchoolId == schoolId && t.Id == teacherId))
-            throw new NotFoundException(ErrorMessages.TeacherNotFound);
+            throw new NotFoundException(string.Format(ErrorMessages.TeacherNotFound, teacherId));
     }
 
     public async Task IsOwnerOfTeacher(Guid schoolId, Guid teacherId)

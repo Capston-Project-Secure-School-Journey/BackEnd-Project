@@ -51,7 +51,7 @@ public class ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMi
                 response.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorDetail.Message = e.Message;
                 break;
-            case ValidationException e:
+            case { } e when e is ValidationException or FluentValidation.ValidationException:
                 response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
                 errorDetail.Message = e.Message;
                 break;

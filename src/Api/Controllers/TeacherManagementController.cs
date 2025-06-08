@@ -1,5 +1,6 @@
 using Api.Attributes;
 using Api.Common.Enums;
+using Api.Extensions;
 using Api.Services.TeacherManagementService;
 using Api.TransferDTOs.Requests;
 using Api.TransferDTOs.Responses;
@@ -80,5 +81,24 @@ public class TeacherManagementController(ITeacherManagementHandler teacherManage
     {
         var schoolId = this.GetSchoolId();
         return Ok(await teacherManagementHandler.UploadAvatar(schoolId, teacherId, file));
+    }
+
+    [HttpGet("template-excel-file")]
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<IActionResult> GetTemplateExcelFile()
+    {
+        var template = await teacherManagementHandler.GetTemplateExcelFile();
+        return File(template,
+            ContentType.ApplicationMsExcel.GetDescription(),
+            "template.xlsx");
+    }
+
+    [HttpPost("import-data")]
+    [Authorize(UserType.SchoolAdmin)]
+    public async Task<ActionResult> Read(IFormFile file)
+    {
+        var schoolId = this.GetSchoolId();
+        await teacherManagementHandler.ImportTeachersFromExcelFile(schoolId, file);
+        return Ok();
     }
 }

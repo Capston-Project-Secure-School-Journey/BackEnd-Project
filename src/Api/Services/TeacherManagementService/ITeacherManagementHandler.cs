@@ -12,4 +12,6 @@ public interface ITeacherManagementHandler
     Task DeleteTeacher(Guid schoolId, Guid id);
     Task DeleteTeacher(Guid schoolId, List<Guid> ids);
     Task<string> UploadAvatar(Guid schoolId, Guid teacherId, IFormFile file);
+    Task<MemoryStream> GetTemplateExcelFile();
+    Task ImportTeachersFromExcelFile(Guid schoolId, IFormFile file);
 }

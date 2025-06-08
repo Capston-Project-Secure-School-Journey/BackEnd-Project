@@ -15,4 +15,5 @@ public interface IClassManagementService
     Task DeleteClass(Guid id);
     Task DeleteClass(List<Guid> ids);
     Task IsOwnerOfClass(Guid schoolId, Guid classId);
+    Task ImportClassesFromExcel(Guid schoolId, List<Class> classes);
 }

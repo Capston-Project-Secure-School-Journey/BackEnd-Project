@@ -15,6 +15,7 @@ public interface IStudentManagementService
 
     Task<Student> GetStudentById(Guid id);
     Task<Student> AddStudent(CreateStudentDto request);
+    Task ImportStudentsFromExcel(Guid schoolId, List<Student> students);
     Task<Student> UpdateStudent(UpdateStudentDto request);
     Task DeleteStudent(Guid id);
     Task DeleteStudent(List<Guid> ids);

@@ -13,6 +13,7 @@ public interface ITeacherManagementService
 
     Task<Teacher> GetTeacherById(Guid id);
     Task<Teacher> AddTeacher(CreateTeacherDto request);
+    Task ImportTeachersFromExcel(Guid schoolId, List<Teacher> teachers);
     Task<Teacher> UpdateTeacher(UpdateTeacherDto request);
     Task DeleteTeacher(Guid id);
     Task DeleteTeacher(List<Guid> ids);

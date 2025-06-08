@@ -11,4 +11,6 @@ public interface IClassManagementHandler
     Task<ClassDetailResponse> UpdateClass(Guid schoolId, UpdateClassRequest request);
     Task DeleteClass(Guid schoolId, Guid id);
     Task DeleteClass(Guid schoolId, List<Guid> ids);
+    Task<MemoryStream> GetTemplateExcelFile();
+    Task ImportClassesFromExcelFile(Guid schoolId, IFormFile file);
 }

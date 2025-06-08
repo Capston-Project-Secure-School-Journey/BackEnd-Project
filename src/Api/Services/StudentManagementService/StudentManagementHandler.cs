@@ -1,5 +1,6 @@
 using Api.Domain;
 using Api.Domain.Models;
+using Api.DTOs.ExcelReader;
 using Api.DTOs.StudentManagement;
 using Api.TransferDTOs.Responses;
 using AutoMapper;
@@ -14,7 +15,10 @@ public class StudentManagementHandler(
     IStudentManagementService studentManagementService,
     IMapper mapper,
     Context context,
-    IFileUploadService uploadService)
+    IFileUploadService uploadService,
+    IServiceProvider serviceProvider,
+    IFileUploadService uploadFileService,
+    ILogger<StudentManagementHandler> logger)
     : IStudentManagementHandler
 {
     public async Task<Pagination<StudentResponse>> GetStudents(Guid schoolId, GetStudentRequest request)
@@ -51,11 +55,24 @@ public class StudentManagementHandler(
 
     public async Task<StudentDetailResponse> AddStudent(Guid schoolId, CreateStudentRequest request)
     {
-        var dto = mapper.Map<CreateStudentDto>(request);
-        dto.SchoolId = schoolId;
-        var student = await studentManagementService.AddStudent(dto);
-
-        return await MapStudent2StudentResponse(student, context, mapper, uploadService);
+        var trans = await context.Database.BeginTransactionAsync();
+        await uploadFileService.BeginTransactionAsync();
+        try
+        {
+            var dto = mapper.Map<CreateStudentDto>(request);
+            dto.SchoolId = schoolId;
+            var student = await studentManagementService.AddStudent(dto);
+            await trans.CommitAsync();
+            return await MapStudent2StudentResponse(student, context, mapper, uploadService);
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            uploadFileService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
+            throw;
+        }
     }
 
     public async Task<StudentDetailResponse> UpdateStudent(Guid schoolId, UpdateStudentRequest request)
@@ -79,13 +96,49 @@ public class StudentManagementHandler(
     {
         foreach (var id in ids) await studentManagementService.IsOwnerOfStudent(schoolId, id);
 
-        await studentManagementService.DeleteStudent(ids);
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            await studentManagementService.DeleteStudent(ids);
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+        }
     }
 
     public async Task<string> UploadAvatar(Guid schoolId, Guid studentId, IFormFile file)
     {
         await studentManagementService.IsOwnerOfStudent(schoolId, studentId);
         return await studentManagementService.UploadAvatar(studentId, file);
+    }
+
+    public Task<MemoryStream> GetTemplateExcelFile()
+    {
+        var reader = new ExcelReader<Student>(serviceProvider);
+        return Task.FromResult(reader.GetTemplateFile(GetExcelColumnDefinitions()));
+    }
+
+    public async Task ImportStudentsFromExcelFile(Guid schoolId, IFormFile file)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        await uploadFileService.BeginTransactionAsync();
+        try
+        {
+            var reader = new ExcelReader<Student>(serviceProvider);
+            var student = reader.ReadExcel(file.OpenReadStream(), GetExcelColumnDefinitions());
+            await studentManagementService.ImportStudentsFromExcel(schoolId, student);
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            uploadFileService
+                .RollBackAsync()
+                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
+            throw;
+        }
     }
 
     private static async Task<StudentDetailResponse> MapStudent2StudentResponse(Student student, Context context,
@@ -114,5 +167,26 @@ public class StudentManagementHandler(
         }
 
         return response;
+    }
+
+    private static List<ExcelColumnDefinition<Student>> GetExcelColumnDefinitions()
+    {
+        var columns = new List<ExcelColumnDefinition<Student>>
+        {
+            new(nameof(Student.LastName), "Họ",
+                "A", "Phạm"),
+            new(nameof(Student.FirstName), "Tên",
+                "B", "Văn Tiến Trưởng"),
+            new(nameof(Student.DateOfBirth), "Ngày sinh",
+                "C", "18/11/2002"),
+            new(nameof(Student.ClassId), "Mã lớp",
+                "D", "08dd8ac0-4cd0-49be-8aef-1261aeb46acd"),
+            new(nameof(Student.Gender), "Giới tính",
+                "E", "0"),
+            new(nameof(Student.PickUpLocation), "Địa chỉ đưa đón",
+                "F", "500 Âu Cơ, Hòa Khánh Bắc, Liên Chiểu, Đà Nẵng")
+        };
+
+        return columns;
     }
 }

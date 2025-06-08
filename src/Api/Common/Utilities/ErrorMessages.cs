@@ -21,7 +21,7 @@ public static class ErrorMessages
     public const string OnlyFirstParentCanEditAddress = "Chỉ có phụ huynh thêm con đầu tiên mới được chỉnh sửa địa chỉ";
     public const string EmailOrPhoneRequired = "Email và số điện thoại đều trống. Vui lòng điền ít nhất 1";
     public const string EmailExists = "Email đã được đăng kí";
-    public const string TeacherNotFound = "Giáo viên không tồn tại";
+    public const string TeacherNotFound = "Giáo viên với mã {0} không tồn tại";
     public const string StudentAlreadyAdded = "Học sinh đã được thêm trước đây";
     public const string InvalidArgumentType = "Invalid argument type";
     public const string CannotAcceptApplication = "Không thể chấp nhận hồ sơ";
@@ -48,6 +48,7 @@ public static class ErrorMessages
     public const string InvalidSecondaryClass = "Lớp không hợp lệ cho trường Trung học cơ sở";
     public const string InvalidHighSchoolClass = "Lớp không hợp lệ cho trường Trung học phổ thông";
     public const string ClassNotExist = "Lớp không tồn tại";
+    public const string ClassNotExistWithClassId = "Lớp {0} không tồn tại";
     public const string InvalidSchoolId = "Please provide a valid school ID";
     public const string SchoolNotFound = "School is not found";
     public const string PhoneExists = "Số điện thoại đã được đăng kí";

@@ -16,7 +16,8 @@ public class StudentManagementService(
     IClassManagementService classManagementService,
     IFileUploadService uploadFileService,
     IQrCodeGenerator qrCodeGenerator,
-    ILogger<StudentManagementService> logger)
+    ILogger<StudentManagementService> logger,
+    GoogleMapsService googleMapsService)
     : IStudentManagementService
 {
     public async Task<IEnumerable<Student>> GetStudents(Guid schoolId)
@@ -69,48 +70,79 @@ public class StudentManagementService(
 
     public async Task<Student> AddStudent(CreateStudentDto request)
     {
-        var trans = await context.Database.BeginTransactionAsync();
-        await uploadFileService.BeginTransactionAsync();
-        try
+        var cl = await classManagementService.GetClassById(request.ClassId);
+        if (cl.SchoolId != request.SchoolId)
+            throw new BadRequestException(ErrorMessages.ClassNotExist);
+
+        var st = new Student()
         {
-            var cl = await classManagementService.GetClassById(request.ClassId);
-            if (cl.SchoolId != request.SchoolId)
-                throw new BadRequestException(ErrorMessages.ClassNotExist);
+            SchoolId = request.SchoolId,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            DateOfBirth = request.DateOfBirth,
+            Gender = request.Gender,
+            ClassId = request.ClassId
+        };
 
-            var st = new Student()
-            {
-                SchoolId = request.SchoolId,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                DateOfBirth = request.DateOfBirth,
-                Gender = request.Gender,
-                ClassId = request.ClassId
-            };
+        cl.NumberOfStudent += 1;
 
-            cl.NumberOfStudent += 1;
+        context.Students.Add(st);
+        context.Classes.Update(cl);
+        await context.SaveChangesAsync();
+        var stream = qrCodeGenerator.GenerateQrCodeStream(GetStudentHash(st.Id));
+        var uploadRe = await uploadFileService.UploadStreamAsync(stream,
+            st.Id.ToString() + ".png", "image/png", "student_qr_images");
+        st.QrImageKey = uploadRe.Key;
 
-            context.Students.Add(st);
-            context.Classes.Update(cl);
-            await context.SaveChangesAsync();
-            var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(st.Id));
-            var stream = qrCodeGenerator.GenerateQrCodeStream(hash);
+        await context.SaveChangesAsync();
+
+        return st;
+    }
+
+    public async Task ImportStudentsFromExcel(Guid schoolId, List<Student> students)
+    {
+        var cache = new Dictionary<Guid, bool>();
+        var index = 0;
+        foreach (var classId in students.Select(st => st.ClassId))
+        {
+            index++;
+            if (cache.TryGetValue(classId, out var _))
+                continue;
+            var exist = await context.Classes
+                .Where(c => c.Id == classId)
+                .Select(c => c.SchoolId)
+                .FirstOrDefaultAsync();
+            
+            if (exist == Guid.Empty || exist != schoolId)
+                throw new BadRequestException($"Lỗi tại dòng {index}." +
+                                              ErrorMessages.ClassNotExistWithClassId.Replace("{0}",
+                                                  classId.ToString()));
+            cache.Add(classId, true);
+        }
+
+        index = 0;
+        foreach (var student in students)
+        {
+            index++;
+            student.Id = Guid.NewGuid();
+            student.SchoolId = schoolId;
+
+            var stream = qrCodeGenerator.GenerateQrCodeStream(GetStudentHash(student.Id));
             var uploadRe = await uploadFileService.UploadStreamAsync(stream,
-                st.Id.ToString() + ".png", "image/png", "student_qr_images");
-            st.QrImageKey = uploadRe.Key;
+                student.Id + ".png", "image/png", "student_qr_images");
+            student.QrImageKey = uploadRe.Key;
 
-            await context.SaveChangesAsync();
-            await trans.CommitAsync();
+            if (!await googleMapsService.IsCarAccessibleAddressAsync(student.PickUpLocation))
+                throw new BadRequestException($"Lỗi tại dòng {index}." +
+                                              $"Địa chỉ {student.PickUpLocation} ôtô không thể đi vào.");
 
-            return st;
+            var locationAddress = await googleMapsService.GetLatLngFromAddressAsync(student.PickUpLocation);
+            student.PickUpLat = locationAddress.lat;
+            student.PickUpLng = locationAddress.lng;
         }
-        catch (Exception)
-        {
-            await trans.RollbackAsync();
-            uploadFileService
-                .RollBackAsync()
-                .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
-            throw;
-        }
+
+        await context.Students.AddRangeAsync(students);
+        await context.SaveChangesAsync();
     }
 
     public async Task<Student> UpdateStudent(UpdateStudentDto request)
@@ -150,17 +182,8 @@ public class StudentManagementService(
 
     public async Task DeleteStudent(List<Guid> ids)
     {
-        var trans = await context.Database.BeginTransactionAsync();
-        try
-        {
-            foreach (var id in ids)
-                await DeleteStudent(id);
-            await trans.CommitAsync();
-        }
-        catch (Exception)
-        {
-            await trans.RollbackAsync();
-        }
+        foreach (var id in ids)
+            await DeleteStudent(id);
     }
 
     public async Task CheckExistStudent(Guid schoolId, Guid studentId)
@@ -199,5 +222,11 @@ public class StudentManagementService(
         }
 
         return uploadResponse.S3Url;
+    }
+
+    public static string GetStudentHash(Guid studentId)
+    {
+        var hash = HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(studentId));
+        return hash;
     }
 }

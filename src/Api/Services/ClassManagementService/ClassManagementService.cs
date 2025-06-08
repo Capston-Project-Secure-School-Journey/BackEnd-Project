@@ -105,64 +105,6 @@ public class ClassManagementService(
 
     public async Task DeleteClass(Guid id)
     {
-        try
-        {
-            var trans = await context.Database.BeginTransactionAsync();
-            try
-            {
-                await DeleteClassNoTransaction(id);
-
-                await trans.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await trans.RollbackAsync();
-                throw;
-            }
-        }
-        catch (Exception)
-        {
-            throw new DatabaseException(ErrorMessages.CannotDeleteData);
-        }
-    }
-
-    public async Task DeleteClass(List<Guid> ids)
-    {
-        try
-        {
-            var trans = await context.Database.BeginTransactionAsync();
-            try
-            {
-                foreach (var id in ids) await DeleteClassNoTransaction(id);
-
-                await trans.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await trans.RollbackAsync();
-                throw;
-            }
-        }
-        catch (Exception)
-        {
-            throw new DatabaseException(ErrorMessages.CannotDeleteData);
-        }
-    }
-
-    public async Task IsOwnerOfClass(Guid schoolId, Guid classId)
-    {
-        if (!await context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
-            throw new ForbiddenException(ErrorMessages.AccessDenied);
-    }
-
-    private async Task CheckExistClassName(Guid schoolId, string className)
-    {
-        if (await context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
-            throw new BadRequestException(ErrorMessages.DuplicateClassName);
-    }
-
-    private async Task DeleteClassNoTransaction(Guid id)
-    {
         var cl = await GetClassById(id);
 
         await context.Entry(cl)
@@ -174,6 +116,54 @@ public class ClassManagementService(
 
         context.Classes.Remove(cl);
         await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteClass(List<Guid> ids)
+    {
+        foreach (var id in ids) await DeleteClass(id);
+    }
+
+    public async Task IsOwnerOfClass(Guid schoolId, Guid classId)
+    {
+        if (!await context.Classes.AnyAsync(t => t.SchoolId == schoolId && t.Id == classId))
+            throw new ForbiddenException(ErrorMessages.AccessDenied);
+    }
+
+    public async Task ImportClassesFromExcel(Guid schoolId, List<Class> classes)
+    {
+        var index = 1;
+        try
+        {
+            var school = await schoolManagement.GetSchool(schoolId);
+            foreach (var @class in classes)
+            {
+                await CheckExistClassName(schoolId, @class.ClassName);
+
+                ValidateGrade(school.SchoolType, @class.Grade);
+
+                foreach (var i in @class.ManagedTeachers)
+                    await teacherManagement.CheckExistTeacher(schoolId, i.ManagedTeacherId);
+
+                @class.NumberOfStudent = 0;
+                @class.Id = Guid.NewGuid();
+                @class.SchoolId = schoolId;
+
+                index++;
+            }
+
+            await context.Classes.AddRangeAsync(classes);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception e) when (e is BadRequestException or NotFoundException or ValidationException)
+        {
+            throw new BadRequestException($"Lỗi tại dòng: {index}, Chi tiết lỗi: {e.Message}");
+        }
+    }
+
+    private async Task CheckExistClassName(Guid schoolId, string className)
+    {
+        if (await context.Classes.AnyAsync(cl => cl.ClassName == className && cl.SchoolId == schoolId))
+            throw new BadRequestException(ErrorMessages.DuplicateClassName);
     }
 
     private static void ValidateGrade(SchoolType schoolType, Grade grade)

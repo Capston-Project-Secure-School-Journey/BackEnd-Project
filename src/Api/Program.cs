@@ -8,6 +8,7 @@ using Api.Hubs;
 using Api.Jobs;
 using Api.Pipeline.Middlewares;
 using Api.Services.TokenService;
+using FluentValidation;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -113,6 +114,9 @@ builder.Services.AddSwaggerDocument(config =>
     config.OperationProcessors.Add(
         new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
+
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 
 builder

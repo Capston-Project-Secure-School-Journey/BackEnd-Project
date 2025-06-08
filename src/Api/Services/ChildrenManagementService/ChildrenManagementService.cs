@@ -30,7 +30,7 @@ public class ChildrenManagementService(
         var children = parent.RelationshipWithStudents
             .Select(x => new { x.StudentId, x.Relationship, x.IsFirstAdded })
             .ToList();
-        
+
         IQueryable<Student>? childrenDetail = null;
         foreach (var id in children.Select(x => x.StudentId))
             if (childrenDetail == null)
@@ -40,7 +40,7 @@ public class ChildrenManagementService(
                     context.Students.AsQueryable().Where(x => x.Id == id));
 
         if (childrenDetail == null) return new List<ChildDto>();
-        
+
         var response = (await childrenDetail
                 .ToListAsync())
             .Select(MapStudentToChildDto)
@@ -128,7 +128,7 @@ public class ChildrenManagementService(
 
         if (!await googleMapsService.IsCarAccessibleAddressAsync(dto.PickUpLocation))
             throw new BadRequestException("Địa chỉ này ôtô không thể đi vào.\n Vui lòng chọn địa chỉ khác.");
-        
+
         var locationAddress = await googleMapsService.GetLatLngFromAddressAsync(dto.PickUpLocation);
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         child.PickUpLocation = dto.PickUpLocation;
@@ -157,12 +157,12 @@ public class ChildrenManagementService(
         var studentId = context.Students
             .Select(st => st.Id)
             .AsEnumerable()
-            .FirstOrDefault(id => HashGenerator.ComputeSha256(Constants.GetStudentStringToHash(id)) == hash);
+            .FirstOrDefault(id => StudentManagementService.StudentManagementService.GetStudentHash(id) == hash);
 
         if (studentId == Guid.Empty)
             throw new BadRequestException(ErrorMessages.ErrorDuringProcessing);
 
-        var studentEntity =  await context.Students.FirstOrDefaultAsync(st => st.Id == studentId);
+        var studentEntity = await context.Students.FirstOrDefaultAsync(st => st.Id == studentId);
         return studentEntity!;
     }
 

@@ -1,4 +1,7 @@
+using Api.Domain;
+using Api.Domain.Models;
 using Api.DTOs.ClassManagement;
+using Api.DTOs.ExcelReader;
 using Api.Extensions;
 using Api.Services.TeacherManagementService;
 using Api.TransferDTOs.Requests;
@@ -11,7 +14,9 @@ namespace Api.Services.ClassManagementService;
 public class ClassManagementHandler(
     IClassManagementService classManagementService,
     ITeacherManagementService teacherManagementService,
-    IMapper mapper)
+    IMapper mapper,
+    IServiceProvider serviceProvider,
+    Context context)
     : IClassManagementHandler
 {
     public async Task<Pagination<ClassResponse>> GetClasses(Guid schoolId, GetClassesRequest request)
@@ -74,7 +79,40 @@ public class ClassManagementHandler(
     {
         foreach (var id in ids)
             await classManagementService.IsOwnerOfClass(schoolId, id);
-        await classManagementService.DeleteClass(ids);
+
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            await classManagementService.DeleteClass(ids);
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+
+    public Task<MemoryStream> GetTemplateExcelFile()
+    {
+        var reader = new ExcelReader<Class>(serviceProvider);
+        return Task.FromResult(reader.GetTemplateFile(GetExcelColumnDefinitions()));
+    }
+
+    public async Task ImportClassesFromExcelFile(Guid schoolId, IFormFile file)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var reader = new ExcelReader<Class>(serviceProvider);
+            var classes = reader.ReadExcel(file.OpenReadStream(), GetExcelColumnDefinitions());
+            await classManagementService.ImportClassesFromExcel(schoolId, classes);
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
     }
 
     private async Task SetManagedTeachers(List<ClassDetailResponse> response)
@@ -99,5 +137,20 @@ public class ClassManagementHandler(
     {
         var temp = new List<ClassDetailResponse> { response };
         await SetManagedTeachers(temp);
+    }
+
+    private static List<ExcelColumnDefinition<Class>> GetExcelColumnDefinitions()
+    {
+        var columns = new List<ExcelColumnDefinition<Class>>
+        {
+            new(nameof(Class.ClassName), "Tên lớp",
+                "A", "9A"),
+            new(nameof(Class.Grade), "Khối",
+                "B", "1"),
+            new(nameof(Class.ManagedTeachers), "Giáo viên quản lí",
+                "C", "08dd8ac1-8fc0-4c50-8f20-27d52b302469,08dd8ac1-c7ac-4958-8493-193af5dbbeeb")
+        };
+
+        return columns;
     }
 }
