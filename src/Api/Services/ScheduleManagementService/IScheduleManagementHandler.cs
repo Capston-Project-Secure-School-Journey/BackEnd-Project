@@ -11,4 +11,6 @@ public interface IScheduleManagementHandler
     Task<Pagination<ClassScheduleResponse>> GetScheduleByDate(Guid schoolId, GetScheduleByDateRequest request);
     Task DeleteSchedule(Guid schoolId, Guid id);
     Task DeleteSchedule(Guid schoolId, List<Guid> ids);
+    Task CloneWeekSchedule(Guid schoolId, DateOnly weekSource, DateOnly weekDestination);
+    Task CloneDaySchedule(Guid schoolId, DateOnly dateSource, DateOnly dateDestination);
 }

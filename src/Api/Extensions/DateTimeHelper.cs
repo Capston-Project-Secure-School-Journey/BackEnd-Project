@@ -127,4 +127,17 @@ public static class DateTimeHelper
 
         return startOfWeek.AddDays(5);
     }
+
+    public static DateOnly? GetDateFromWeekDay(DayOfWeek dayOfWeek, DateOnly startDate, DateOnly endDate)
+    {
+        for (var date = startDate; date <= endDate; date = date.AddDays(1))
+        {
+            if (date.DayOfWeek == dayOfWeek)
+            {
+                return date;
+            }
+        }
+
+        return null;
+    }
 }

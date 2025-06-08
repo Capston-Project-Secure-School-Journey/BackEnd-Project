@@ -21,7 +21,7 @@ public interface IScheduleManagementService
         Grade? grade);
 
     Task<ClassSchedulePaginationResponse> GetScheduleView(Guid schoolId, DateOnly date);
-    Task<IEnumerable<ClassSchedule>> CloneMonthSchedule(Guid schoolId, DateOnly date);
-    Task<IEnumerable<ClassSchedule>> CloneWeekSchedule(Guid schoolId, DateOnly date);
-    Task<IEnumerable<ClassSchedule>> CloneDaySchedule(Guid schoolId, DateOnly date);
+    Task CloneMonthSchedule(Guid schoolId, DateOnly monthSource, DateOnly monthDestination);
+    Task CloneWeekSchedule(Guid schoolId, DateOnly weekSource, DateOnly weekDestination);
+    Task CloneDaySchedule(Guid schoolId, DateOnly dateSource, DateOnly dateDestination);
 }

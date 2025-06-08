@@ -2,7 +2,7 @@ using Api.Common.Enums;
 
 namespace Api.Domain.Models;
 
-public class ClassSchedule : BaseModel
+public class ClassSchedule : BaseModel, ICloneable
 {
     public Guid Id { get; set; }
     public Guid SchoolId { get; set; }
@@ -18,4 +18,19 @@ public class ClassSchedule : BaseModel
     public ScheduleGroup? ScheduleGroup { get; set; }
     public School School { get; set; } = null!;
     public Class Class { get; set; } = null!;
+    public object Clone()
+    {
+        return new ClassSchedule
+        {
+            Id = Guid.NewGuid(),
+            SchoolId = SchoolId,
+            Date = Date,
+            Note = Note,
+            SessionType = SessionType,
+            ScheduleType = ScheduleType,
+            ClassId = ClassId,
+            Grade = Grade,
+            ScheduleGroupId = ScheduleGroupId,
+        };
+    }
 }

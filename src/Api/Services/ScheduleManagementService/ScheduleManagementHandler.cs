@@ -63,7 +63,7 @@ public class ScheduleManagementHandler(
             .Pagination(request.Page, request.Limit)
             .AsEnumerable()
             .Select(MapToClassScheduleResponse);
-        
+
         var response = new Pagination<ClassScheduleResponse>(data, request.Limit, request.Page, total);
 
         return response;
@@ -82,10 +82,37 @@ public class ScheduleManagementHandler(
             await scheduleManagementService.DeleteSchedule(schoolId, ids);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
+        }
+    }
+
+    public async Task CloneWeekSchedule(Guid schoolId, DateOnly weekSource, DateOnly weekDestination)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            await scheduleManagementService.CloneWeekSchedule(schoolId, weekSource, weekDestination);
+            await trans.CommitAsync();
+        }
+        finally
+        {
+            await trans.DisposeAsync();
+        }
+    }
+
+    public async Task CloneDaySchedule(Guid schoolId, DateOnly dateSource, DateOnly dateDestination)
+    {
+        var trans = await context.Database.BeginTransactionAsync();
+        try
+        {
+            await scheduleManagementService.CloneDaySchedule(schoolId, dateSource, dateDestination);
+            await trans.CommitAsync();
+        }
+        finally
+        {
+            await trans.DisposeAsync();
         }
     }
 

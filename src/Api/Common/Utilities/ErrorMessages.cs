@@ -10,7 +10,7 @@ public static class ErrorMessages
     public const string RequireBothSidesUploaded = "Bạn cần tải cả mặt trước và mặt sau";
 
     public const string InvalidScheduleAddTime =
-        "Bạn không thể thêm lịch. Lịch các tuần phải được thêm vào trước ngày chủ nhật của tuần trước đó";
+        "Bạn không thể thêm lịch. Lịch học của tuần này được thêm vào trước ngày {0}";
 
     public const string CannotAddPastSchedule = "Bạn không thể thêm lịch trong quá khứ";
     public const string MissingVehicleType = "Bạn vẫn chưa thực hiện nhập thông tin về loại xe";

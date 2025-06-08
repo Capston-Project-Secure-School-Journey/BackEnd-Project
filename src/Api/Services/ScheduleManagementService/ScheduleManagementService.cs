@@ -380,19 +380,176 @@ public class ScheduleManagementService(
         return gradeGroup;
     }
 
-    public Task<IEnumerable<ClassSchedule>> CloneMonthSchedule(Guid schoolId, DateOnly date)
+    public Task CloneMonthSchedule(Guid schoolId, DateOnly monthSource,
+        DateOnly monthDestination)
     {
+        var srcMonthRange = DateTimeHelper.GetMonthRange(monthSource);
+        var desMonthRange = DateTimeHelper.GetMonthRange(monthDestination);
+
+        CheckScheduleDate(desMonthRange.StartOfMonth);
+
+        if (srcMonthRange.EndOfMonth >= desMonthRange.StartOfMonth
+            && srcMonthRange.EndOfMonth <= desMonthRange.EndOfMonth)
+            throw new BadRequestException("Không thể thực hiện sao chép lịch từ cùng 1 tháng giống nhau.");
+
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ClassSchedule>> CloneWeekSchedule(Guid schoolId, DateOnly date)
+    public async Task CloneWeekSchedule(Guid schoolId, DateOnly weekSource,
+        DateOnly weekDestination)
     {
-        throw new NotImplementedException();
+        var srcWeekRange = DateTimeHelper.GetWeekRange(weekSource);
+        var desWeekRange = DateTimeHelper.GetWeekRange(weekDestination);
+
+        CheckScheduleDate(desWeekRange.StartOfWeek);
+
+        if (srcWeekRange.EndOfWeek >= desWeekRange.StartOfWeek
+            && srcWeekRange.EndOfWeek <= desWeekRange.StartOfWeek)
+            throw new BadRequestException("Không thể thực hiện sao chép lịch từ cùng 1 tuần giống nhau.");
+
+        var srcScheduleGroups = await context
+            .ScheduleGroups
+            .AsNoTracking()
+            .Include(c => c.ClassSchedules)
+            .Where(sg => sg.SchoolId == schoolId)
+            .Where(sg => sg.ScheduleType == ScheduleType.Grade || sg.ScheduleType == ScheduleType.School)
+            .Where(sg => sg.Date >= srcWeekRange.StartOfWeek && sg.Date <= srcWeekRange.EndOfWeek)
+            .ToListAsync();
+
+        var srcClassSchedules = await context
+            .ClassSchedules
+            .AsNoTracking()
+            .Where(sg => sg.SchoolId == schoolId)
+            .Where(sg => sg.ScheduleType == ScheduleType.Grade || sg.ScheduleType == ScheduleType.School)
+            .Where(cs => cs.ScheduleType == ScheduleType.Class)
+            .Where(sg => sg.Date >= srcWeekRange.StartOfWeek && sg.Date <= srcWeekRange.EndOfWeek)
+            .ToListAsync();
+
+        var copyScheduleGroups = new List<ScheduleGroup?>();
+        var classSchedules = new List<ClassSchedule?>();
+        foreach (var srcScheduleGroup in srcScheduleGroups)
+        {
+            var desDate = DateTimeHelper.GetDateFromWeekDay(srcScheduleGroup.Date.DayOfWeek,
+                desWeekRange.StartOfWeek, desWeekRange.EndOfWeek)!.Value;
+
+            await CheckOverlap(schoolId,
+                desDate,
+                srcScheduleGroup.ClassSchedules.Select(cs => cs.ClassId).ToList(),
+                srcScheduleGroup.SessionType);
+
+            var scheduleGroup = srcScheduleGroup.Clone() as ScheduleGroup;
+            scheduleGroup!.Date = desDate;
+            foreach (var classSchedule in scheduleGroup.ClassSchedules)
+            {
+                classSchedule.Date = desDate;
+            }
+
+            copyScheduleGroups.Add(scheduleGroup);
+        }
+
+        foreach (var srcClassSchedule in srcClassSchedules)
+        {
+            var desDate = DateTimeHelper.GetDateFromWeekDay(srcClassSchedule.Date.DayOfWeek,
+                desWeekRange.StartOfWeek, desWeekRange.EndOfWeek)!.Value;
+
+            await CheckOverlap(schoolId,
+                desDate,
+                srcClassSchedule.ClassId,
+                srcClassSchedule.SessionType);
+
+            var classSchedule = srcClassSchedule.Clone() as ClassSchedule;
+            classSchedule!.Date = desDate;
+            classSchedules.Add(classSchedule);
+        }
+
+
+        classSchedules = classSchedules
+            .Union(copyScheduleGroups.SelectMany(sg => sg!.ClassSchedules))
+            .ToList();
+
+        if (classSchedules.Count == 0)
+            throw new BadRequestException("Không có lịch nào để thực hiện sao chép.");
+
+        foreach (var copyScheduleGroup in copyScheduleGroups)
+        {
+            copyScheduleGroup!.ClassSchedules = [];
+        }
+
+        if (copyScheduleGroups.Count > 0)
+            context.ScheduleGroups.AddRange(copyScheduleGroups!);
+        context.ClassSchedules.AddRange(classSchedules!);
+        await context.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<ClassSchedule>> CloneDaySchedule(Guid schoolId, DateOnly date)
+    public async Task CloneDaySchedule(Guid schoolId, DateOnly dateSource,
+        DateOnly dateDestination)
     {
-        throw new NotImplementedException();
+        CheckScheduleDate(dateDestination);
+        var srcScheduleGroups = await context
+            .ScheduleGroups
+            .AsNoTracking()
+            .Include(c => c.ClassSchedules)
+            .Where(sg => sg.SchoolId == schoolId)
+            .Where(sg => sg.ScheduleType == ScheduleType.Grade || sg.ScheduleType == ScheduleType.School)
+            .Where(sg => sg.Date == dateSource)
+            .ToListAsync();
+
+        var srcClassSchedules = await context
+            .ClassSchedules
+            .AsNoTracking()
+            .Where(sg => sg.SchoolId == schoolId)
+            .Where(sg => sg.ScheduleType == ScheduleType.Grade || sg.ScheduleType == ScheduleType.School)
+            .Where(cs => cs.ScheduleType == ScheduleType.Class)
+            .Where(sg => sg.Date == dateSource)
+            .ToListAsync();
+
+        var copyScheduleGroups = new List<ScheduleGroup?>();
+        var classSchedules = new List<ClassSchedule?>();
+        foreach (var srcScheduleGroup in srcScheduleGroups)
+        {
+            await CheckOverlap(schoolId,
+                dateDestination,
+                srcScheduleGroup.ClassSchedules.Select(cs => cs.ClassId).ToList(),
+                srcScheduleGroup.SessionType);
+
+            var scheduleGroup = srcScheduleGroup.Clone() as ScheduleGroup;
+            scheduleGroup!.Date = dateDestination;
+            foreach (var classSchedule in scheduleGroup.ClassSchedules)
+            {
+                classSchedule.Date = dateDestination;
+            }
+
+            copyScheduleGroups.Add(scheduleGroup);
+        }
+
+        foreach (var srcClassSchedule in srcClassSchedules)
+        {
+            await CheckOverlap(schoolId,
+                dateDestination,
+                srcClassSchedule.ClassId,
+                srcClassSchedule.SessionType);
+
+            var classSchedule = srcClassSchedule.Clone() as ClassSchedule;
+            classSchedule!.Date = dateDestination;
+            classSchedules.Add(classSchedule);
+        }
+
+        classSchedules = classSchedules
+            .Union(copyScheduleGroups.SelectMany(sg => sg!.ClassSchedules))
+            .ToList();
+
+        if (classSchedules.Count == 0)
+            throw new BadRequestException("Không có lịch nào để thực hiện sao chép.");
+
+        foreach (var copyScheduleGroup in copyScheduleGroups)
+        {
+            copyScheduleGroup!.ClassSchedules = [];
+        }
+
+        if (copyScheduleGroups.Count > 0)
+            context.ScheduleGroups.AddRange(copyScheduleGroups!);
+        context.ClassSchedules.AddRange(classSchedules!);
+        await context.SaveChangesAsync();
     }
 
     private async Task<List<Guid>> GetTargetClasses(Guid schoolId, ScheduleType scheduleType, Grade? grade,
@@ -581,7 +738,8 @@ public class ScheduleManagementService(
         if (currentDate > date)
             throw new BadRequestException(ErrorMessages.CannotAddPastSchedule);
         if (weekRange.StartOfWeek.AddDays(-1) <= currentDate)
-            throw new BadRequestException(ErrorMessages.InvalidScheduleAddTime);
+            throw new BadRequestException(string.Format(ErrorMessages.InvalidScheduleAddTime,
+                weekRange.StartOfWeek.AddDays(-1)));
     }
 
     private static void ValidateCreateScheduleDto(CreateScheduleDto dto)

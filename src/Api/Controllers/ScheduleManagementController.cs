@@ -66,4 +66,26 @@ public class ScheduleManagementController(IScheduleManagementHandler scheduleMan
 
         return Ok();
     }
+
+    [HttpPost("clone-week-schedule")]
+    [Authorize(UserType.SchoolAdmin)]
+    [ValidateModel]
+    public async Task<IActionResult> CloneWeekSchedule([FromBody] CloneWeekScheduleRequest request)
+    {
+        var schoolId = this.GetSchoolId();
+        await scheduleManagementHandler.CloneWeekSchedule(schoolId, request.WeekSource, request.WeekDestination);
+
+        return Ok();
+    }
+
+    [HttpPost("clone-day-schedule")]
+    [Authorize(UserType.SchoolAdmin)]
+    [ValidateModel]
+    public async Task<IActionResult> CloneDaySchedule([FromBody] CloneDayScheduleRequest request)
+    {
+        var schoolId = this.GetSchoolId();
+        await scheduleManagementHandler.CloneDaySchedule(schoolId, request.DateSource, request.DateDestination);
+
+        return Ok();
+    }
 }
