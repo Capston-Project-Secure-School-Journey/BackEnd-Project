@@ -393,7 +393,6 @@ public class ApprovalProcessor(
         switch (application.RequestStatus)
         {
             case RequestStatus.Approved:
-                if (isReviewer)
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.RequestCancellation });
                 break;
             case RequestStatus.Rejected:
