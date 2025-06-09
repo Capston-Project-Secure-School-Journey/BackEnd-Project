@@ -1,11 +1,15 @@
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Api.Common.Enums;
 using Api.Common.Exceptions;
 using Api.Common.Utilities;
 using Api.Domain;
+using Api.Domain.Models;
 using Api.Domain.ModelSettings;
 using Api.DTOs.UploadFileService;
+using Api.Extensions;
+using ImageMagick;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services.UploadFileService;
@@ -41,6 +45,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         try
         {
+            file = await ConvertHeicToPngIFormFileAsync(file);
             Guid fmKey;
 
             var fileName = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
@@ -324,9 +329,90 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
     {
         await UploadTransactionManager.RollbackAsync();
     }
-    
+
     public async Task BeginTransactionAsync()
     {
         await UploadTransactionManager.BeginTransactionAsync();
+    }
+
+    private static async Task<IFormFile> ConvertHeicToPngIFormFileAsync(IFormFile file)
+    {
+        if (file.ContentType != ContentType.ImageHeic.GetDescription()
+            && file.ContentType != ContentType.ImageHeif.GetDescription())
+            return file;
+
+        await using var inputStream = new MemoryStream();
+        await file.CopyToAsync(inputStream);
+        inputStream.Position = 0;
+
+        using var image = new MagickImage(inputStream);
+        image.Format = MagickFormat.Png;
+
+        var outputStream = new MemoryStream();
+        await image.WriteAsync(outputStream);
+        outputStream.Position = 0;
+
+        var formFile = new FormFile(outputStream, 0,
+            outputStream.Length,
+            file.Name, Path.ChangeExtension(file.FileName, ".png"))
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContentType.ImagePng.GetDescription(),
+        };
+        return formFile;
+    }
+
+    public async Task<Stream> ConvertHeicFileToPngInS3(FileManagement fileManagement)
+    {
+        try
+        {
+            var inputStream = await DownloadFileFromS3Async(fileManagement.S3Key);
+            using var image = new MagickImage(inputStream);
+            image.Format = MagickFormat.Png;
+
+            var outputStream = new MemoryStream();
+            await image.WriteAsync(outputStream);
+            outputStream.Position = 0;
+
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = _bucketName,
+                Key = fileManagement.S3Key,
+                InputStream = outputStream,
+                ContentType = ContentType.ImagePng.GetDescription()
+            };
+
+            await _s3Client.PutObjectAsync(putRequest);
+
+            fileManagement.FileType = ContentType.ImagePng.GetDescription();
+            fileManagement.FileSize = outputStream.Length;
+            fileManagement.FileName = Path.ChangeExtension(fileManagement.FileName, ".png");
+            
+            return outputStream;
+        }
+        catch (AmazonS3Exception ex)
+        {
+            throw new S3Exception($"Error processing and uploading file {ex}");
+        }
+    }
+
+    public async Task<MemoryStream> DownloadFileFromS3Async(string objectKey)
+    {
+        var memoryStream = new MemoryStream();
+
+        var request = new GetObjectRequest
+        {
+            BucketName = _bucketName,
+            Key = objectKey
+        };
+
+        using (var response = await _s3Client.GetObjectAsync(request))
+        await using (var responseStream = response.ResponseStream)
+        {
+            await responseStream.CopyToAsync(memoryStream);
+        }
+
+        memoryStream.Position = 0;
+        return memoryStream;
     }
 }

@@ -1,3 +1,4 @@
+using Api.Domain.Models;
 using Api.DTOs.UploadFileService;
 
 namespace Api.Services.UploadFileService;
@@ -8,6 +9,7 @@ public interface IFileUploadService
 
     Task<UploadFileResponse> UploadStreamAsync(Stream stream, string fileName, string contentType,
         string prefix = "");
+
     Task<bool> DeleteFileManagementAsync(Guid id);
     Task<bool> DeleteFileManagementAsync(List<Guid> ids);
     Task<PreSignedUrlResponse> GeneratePreSignedUploadUrlAsync(PreSignedUrlRequest request, int expirationMinutes = 60);
@@ -16,4 +18,6 @@ public interface IFileUploadService
     Task<UploadFileResponse> CopyObjectAsync(Guid id, string prefix);
     Task RollBackAsync();
     Task BeginTransactionAsync();
+    Task<Stream> ConvertHeicFileToPngInS3(FileManagement fileManagement);
+    Task<MemoryStream> DownloadFileFromS3Async(string objectKey);
 }

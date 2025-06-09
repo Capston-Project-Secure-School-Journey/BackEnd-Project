@@ -1,3 +1,4 @@
+using Api.Common.Enums;
 using Api.Common.Exceptions;
 using Api.Common.Utilities;
 using Api.Domain;
@@ -61,6 +62,9 @@ public class BaseUploadFileService(Context context, IUploadTransactionManager up
     {
         var file = await CheckIfFileExist(id);
         file.IsUploaded = true;
+        if (file.FileType == ContentType.ImageHeic.GetDescription() ||
+            file.FileType == ContentType.ImageHeif.GetDescription())
+            await ((this as S3FileUploadService)!).ConvertHeicFileToPngInS3(file);
         context.FileManagements.Update(file);
         await context.SaveChangesAsync();
     }
