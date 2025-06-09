@@ -393,7 +393,7 @@ public class ApprovalProcessor(
         switch (application.RequestStatus)
         {
             case RequestStatus.Approved:
-                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.RequestCancellation });
+                actions.Add(new ApplicationActionDto() { Action = ApplicationAction.RequestCancellation });
                 break;
             case RequestStatus.Rejected:
                 break;
@@ -408,6 +408,8 @@ public class ApprovalProcessor(
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Update });
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
                 }
+                else
+                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
 
                 break;
             case RequestStatus.Pending:
