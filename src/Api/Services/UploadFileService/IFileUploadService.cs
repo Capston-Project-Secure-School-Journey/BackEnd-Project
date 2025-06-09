@@ -18,6 +18,6 @@ public interface IFileUploadService
     Task<UploadFileResponse> CopyObjectAsync(Guid id, string prefix);
     Task RollBackAsync();
     Task BeginTransactionAsync();
-    Task<Stream> ConvertHeicFileToPngInS3(FileManagement fileManagement);
+    Task ConvertHeicFileToPngInS3(FileManagement fileManagement);
     Task<MemoryStream> DownloadFileFromS3Async(string objectKey);
 }

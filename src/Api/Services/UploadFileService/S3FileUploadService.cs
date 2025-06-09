@@ -362,7 +362,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
         return formFile;
     }
 
-    public async Task<Stream> ConvertHeicFileToPngInS3(FileManagement fileManagement)
+    public async Task ConvertHeicFileToPngInS3(FileManagement fileManagement)
     {
         try
         {
@@ -373,6 +373,7 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             var outputStream = new MemoryStream();
             await image.WriteAsync(outputStream);
             outputStream.Position = 0;
+            var fileSize = outputStream.Length;
 
             var putRequest = new PutObjectRequest
             {
@@ -385,10 +386,8 @@ public class S3FileUploadService : BaseUploadFileService, IFileUploadService
             await _s3Client.PutObjectAsync(putRequest);
 
             fileManagement.FileType = ContentType.ImagePng.GetDescription();
-            fileManagement.FileSize = outputStream.Length;
+            fileManagement.FileSize = fileSize / 1024f / 1024f;
             fileManagement.FileName = Path.ChangeExtension(fileManagement.FileName, ".png");
-            
-            return outputStream;
         }
         catch (AmazonS3Exception ex)
         {
