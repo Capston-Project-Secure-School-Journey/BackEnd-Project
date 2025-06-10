@@ -50,7 +50,7 @@ public class SendDriverAddressNotificationJob(
                 {
                     notifications.AddRange(GetNotificationDto(shuttleSchedule, student));
                     cache.Set(cacheKey, 1,
-                        TimeSpan.FromHours(1));
+                        TimeSpan.FromHours(3));
                 }
             }
 

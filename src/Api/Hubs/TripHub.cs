@@ -1,9 +1,12 @@
 using Api.Attributes;
 using Api.Common.Enums;
+using Api.Domain.Models;
 using Api.Extensions;
+using Api.Jobs.SchoolTripEventDispatchJobs;
 using Api.Security.CurrentUserProvider;
 using Api.Services.DriverSchoolTripService;
 using Api.Services.ParentSchoolTripService;
+using Hangfire;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -75,11 +78,29 @@ public class TripHub(
     {
         var currentUser = currentUserProvider.GetCurrentUser();
         logger.LogInformation("UpdateTripLocation called by {driverId}", currentUser.UserId);
-        
+
         var key = $"TripHub_{currentUser.UserId}";
+        var errorKey = $"TripHub_{currentUser.UserId}_Error";
+
+        if (memoryCache.TryGetValue(errorKey, out _))
+        {
+            logger.LogInformation("Driver {driverId} không có chuyến đi nào hiện tại.", currentUser.UserId);
+            return;
+        }
+
         if (!memoryCache.TryGetValue(key, out Guid tripId))
         {
-            var trip = await driverSchoolTripService.GetCurrentShuttleScheduleByDriver(currentUser.UserId);
+            ShuttleSchedule trip;
+            try
+            {
+                trip = await driverSchoolTripService.GetCurrentShuttleScheduleByDriver(currentUser.UserId);
+            }
+            catch (Exception)
+            {
+                memoryCache.Set(errorKey, true, TimeSpan.FromMinutes(5));
+                return;
+            }
+
             memoryCache.Set(key, trip.Id, TimeSpan.FromMinutes(5));
 
             driverSchoolTripService
@@ -91,5 +112,8 @@ public class TripHub(
             .Group(tripId.ToString())
             .SendDriverAddress(tripId, latitude, longitude)
             .FireAndForget((ex) => logger.LogError(ex, "TripHub.SendDriverAddress"));
+
+        BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
+            (job) => job.ExecuteAsync(tripId));
     }
 }
