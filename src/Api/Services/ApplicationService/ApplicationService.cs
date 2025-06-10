@@ -17,9 +17,11 @@ public class ApplicationService(
             .Include(x => x.School)
             .Include(x => x.Driver)
             .AsNoTracking()
-            .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created)
-            .Where(x => status == null || x.RequestStatus == status.Value)
-            .AsQueryable();
+            .Where(x => x.SchoolId == schoolId && x.RequestStatus != RequestStatus.Created);
+
+        if (status != null)
+            applications = applications
+                .Where(x => x.RequestStatus == status.Value);
 
         return Task.FromResult(applications);
     }
@@ -31,9 +33,11 @@ public class ApplicationService(
             .Include(x => x.School)
             .Include(x => x.Driver)
             .AsNoTracking()
-            .Where(x => x.DriverId == driverId)
-            .Where(x => status == null || x.RequestStatus == status.Value)
-            .AsQueryable();
+            .Where(x => x.DriverId == driverId);
+
+        if (status != null)
+            applications = applications
+                .Where(x => x.RequestStatus == status.Value);
 
         return Task.FromResult(applications);
     }
