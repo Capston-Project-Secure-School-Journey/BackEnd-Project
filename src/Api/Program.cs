@@ -46,7 +46,7 @@ builder.Services.AddHangfire(config =>
                 new MySqlStorageOptions
                 {
                     TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                    QueuePollInterval = TimeSpan.FromSeconds(15),
+                    QueuePollInterval = TimeSpan.FromSeconds(2),
                     JobExpirationCheckInterval = TimeSpan.FromHours(1),
                     CountersAggregateInterval = TimeSpan.FromMinutes(5),
                     PrepareSchemaIfNecessary = true,
@@ -55,7 +55,13 @@ builder.Services.AddHangfire(config =>
                     TablesPrefix = "Hangfire"
                 }))
 );
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(
+    options =>
+    {
+        options.WorkerCount = Environment.ProcessorCount;
+        options.HeartbeatInterval = TimeSpan.FromSeconds(2);
+    }
+);
 
 DependencyContainer.RegisterServices(builder.Services);
 // Add services to the container.
@@ -80,6 +86,7 @@ builder.Services.AddAuthentication(options =>
                 {
                     context.Token = authHeader.StartsWith("Bearer ") ? authHeader[7..] : authHeader;
                 }
+
                 return Task.CompletedTask;
             }
         };
