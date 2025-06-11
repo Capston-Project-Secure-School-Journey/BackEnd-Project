@@ -40,7 +40,6 @@ jobs:
           echo '${{ secrets.FIREBASEADMINSDK }}' > src/Api/firebase-adminsdk.json
           echo '${{ secrets.SSAST_TECH_KEY }}' > src/Nginx/api.privkey.pem
           echo '${{ secrets.SSAST_TECH_CER }}' > src/Nginx/api.fullchain.pem
-          echo '${{ secrets.GRAFANA_ENV }}' > src/DashboardSystem/grafana.env
           echo '${{ secrets.DASHBOARD_SSAST_TECH_KEY }}' > src/Nginx/dashboard.privkey.pem
           echo '${{ secrets.DASHBOARD_SSAST_TECH_CER }}' > src/Nginx/dashboard.fullchain.pem
 
@@ -62,7 +61,6 @@ jobs:
           rm -f src/Api/firebase-adminsdk.json
           rm -f src/Nginx/api.privkey.pem
           rm -f src/Nginx/api.fullchain.pem
-          rm -f src/DashboardSystem/grafana.env
           rm -f src/Nginx/dashboard.privkey.pem
           rm -f src/Nginx/dashboard.fullchain.pem
 
@@ -107,9 +105,10 @@ jobs:
             cd temp
 
             echo "Pulling latest Docker images..."
-            docker compose pull
+            docker compose pull --quiet
 
             echo "Deploying with Docker Compose..."
+            export GF_SECURITY_ADMIN_PASSWORD=${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}
             docker compose up -d --remove-orphans
 
             echo "Cleaning up unused images..."
