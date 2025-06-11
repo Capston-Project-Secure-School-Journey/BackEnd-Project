@@ -409,7 +409,7 @@ public class ApprovalProcessor(
                     actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
                 }
                 else
-                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Cancel });
+                    actions.Add(new ApplicationActionDto() { Action = ApplicationAction.Reject });
 
                 break;
             case RequestStatus.Pending:
