@@ -67,11 +67,14 @@ public class StudentManagementHandler(
         }
         catch (Exception)
         {
-            await trans.RollbackAsync();
             uploadFileService
                 .RollBackAsync()
                 .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
+        }
+        finally
+        {
+            await trans.DisposeAsync();
         }
     }
 
@@ -102,9 +105,9 @@ public class StudentManagementHandler(
             await studentManagementService.DeleteStudent(ids);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
+            await trans.DisposeAsync();
         }
     }
 
@@ -133,11 +136,14 @@ public class StudentManagementHandler(
         }
         catch (Exception)
         {
-            await trans.RollbackAsync();
             uploadFileService
                 .RollBackAsync()
                 .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
             throw;
+        }
+        finally
+        {
+            await trans.DisposeAsync();
         }
     }
 

@@ -84,10 +84,9 @@ public class ApprovalProcessor(
             await trans.CommitAsync();
             return application;
         }
-        catch (Exception)
+        finally
         {
             await trans.RollbackAsync();
-            throw;
         }
     }
 
@@ -165,10 +164,9 @@ public class ApprovalProcessor(
             await trans.CommitAsync();
             return application;
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -246,10 +244,9 @@ public class ApprovalProcessor(
             await context.SaveChangesAsync();
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -368,10 +365,9 @@ public class ApprovalProcessor(
             await context.SaveChangesAsync();
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -541,10 +537,9 @@ public class ApprovalProcessor(
             await context.SaveChangesAsync();
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -578,10 +573,9 @@ public class ApprovalProcessor(
             await context.SaveChangesAsync();
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 }

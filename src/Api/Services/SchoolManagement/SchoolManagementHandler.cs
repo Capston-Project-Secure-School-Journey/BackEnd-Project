@@ -45,10 +45,9 @@ public class SchoolManagementHandler(
             await trans.CommitAsync();
             return response;
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -92,11 +91,11 @@ public class SchoolManagementHandler(
         {
             await schoolManagement.DeleteSchool(schoolId);
             await userManagement.DeleteSchoolAdmin(schoolId);
+            await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
             await trans.DisposeAsync();
-            throw;
         }
     }
 
@@ -109,10 +108,9 @@ public class SchoolManagementHandler(
             await userManagement.DeleteSchoolAdmin(schoolIds);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
             await trans.DisposeAsync();
-            throw;
         }
     }
 

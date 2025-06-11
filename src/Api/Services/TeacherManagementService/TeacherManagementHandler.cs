@@ -78,9 +78,9 @@ public class TeacherManagementHandler(
             await teacherManagementService.DeleteTeacher(ids);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
+            await trans.DisposeAsync();
         }
     }
 
@@ -106,10 +106,9 @@ public class TeacherManagementHandler(
             await teacherManagementService.ImportTeachersFromExcel(schoolId, teachers);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 

@@ -64,10 +64,9 @@ public class SendDriverAddressNotificationJob(
 
                 await trans.CommitAsync();
             }
-            catch (Exception)
+            finally
             {
-                await trans.RollbackAsync();
-                throw;
+                await trans.DisposeAsync();
             }
 
             logger.LogInformation("Sending driver address job successfully");

@@ -84,11 +84,11 @@ public class ClassManagementHandler(
         try
         {
             await classManagementService.DeleteClass(ids);
+            await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
@@ -108,10 +108,9 @@ public class ClassManagementHandler(
             await classManagementService.ImportClassesFromExcel(schoolId, classes);
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 

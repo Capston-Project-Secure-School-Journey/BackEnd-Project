@@ -100,7 +100,6 @@ public class AlertMissingAddressJob(
             }
             catch (Exception)
             {
-                await trans.RollbackAsync();
                 uploadFileService
                     .RollBackAsync()
                     .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
@@ -108,6 +107,7 @@ public class AlertMissingAddressJob(
             }
             finally
             {
+                await trans.DisposeAsync();
                 await csvFile.DisposeAsync();
             }
 
