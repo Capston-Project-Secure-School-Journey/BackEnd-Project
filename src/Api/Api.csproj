@@ -22,7 +22,6 @@
         <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.6.0" />
         <PackageReference Include="MailKit" Version="4.11.0" />
-        <PackageReference Include="MediatR" Version="12.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
@@ -42,7 +41,6 @@
         <PackageReference Include="Serilog.Sinks.MySql" Version="5.0.0" />
         <PackageReference Include="SkiaSharp" Version="3.116.1" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
         <PackageReference Include="System.Drawing.Common" Version="9.0.2" />
         <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.5" />
         <PackageReference Include="ZXing.Net" Version="0.16.10" />
@@ -55,7 +53,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="DTOs\Jobs\" />
         <Folder Include="TransferDTOs\" />
     </ItemGroup>
 

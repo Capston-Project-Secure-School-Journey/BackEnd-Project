@@ -176,7 +176,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMetricServer();
 app.UseHttpMetrics();
 app.UseOpenApi();
-app.UseSwaggerUI();
+app.UseSwaggerUi();
 app.UseCors(cors);
 app.MapControllers();
 app.UseHangfireDashboard("/hangfire", new DashboardOptions

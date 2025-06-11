@@ -1,10 +1,10 @@
 using System.Text.Json.Serialization;
-using Swashbuckle.AspNetCore.Annotations;
+using NSwag.Annotations;
 
 namespace Api.DTOs.JourneyNoteService;
 
 public class UpdateJourneyNoteDto
 {
-    [JsonIgnore] [SwaggerIgnore] public Guid JourneyNoteId { get; set; }
+    [JsonIgnore] [OpenApiIgnore] public Guid JourneyNoteId { get; set; }
     public string Description { get; set; } = string.Empty;
 }

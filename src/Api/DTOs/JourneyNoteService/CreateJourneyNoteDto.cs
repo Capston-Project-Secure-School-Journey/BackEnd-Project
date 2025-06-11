@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Api.Common.Enums;
-using Swashbuckle.AspNetCore.Annotations;
+using NSwag.Annotations;
 
 namespace Api.DTOs.JourneyNoteService;
 
@@ -15,7 +15,7 @@ public class CreateJourneyNoteDto
     [Required(ErrorMessage = "Mã học sinh không được để trống.")]
     public Guid StudentId { get; set; }
 
-    [SwaggerIgnore] 
+    [OpenApiIgnore] 
     [JsonIgnore]
     public Guid ParentId { get; set; }
 
