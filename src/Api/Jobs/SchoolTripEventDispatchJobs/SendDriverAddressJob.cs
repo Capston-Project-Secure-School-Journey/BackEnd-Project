@@ -28,11 +28,8 @@ public class SendDriverAddressNotificationJob(
                 throw new InvalidDataException("Invalid Shuttle Schedule Id");
 
             var scope = serviceProvider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<Context>();
             var shuttleScheduleManagementService =
                 scope.ServiceProvider.GetRequiredService<IShuttleScheduleManagementService>();
-            var notificationService =
-                scope.ServiceProvider.GetRequiredService<INotificationService>();
 
             var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
 
@@ -54,6 +51,12 @@ public class SendDriverAddressNotificationJob(
                 }
             }
 
+            if (notifications.Count == 0)
+                return;
+
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
+            var notificationService =
+                scope.ServiceProvider.GetRequiredService<INotificationService>();
             var trans = await db.Database.BeginTransactionAsync();
             try
             {

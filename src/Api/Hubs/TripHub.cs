@@ -80,6 +80,7 @@ public class TripHub(
         logger.LogInformation("UpdateTripLocation called by {driverId}", currentUser.UserId);
 
         var key = $"TripHub_{currentUser.UserId}";
+        var notificationKey = $"TripHub_{currentUser.UserId}_Notification";
         var errorKey = $"TripHub_{currentUser.UserId}_Error";
 
         if (memoryCache.TryGetValue(errorKey, out _))
@@ -113,7 +114,11 @@ public class TripHub(
             .SendDriverAddress(tripId, latitude, longitude)
             .FireAndForget((ex) => logger.LogError(ex, "TripHub.SendDriverAddress"));
 
-        BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
-            (job) => job.ExecuteAsync(tripId));
+        if (!memoryCache.TryGetValue(notificationKey, out _))
+        {
+            BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
+                (job) => job.ExecuteAsync(tripId));
+            memoryCache.Set(notificationKey, true, TimeSpan.FromMinutes(2));
+        }
     }
 }
