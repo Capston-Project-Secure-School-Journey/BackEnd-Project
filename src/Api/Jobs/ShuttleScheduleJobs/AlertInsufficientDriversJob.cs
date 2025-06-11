@@ -89,7 +89,6 @@ public class AlertInsufficientDriversJob(
                 }
                 catch (Exception)
                 {
-                    await trans.RollbackAsync();
                     uploadFileService
                         .RollBackAsync()
                         .FireAndForget((ex) => logger.LogError(ex, "UploadFileService.RollBackAsync"));
@@ -97,6 +96,7 @@ public class AlertInsufficientDriversJob(
                 }
                 finally
                 {
+                    await trans.DisposeAsync();
                     await csvFile.DisposeAsync();
                 }
             }

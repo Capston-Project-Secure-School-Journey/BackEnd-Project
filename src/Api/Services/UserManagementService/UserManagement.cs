@@ -137,10 +137,9 @@ public class UserManagement(Context context) : IUserManagement
 
             await trans.CommitAsync();
         }
-        catch (Exception)
+        finally
         {
-            await trans.RollbackAsync();
-            throw;
+            await trans.DisposeAsync();
         }
     }
 
