@@ -86,7 +86,7 @@ public class ApprovalProcessor(
         }
         finally
         {
-            await trans.RollbackAsync();
+            await trans.DisposeAsync();
         }
     }
 
