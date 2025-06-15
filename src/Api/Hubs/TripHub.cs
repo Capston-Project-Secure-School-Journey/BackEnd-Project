@@ -102,6 +102,7 @@ public class TripHub(
                 return;
             }
 
+            tripId = trip.Id;
             memoryCache.Set(key, trip.Id, TimeSpan.FromMinutes(5));
 
             driverSchoolTripService
