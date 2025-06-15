@@ -98,11 +98,12 @@ public class TripHub(
             }
             catch (Exception)
             {
-                memoryCache.Set(errorKey, true, TimeSpan.FromMinutes(5));
+                memoryCache.Set(errorKey, true, TimeSpan.FromSeconds(10));
                 return;
             }
 
-            memoryCache.Set(key, trip.Id, TimeSpan.FromMinutes(5));
+            tripId = trip.Id;
+            memoryCache.Set(key, trip.Id, TimeSpan.FromSeconds(10));
 
             driverSchoolTripService
                 .UpdateCurrentAddress(tripId, currentUser.UserId, latitude, longitude)
@@ -118,7 +119,7 @@ public class TripHub(
         {
             BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
                 (job) => job.ExecuteAsync(tripId));
-            memoryCache.Set(notificationKey, true, TimeSpan.FromMinutes(2));
+            memoryCache.Set(notificationKey, true, TimeSpan.FromSeconds(10));
         }
     }
 }
