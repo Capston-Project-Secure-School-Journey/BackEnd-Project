@@ -77,7 +77,7 @@ public class TripHub(
     public async Task UpdateTripLocation(double latitude, double longitude)
     {
         var currentUser = currentUserProvider.GetCurrentUser();
-        logger.LogInformation("UpdateTripLocation called by {driverId}", currentUser.UserId);
+        logger.LogInformation("UpdateTripLocation called by {DriverId}", currentUser.UserId);
 
         var key = $"TripHub_{currentUser.UserId}";
         var notificationKey = $"TripHub_{currentUser.UserId}_Notification";
@@ -85,41 +85,43 @@ public class TripHub(
 
         if (memoryCache.TryGetValue(errorKey, out _))
         {
-            logger.LogInformation("Driver {driverId} không có chuyến đi nào hiện tại.", currentUser.UserId);
+            logger.LogInformation("Driver {DriverId} không có chuyến đi nào hiện tại.", currentUser.UserId);
             return;
         }
 
-        if (!memoryCache.TryGetValue(key, out Guid tripId))
+        if (!memoryCache.TryGetValue(key, out ShuttleSchedule? cacheTrip))
         {
-            ShuttleSchedule trip;
             try
             {
-                trip = await driverSchoolTripService.GetCurrentShuttleScheduleByDriver(currentUser.UserId);
+                cacheTrip = await driverSchoolTripService.GetCurrentShuttleScheduleByDriver(currentUser.UserId);
             }
             catch (Exception)
             {
-                memoryCache.Set(errorKey, true, TimeSpan.FromSeconds(10));
+                memoryCache.Set(errorKey, true, TimeSpan.FromMinutes(1));
                 return;
             }
-
-            tripId = trip.Id;
-            memoryCache.Set(key, trip.Id, TimeSpan.FromSeconds(10));
-
-            driverSchoolTripService
-                .UpdateCurrentAddress(tripId, currentUser.UserId, latitude, longitude)
-                .FireAndForget((ex) => logger.LogError(ex, "DriverSchoolTripService.UpdateCurrentAddress"));
+            
+            memoryCache.Set(key, cacheTrip, TimeSpan.FromMinutes(10));
         }
 
         Clients
-            .Group(tripId.ToString())
-            .SendDriverAddress(tripId, latitude, longitude)
+            .Group(cacheTrip!.Id.ToString())
+            .SendDriverAddress(cacheTrip.Id, latitude, longitude)
             .FireAndForget((ex) => logger.LogError(ex, "TripHub.SendDriverAddress"));
 
         if (!memoryCache.TryGetValue(notificationKey, out _))
         {
+            cacheTrip.CurrentLat = latitude;
+            cacheTrip.CurrentLng = longitude;
+            
             BackgroundJob.Enqueue<SendDriverAddressNotificationJob>(
-                (job) => job.ExecuteAsync(tripId));
-            memoryCache.Set(notificationKey, true, TimeSpan.FromSeconds(10));
+                (job) => job.ExecuteAsync(cacheTrip));
+            
+            driverSchoolTripService
+                .UpdateCurrentAddress(cacheTrip.Id, currentUser.UserId, latitude, longitude)
+                .FireAndForget((ex) => logger.LogError(ex, "DriverSchoolTripService.UpdateCurrentAddress"));
+            
+            memoryCache.Set(notificationKey, true, TimeSpan.FromSeconds(6));
         }
     }
 }
