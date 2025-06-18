@@ -1,0 +1,205 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="27.1.5">
+  <diagram name="Schedule Management System" id="schedule-management-diagram">
+    <mxGraphModel dx="851" dy="509" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="controller-layer" value="Controllers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="50" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementController" value="ScheduleManagementController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="300" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementController-fields" value="- IScheduleManagementHandler _scheduleManagementHandler" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementController" vertex="1">
+          <mxGeometry y="26" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementController-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ScheduleManagementController" vertex="1">
+          <mxGeometry y="52" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementController-methods" value="+ GetCurrentScheduleView(DateOnly): Task&lt;ClassSchedulePaginationResponse&gt;&#xa;+ CreateSchedule(CreateScheduleRequest): Task&lt;IEnumerable&lt;ClassScheduleResponse&gt;&gt;&#xa;+ UpdateSchedule(Guid, UpdateScheduleRequest): Task&lt;ClassScheduleResponse&gt;&#xa;+ GetScheduleByDate(GetScheduleByDateRequest): Task&lt;Pagination&lt;ClassScheduleResponse&gt;&gt;&#xa;+ DeleteSchedule(List&lt;Guid&gt;): Task&lt;IActionResult&gt;&#xa;+ DeleteSchedule(Guid): Task&lt;IActionResult&gt;&#xa;+ CloneWeekSchedule(CloneWeekScheduleRequest): Task&lt;IActionResult&gt;&#xa;+ CloneDaySchedule(CloneDayScheduleRequest): Task&lt;IActionResult&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementController" vertex="1">
+          <mxGeometry y="60" width="300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="handler-layer" value="Handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="50" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IScheduleManagementHandler" value="&lt;&lt;interface&gt;&gt;&#xa;IScheduleManagementHandler" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="400" y="100" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="IScheduleManagementHandler-methods" value="+ CreateSchedule(Guid, CreateScheduleRequest): Task&lt;IEnumerable&lt;ClassScheduleResponse&gt;&gt;&#xa;+ UpdateSchedule(Guid, UpdateScheduleRequest): Task&lt;ClassScheduleResponse&gt;&#xa;+ GetScheduleView(Guid, DateOnly): Task&lt;ClassSchedulePaginationResponse&gt;&#xa;+ GetScheduleByDate(Guid, GetScheduleByDateRequest): Task&lt;Pagination&lt;ClassScheduleResponse&gt;&gt;&#xa;+ DeleteSchedule(Guid, Guid): Task&#xa;+ DeleteSchedule(Guid, List&lt;Guid&gt;): Task&#xa;+ CloneWeekSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneDaySchedule(Guid, DateOnly, DateOnly): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IScheduleManagementHandler" vertex="1">
+          <mxGeometry y="40" width="320" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementHandler" value="ScheduleManagementHandler" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="400" y="320" width="320" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementHandler-fields" value="- IScheduleManagementService _scheduleManagementService&#xa;- IMapper _mapper&#xa;- Context _context" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementHandler" vertex="1">
+          <mxGeometry y="26" width="320" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementHandler-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ScheduleManagementHandler" vertex="1">
+          <mxGeometry y="80" width="320" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementHandler-methods" value="+ CreateSchedule(Guid, CreateScheduleRequest): Task&lt;IEnumerable&lt;ClassScheduleResponse&gt;&gt;&#xa;+ UpdateSchedule(Guid, UpdateScheduleRequest): Task&lt;ClassScheduleResponse&gt;&#xa;+ GetScheduleView(Guid, DateOnly): Task&lt;ClassSchedulePaginationResponse&gt;&#xa;+ GetScheduleByDate(Guid, GetScheduleByDateRequest): Task&lt;Pagination&lt;ClassScheduleResponse&gt;&gt;&#xa;+ DeleteSchedule(Guid, Guid): Task&#xa;+ DeleteSchedule(Guid, List&lt;Guid&gt;): Task&#xa;+ CloneWeekSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneDaySchedule(Guid, DateOnly, DateOnly): Task&#xa;- MapToClassScheduleResponse(ClassSchedule): ClassScheduleResponse" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementHandler" vertex="1">
+          <mxGeometry y="88" width="320" height="192" as="geometry" />
+        </mxCell>
+        <mxCell id="service-layer" value="Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="770" y="50" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IScheduleManagementService" value="&lt;&lt;interface&gt;&gt;&#xa;IScheduleManagementService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="770" y="100" width="320" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="IScheduleManagementService-methods" value="+ CreateSchedule(Guid, CreateScheduleDto): Task&lt;IEnumerable&lt;ClassSchedule&gt;&gt;&#xa;+ UpdateSchedule(Guid, UpdateScheduleDto): Task&lt;ClassSchedule&gt;&#xa;+ DeleteSchedule(Guid, Guid): Task&#xa;+ DeleteSchedule(Guid, List&lt;Guid&gt;): Task&#xa;+ GetScheduleByWeek(Guid, DateTime): Task&lt;IEnumerable&lt;ClassSchedule&gt;&gt;&#xa;+ GetScheduleByDateQueryable(Guid, DateOnly, SessionType?, Guid?, string?, Grade?): Task&lt;IQueryable&lt;ClassSchedule&gt;&gt;&#xa;+ GetScheduleView(Guid, DateOnly): Task&lt;ClassSchedulePaginationResponse&gt;&#xa;+ CloneMonthSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneWeekSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneDaySchedule(Guid, DateOnly, DateOnly): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IScheduleManagementService" vertex="1">
+          <mxGeometry y="40" width="320" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementService" value="ScheduleManagementService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="770" y="380" width="320" height="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementService-fields" value="- Context _context&#xa;- IClassManagementService _classManagementService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementService" vertex="1">
+          <mxGeometry y="26" width="320" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ScheduleManagementService" vertex="1">
+          <mxGeometry y="70" width="320" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleManagementService-methods" value="+ CreateSchedule(Guid, CreateScheduleDto): Task&lt;IEnumerable&lt;ClassSchedule&gt;&gt;&#xa;+ UpdateSchedule(Guid, UpdateScheduleDto): Task&lt;ClassSchedule&gt;&#xa;+ DeleteSchedule(Guid, Guid): Task&#xa;+ DeleteSchedule(Guid, List&lt;Guid&gt;): Task&#xa;+ GetScheduleByWeek(Guid, DateTime): Task&lt;IEnumerable&lt;ClassSchedule&gt;&gt;&#xa;+ GetScheduleByDateQueryable(Guid, DateOnly, SessionType?, Guid?, string?, Grade?): Task&lt;IQueryable&lt;ClassSchedule&gt;&gt;&#xa;+ GetScheduleView(Guid, DateOnly): Task&lt;ClassSchedulePaginationResponse&gt;&#xa;+ CloneMonthSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneWeekSchedule(Guid, DateOnly, DateOnly): Task&#xa;+ CloneDaySchedule(Guid, DateOnly, DateOnly): Task&#xa;- DetachScheduleFromGroup(ClassSchedule): Task&#xa;- FindScheduleGroupMatchWithSchedule(Guid, DateOnly, SessionType, Grade): ScheduleGroup&#xa;- GetTargetClasses(Guid, ScheduleType, Grade?, List&lt;Guid&gt;): Task&lt;List&lt;Guid&gt;&gt;&#xa;- CheckOverlap(Guid, DateOnly, List&lt;Guid&gt;, SessionType): Task&#xa;- GetGrades(Guid): Task&lt;Dictionary&lt;Grade, List&lt;Guid&gt;&gt;&gt;&#xa;- CheckScheduleDate(DateOnly): void&#xa;- ValidateCreateScheduleDto(CreateScheduleDto): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleManagementService" vertex="1">
+          <mxGeometry y="78" width="320" height="322" as="geometry" />
+        </mxCell>
+        <mxCell id="domain-layer" value="Domain Entities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Context" value="Context" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="100" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-fields" value="+ DbSet&lt;ClassSchedule&gt; ClassSchedules&#xa;+ DbSet&lt;ScheduleGroup&gt; ScheduleGroups" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="26" width="250" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="70" width="250" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-methods" value="+ SaveChangesAsync(): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="78" width="250" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassSchedule" value="ClassSchedule" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="240" width="250" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassSchedule-fields" value="+ Guid Id&#xa;+ Guid SchoolId&#xa;+ DateOnly Date&#xa;+ string Note&#xa;+ SessionType SessionType&#xa;+ ScheduleType ScheduleType&#xa;+ Guid ClassId&#xa;+ Grade? Grade&#xa;+ Guid? ScheduleGroupId&#xa;+ ScheduleGroup? ScheduleGroup&#xa;+ School School&#xa;+ Class Class" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassSchedule" vertex="1">
+          <mxGeometry y="26" width="250" height="224" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassSchedule-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ClassSchedule" vertex="1">
+          <mxGeometry y="250" width="250" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassSchedule-methods" value="+ object Clone()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassSchedule" vertex="1">
+          <mxGeometry y="258" width="250" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleGroup" value="ScheduleGroup" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="240" width="250" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleGroup-fields" value="+ Guid Id&#xa;+ Guid SchoolId&#xa;+ DateOnly Date&#xa;+ SessionType SessionType&#xa;+ ScheduleType ScheduleType&#xa;+ Grade? Grade&#xa;+ List&lt;Guid&gt; ClassException&#xa;+ School School&#xa;+ HashSet&lt;ClassSchedule&gt; ClassSchedules" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleGroup" vertex="1">
+          <mxGeometry y="26" width="250" height="184" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleGroup-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ScheduleGroup" vertex="1">
+          <mxGeometry y="210" width="250" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ScheduleGroup-methods" value="+ object Clone()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ScheduleGroup" vertex="1">
+          <mxGeometry y="218" width="250" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="controller-to-handler" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ScheduleManagementController" target="IScheduleManagementHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="200" as="sourcePoint" />
+            <mxPoint x="400" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="controller-to-handler-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="controller-to-handler" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ScheduleManagementHandler" target="IScheduleManagementHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="560" y="320" as="sourcePoint" />
+            <mxPoint x="560" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-service" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ScheduleManagementHandler" target="IScheduleManagementService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="400" as="sourcePoint" />
+            <mxPoint x="770" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-service-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-to-service" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ScheduleManagementService" target="IScheduleManagementService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="930" y="380" as="sourcePoint" />
+            <mxPoint x="930" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ScheduleManagementService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1090" y="400" as="sourcePoint" />
+            <mxPoint x="1140" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ScheduleManagementHandler" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="400" as="sourcePoint" />
+            <mxPoint x="1140" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-contains-classschedule" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="ClassSchedule" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="200" as="sourcePoint" />
+            <mxPoint x="1240" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-contains-classschedule-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-contains-classschedule" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-contains-schedulegroup" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="ScheduleGroup" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1390" y="150" as="sourcePoint" />
+            <mxPoint x="1440" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-contains-schedulegroup-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-contains-schedulegroup" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="schedulegroup-contains-classschedule" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="ScheduleGroup" target="ClassSchedule" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1440" y="360" as="sourcePoint" />
+            <mxPoint x="1390" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="schedulegroup-contains-classschedule-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="schedulegroup-contains-classschedule" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

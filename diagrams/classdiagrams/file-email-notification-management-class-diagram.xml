@@ -1,0 +1,287 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="27.1.5">
+  <diagram name="File Email Notification Management System" id="file-email-notification-diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Services Layer -->
+        <mxCell id="services-layer" value="Services &amp; File Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- File Upload Services -->
+        <mxCell id="IFileUploadService" value="&lt;&lt;interface&gt;&gt;&#xa;IFileUploadService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="350" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="IFileUploadService-methods" value="+ UploadFileAsync(IFormFile, RelatedObjectType, Guid?): Task&lt;UploadFileResponse&gt;&#xa;+ UploadStreamAsync(Stream, string, RelatedObjectType, Guid?): Task&lt;UploadFileResponse&gt;&#xa;+ DeleteFileManagementAsync(Guid): Task&lt;bool&gt;&#xa;+ GeneratePreSignedUploadUrlAsync(string, string): Task&lt;PreSignedUrlResponse&gt;&#xa;+ GeneratePreSignedDownloadUrlAsync(Guid): Task&lt;string&gt;&#xa;+ CopyObjectAsync(string, string): Task&lt;UploadFileResponse&gt;&#xa;+ RollBackAsync(): Task&#xa;+ BeginTransactionAsync(): Task&#xa;+ ConvertHeicFileToPngInS3(string): Task&#xa;+ DownloadFileFromS3Async(string): Task&lt;MemoryStream&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IFileUploadService" vertex="1">
+          <mxGeometry y="40" width="350" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="BaseUploadFileService" value="BaseUploadFileService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="50" y="380" width="350" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="BaseUploadFileService-fields" value="# IUploadTransactionManager UploadTransactionManager&#xa;# Context _context" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BaseUploadFileService" vertex="1">
+          <mxGeometry y="26" width="350" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="BaseUploadFileService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="BaseUploadFileService" vertex="1">
+          <mxGeometry y="70" width="350" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="BaseUploadFileService-methods" value="# AddFileManagement(FileManagement): Task&lt;FileManagement&gt;&#xa;# DeleteFileManagement(Guid): Task&#xa;# GetS3Key(Guid): Task&lt;string&gt;&#xa;# GetFileManagement(Guid): Task&lt;FileManagement&gt;&#xa;+ MarkFileAsUploadedAsync(Guid): Task&#xa;+ GetFileData(Guid): Task&lt;FileManagement&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="BaseUploadFileService" vertex="1">
+          <mxGeometry y="78" width="350" height="102" as="geometry" />
+        </mxCell>
+
+        <mxCell id="S3FileUploadService" value="S3FileUploadService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="50" y="600" width="350" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="S3FileUploadService-fields" value="- AmazonS3Client _s3Client&#xa;- string _bucketName&#xa;- IFileDeleter _fileDeleter" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="S3FileUploadService" vertex="1">
+          <mxGeometry y="26" width="350" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="S3FileUploadService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="S3FileUploadService" vertex="1">
+          <mxGeometry y="80" width="350" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="S3FileUploadService-methods" value="+ UploadFileAsync(IFormFile, RelatedObjectType, Guid?): Task&lt;UploadFileResponse&gt;&#xa;+ UploadStreamAsync(Stream, string, RelatedObjectType, Guid?): Task&lt;UploadFileResponse&gt;&#xa;+ DeleteFileManagementAsync(Guid): Task&lt;bool&gt;&#xa;+ GeneratePreSignedUploadUrlAsync(string, string): Task&lt;PreSignedUrlResponse&gt;&#xa;+ GeneratePreSignedDownloadUrlAsync(Guid): Task&lt;string&gt;&#xa;+ CopyObjectAsync(string, string): Task&lt;UploadFileResponse&gt;&#xa;+ RollBackAsync(): Task&#xa;+ BeginTransactionAsync(): Task&#xa;+ ConvertHeicFileToPngInS3(string): Task&#xa;+ DownloadFileFromS3Async(string): Task&lt;MemoryStream&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="S3FileUploadService" vertex="1">
+          <mxGeometry y="88" width="350" height="172" as="geometry" />
+        </mxCell>
+
+        <!-- File Deleter Interface -->
+        <mxCell id="IFileDeleter" value="&lt;&lt;interface&gt;&gt;&#xa;IFileDeleter" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="450" y="600" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="IFileDeleter-methods" value="+ DeleteFileAsync(string): Task&lt;bool&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IFileDeleter" vertex="1">
+          <mxGeometry y="40" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Email & Notification Services -->
+        <mxCell id="notification-layer" value="Email &amp; Notification Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="700" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="MailService" value="MailService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="700" y="100" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="MailService-fields" value="- MailSettings _mailSettings" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="MailService" vertex="1">
+          <mxGeometry y="26" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="MailService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="MailService" vertex="1">
+          <mxGeometry y="52" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="MailService-methods" value="+ SendEmail(MailRequest): Task&lt;bool&gt;&#xa;+ SendEmailWithTemplate(string, string, object): Task&lt;bool&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="MailService" vertex="1">
+          <mxGeometry y="60" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="INotificationSender" value="&lt;&lt;interface&gt;&gt;&#xa;INotificationSender" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="700" y="260" width="300" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="INotificationSender-methods" value="+ SendOneAsync(NotificationRequest): Task&#xa;+ SendByNotificationAsync(Notification): Task&#xa;+ SendByNotificationManyAsync(List&lt;Notification&gt;): Task&#xa;+ SendManyAsync(List&lt;NotificationRequest&gt;): Task&#xa;+ SendDataAsync(DataMessage): Task&#xa;+ SendDataManyAsync(List&lt;DataMessage&gt;): Task&#xa;+ SendDataToTopicAsync(string, DataMessage): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="INotificationSender" vertex="1">
+          <mxGeometry y="40" width="300" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Background Jobs -->
+        <mxCell id="jobs-layer" value="Background Jobs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="700" y="480" width="300" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="SendNotificationJob" value="SendNotificationJob" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="700" y="530" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="SendNotificationJob-methods" value="+ ExecuteAsync(IJobExecutionContext): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="SendNotificationJob" vertex="1">
+          <mxGeometry y="26" width="200" height="54" as="geometry" />
+        </mxCell>
+
+        <mxCell id="CleanFileJob" value="CleanFileJob" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="950" y="530" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="CleanFileJob-methods" value="+ ExecuteAsync(IJobExecutionContext): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="CleanFileJob" vertex="1">
+          <mxGeometry y="26" width="200" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- Domain Layer -->
+        <mxCell id="domain-layer" value="Domain Entities &amp; Context" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="50" width="450" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="Context" value="Context" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="100" width="300" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-fields" value="+ DbSet&lt;FileManagement&gt; FileManagements&#xa;+ DbSet&lt;Notification&gt; Notifications&#xa;+ bool BypassSoftDelete&#xa;+ IMongoDatabase MongoDatabase&#xa;+ IMongoCollection&lt;ShuttleSchedule&gt; ShuttleScheduleCollection&#xa;+ IMongoCollection&lt;JourneyNote&gt; JourneyNoteCollection" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="26" width="300" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="130" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-methods" value="+ SaveChangesAsync(): Task&lt;int&gt;&#xa;+ Entry&lt;T&gt;(T): EntityEntry&lt;T&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="138" width="300" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FileManagement" value="FileManagement" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="320" width="220" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="FileManagement-fields" value="+ Guid Id&#xa;+ string FileName&#xa;+ string S3Key&#xa;+ string FileType&#xa;+ float FileSize&#xa;+ DateTime UploadDate&#xa;+ Guid? UploadBy&#xa;+ Guid? RelatedObjectId&#xa;+ RelatedObjectType? RelatedObjectType&#xa;+ bool IsUploaded&#xa;+ DateTime CreatedAt&#xa;+ DateTime UpdatedAt&#xa;+ bool IsDeleted" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="FileManagement" vertex="1">
+          <mxGeometry y="26" width="220" height="254" as="geometry" />
+        </mxCell>
+
+        <mxCell id="Notification" value="Notification" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1470" y="320" width="180" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="Notification-fields" value="+ Guid Id&#xa;+ string Title&#xa;+ string Content&#xa;+ int Type&#xa;+ Guid RecipientId&#xa;+ Guid? SenderId&#xa;+ DateTime CreatedAt&#xa;+ bool IsRead&#xa;+ string Navigation&#xa;+ int Priority" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Notification" vertex="1">
+          <mxGeometry y="26" width="180" height="194" as="geometry" />
+        </mxCell>
+
+        <!-- Transaction Manager Interface -->
+        <mxCell id="IUploadTransactionManager" value="&lt;&lt;interface&gt;&gt;&#xa;IUploadTransactionManager" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="450" y="380" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="IUploadTransactionManager-methods" value="+ BeginTransactionAsync(): Task&#xa;+ CommitAsync(): Task&#xa;+ RollBackAsync(): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IUploadTransactionManager" vertex="1">
+          <mxGeometry y="40" width="220" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        
+        <!-- S3FileUploadService implements IFileUploadService -->
+        <mxCell id="s3-implements-interface" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="S3FileUploadService" target="IFileUploadService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="225" y="600" as="sourcePoint" />
+            <mxPoint x="225" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s3-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="s3-implements-interface" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- S3FileUploadService extends BaseUploadFileService -->
+        <mxCell id="s3-extends-base" value="" style="endArrow=block;html=1;rounded=0;" parent="1" source="S3FileUploadService" target="BaseUploadFileService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="225" y="600" as="sourcePoint" />
+            <mxPoint x="225" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s3-extends-label" value="extends" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="s3-extends-base" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- S3FileUploadService uses IFileDeleter -->
+        <mxCell id="s3-uses-deleter" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="S3FileUploadService" target="IFileDeleter" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="700" as="sourcePoint" />
+            <mxPoint x="450" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s3-uses-deleter-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="s3-uses-deleter" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- BaseUploadFileService uses IUploadTransactionManager -->
+        <mxCell id="base-uses-transaction" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="BaseUploadFileService" target="IUploadTransactionManager" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="base-uses-transaction-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="base-uses-transaction" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- BaseUploadFileService uses Context -->
+        <mxCell id="base-uses-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="BaseUploadFileService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="420" as="sourcePoint" />
+            <mxPoint x="1200" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="base-uses-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="base-uses-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SendNotificationJob uses INotificationSender -->
+        <mxCell id="job-uses-notification" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="SendNotificationJob" target="INotificationSender" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="530" as="sourcePoint" />
+            <mxPoint x="850" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="job-uses-notification-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="job-uses-notification" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- CleanFileJob uses Context -->
+        <mxCell id="clean-uses-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="CleanFileJob" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1050" y="530" as="sourcePoint" />
+            <mxPoint x="1200" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clean-uses-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="clean-uses-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- CleanFileJob uses IFileDeleter -->
+        <mxCell id="clean-uses-deleter" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="CleanFileJob" target="IFileDeleter" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="950" y="580" as="sourcePoint" />
+            <mxPoint x="650" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clean-uses-deleter-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="clean-uses-deleter" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Context manages FileManagement -->
+        <mxCell id="context-manages-file" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="FileManagement" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1350" y="280" as="sourcePoint" />
+            <mxPoint x="1310" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-manages-file-label" value="manages" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-manages-file" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Context manages Notification -->
+        <mxCell id="context-manages-notification" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="Notification" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1500" y="280" as="sourcePoint" />
+            <mxPoint x="1560" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-manages-notification-label" value="manages" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-manages-notification" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- MailService uses Context (for notification sending) -->
+        <mxCell id="mail-uses-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="MailService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1000" y="150" as="sourcePoint" />
+            <mxPoint x="1200" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="mail-uses-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="mail-uses-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

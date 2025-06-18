@@ -1,0 +1,204 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="27.1.5">
+  <diagram name="Class Management System" id="class-management-diagram">
+    <mxGraphModel dx="851" dy="509" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="controller-layer" value="Controllers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="50" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementController" value="ClassManagementController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="300" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementController-fields" value="- IClassManagementHandler _classManagementHandler" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementController" vertex="1">
+          <mxGeometry y="26" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementController-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ClassManagementController" vertex="1">
+          <mxGeometry y="52" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementController-methods" value="+ CreateClass(CreateClassRequest): Task&lt;ActionResult&lt;ClassDetailResponse&gt;&gt;&#xa;+ UpdateClass(Guid, UpdateClassRequest): Task&lt;ActionResult&lt;ClassDetailResponse&gt;&gt;&#xa;+ GetClass(Guid): Task&lt;ActionResult&lt;ClassDetailResponse&gt;&gt;&#xa;+ GetClasses(GetClassesRequest): Task&lt;ActionResult&lt;Pagination&lt;ClassResponse&gt;&gt;&gt;&#xa;+ DeleteClass(Guid): Task&lt;IActionResult&gt;&#xa;+ DeleteClasses(List&lt;Guid&gt;): Task&lt;IActionResult&gt;&#xa;+ GetTemplateExcelFile(): Task&lt;IActionResult&gt;&#xa;+ ImportData(IFormFile): Task&lt;ActionResult&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementController" vertex="1">
+          <mxGeometry y="60" width="300" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="handler-layer" value="Handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="50" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IClassManagementHandler" value="&lt;&lt;interface&gt;&gt;&#xa;IClassManagementHandler" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="400" y="100" width="320" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="IClassManagementHandler-methods" value="+ GetClasses(Guid, GetClassesRequest): Task&lt;Pagination&lt;ClassResponse&gt;&gt;&#xa;+ GetClassById(Guid, Guid): Task&lt;ClassDetailResponse&gt;&#xa;+ AddClass(Guid, CreateClassRequest): Task&lt;ClassDetailResponse&gt;&#xa;+ UpdateClass(Guid, UpdateClassRequest): Task&lt;ClassDetailResponse&gt;&#xa;+ DeleteClass(Guid, Guid): Task&#xa;+ DeleteClass(Guid, List&lt;Guid&gt;): Task&#xa;+ GetTemplateExcelFile(): Task&lt;MemoryStream&gt;&#xa;+ ImportClassesFromExcelFile(Guid, IFormFile): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IClassManagementHandler" vertex="1">
+          <mxGeometry y="40" width="320" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementHandler" value="ClassManagementHandler" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="400" y="320" width="320" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementHandler-fields" value="- IClassManagementService _classManagementService&#xa;- ITeacherManagementService _teacherManagementService&#xa;- IMapper _mapper&#xa;- IServiceProvider _serviceProvider&#xa;- Context _context" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementHandler" vertex="1">
+          <mxGeometry y="26" width="320" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementHandler-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ClassManagementHandler" vertex="1">
+          <mxGeometry y="110" width="320" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementHandler-methods" value="+ GetClasses(Guid, GetClassesRequest): Task&lt;Pagination&lt;ClassResponse&gt;&gt;&#xa;+ GetClassById(Guid, Guid): Task&lt;ClassDetailResponse&gt;&#xa;+ AddClass(Guid, CreateClassRequest): Task&lt;ClassDetailResponse&gt;&#xa;+ UpdateClass(Guid, UpdateClassRequest): Task&lt;ClassDetailResponse&gt;&#xa;+ DeleteClass(Guid, Guid): Task&#xa;+ DeleteClass(Guid, List&lt;Guid&gt;): Task&#xa;+ GetTemplateExcelFile(): Task&lt;MemoryStream&gt;&#xa;+ ImportClassesFromExcelFile(Guid, IFormFile): Task&#xa;- SetManagedTeachers(List&lt;ClassDetailResponse&gt;): Task&#xa;- SetManagedTeachers(ClassDetailResponse): Task&#xa;- GetExcelColumnDefinitions(): List&lt;ExcelColumnDefinition&lt;Class&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementHandler" vertex="1">
+          <mxGeometry y="118" width="320" height="162" as="geometry" />
+        </mxCell>
+        <mxCell id="service-layer" value="Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="770" y="50" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IClassManagementService" value="&lt;&lt;interface&gt;&gt;&#xa;IClassManagementService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="770" y="100" width="320" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="IClassManagementService-methods" value="+ GetClasses(Guid): Task&lt;IEnumerable&lt;Class&gt;&gt;&#xa;+ GetClassesByFilter(Guid, string?, Grade?): Task&lt;IEnumerable&lt;Class&gt;&gt;&#xa;+ GetClassesQueryAbleByFilter(Guid, string?, Grade?): Task&lt;IQueryable&lt;Class&gt;&gt;&#xa;+ GetClassById(Guid): Task&lt;Class&gt;&#xa;+ AddClass(CreateClassDto): Task&lt;Class&gt;&#xa;+ UpdateClass(UpdateClassDto): Task&lt;Class&gt;&#xa;+ DeleteClass(Guid): Task&#xa;+ DeleteClass(List&lt;Guid&gt;): Task&#xa;+ IsOwnerOfClass(Guid, Guid): Task&#xa;+ ImportClassesFromExcel(Guid, List&lt;Class&gt;): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IClassManagementService" vertex="1">
+          <mxGeometry y="40" width="320" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementService" value="ClassManagementService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="770" y="360" width="320" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementService-fields" value="- Context _context&#xa;- ISchoolManagement _schoolManagement&#xa;- ITeacherManagementService _teacherManagement" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementService" vertex="1">
+          <mxGeometry y="26" width="320" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ClassManagementService" vertex="1">
+          <mxGeometry y="80" width="320" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ClassManagementService-methods" value="+ GetClasses(Guid): Task&lt;IEnumerable&lt;Class&gt;&gt;&#xa;+ GetClassesByFilter(Guid, string?, Grade?): Task&lt;IEnumerable&lt;Class&gt;&gt;&#xa;+ GetClassesQueryAbleByFilter(Guid, string?, Grade?): Task&lt;IQueryable&lt;Class&gt;&gt;&#xa;+ GetClassById(Guid): Task&lt;Class&gt;&#xa;+ AddClass(CreateClassDto): Task&lt;Class&gt;&#xa;+ UpdateClass(UpdateClassDto): Task&lt;Class&gt;&#xa;+ DeleteClass(Guid): Task&#xa;+ DeleteClass(List&lt;Guid&gt;): Task&#xa;+ IsOwnerOfClass(Guid, Guid): Task&#xa;+ ImportClassesFromExcel(Guid, List&lt;Class&gt;): Task&#xa;- CheckExistClassName(Guid, string): Task&#xa;- ValidateGrade(SchoolType, Grade): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ClassManagementService" vertex="1">
+          <mxGeometry y="88" width="320" height="212" as="geometry" />
+        </mxCell>
+        <mxCell id="domain-layer" value="Domain Entities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Context" value="Context" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="100" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-fields" value="+ DbSet&lt;Class&gt; Classes&#xa;+ DbSet&lt;Student&gt; Students" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="26" width="200" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="70" width="200" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-methods" value="+ SaveChangesAsync(): Task&#xa;+ Entry&lt;T&gt;(T): EntityEntry&lt;T&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="78" width="200" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="Class" value="Class" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="260" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Class-fields" value="+ Guid Id&#xa;+ Guid SchoolId&#xa;+ string ClassName&#xa;+ Grade Grade&#xa;+ int NumberOfStudent&#xa;+ List&lt;Student&gt; Students&#xa;+ List&lt;ManagedTeacher&gt; ManagedTeachers&#xa;+ School School" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Class" vertex="1">
+          <mxGeometry y="26" width="200" height="134" as="geometry" />
+        </mxCell>
+        <mxCell id="Student" value="Student" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="270" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Student-fields" value="+ Guid Id&#xa;+ Guid SchoolId&#xa;+ Guid ClassId&#xa;+ string FirstName&#xa;+ string LastName&#xa;+ string FullName&#xa;+ Class Class" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Student" vertex="1">
+          <mxGeometry y="26" width="160" height="114" as="geometry" />
+        </mxCell>
+        <mxCell id="controller-to-handler" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ClassManagementController" target="IClassManagementHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="200" as="sourcePoint" />
+            <mxPoint x="400" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="controller-to-handler-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="controller-to-handler" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ClassManagementHandler" target="IClassManagementHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="560" y="320" as="sourcePoint" />
+            <mxPoint x="560" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-service" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ClassManagementHandler" target="IClassManagementService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="400" as="sourcePoint" />
+            <mxPoint x="770" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-service-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-to-service" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ClassManagementService" target="IClassManagementService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="930" y="360" as="sourcePoint" />
+            <mxPoint x="930" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ClassManagementService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1090" y="400" as="sourcePoint" />
+            <mxPoint x="1140" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ClassManagementHandler" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="400" as="sourcePoint" />
+            <mxPoint x="1140" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-owns-class" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="Class" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="220" as="sourcePoint" />
+            <mxPoint x="1240" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-owns-class-label" value="owns" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-owns-class" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-owns-student" value="" style="endArrow=diamond;html=1;rounded=0;endFill=1;" parent="1" source="Context" target="Student" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1340" y="160" as="sourcePoint" />
+            <mxPoint x="1460" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="context-owns-student-label" value="owns" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="context-owns-student" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="class-contains-student" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="Class" target="Student" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1340" y="330" as="sourcePoint" />
+            <mxPoint x="1380" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="class-contains-student-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="class-contains-student" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="student-belongs-class" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="Student" target="Class" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1380" y="350" as="sourcePoint" />
+            <mxPoint x="1340" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="student-belongs-class-label" value="belongs to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="student-belongs-class" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

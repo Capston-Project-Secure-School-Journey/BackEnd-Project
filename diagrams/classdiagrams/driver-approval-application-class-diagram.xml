@@ -1,0 +1,233 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" version="27.1.6">
+  <diagram name="Driver Approval Application System" id="driver-approval-diagram">
+    <mxGraphModel dx="2037" dy="1073" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="controller-layer" value="Controllers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="49" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalApplicationController" value="DriverApprovalApplicationController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="49" y="100" width="400" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalApplicationController-fields" value="- IApplicationHandler _applicationHandler" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="DriverApprovalApplicationController" vertex="1">
+          <mxGeometry y="26" width="400" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalApplicationController-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="DriverApprovalApplicationController" vertex="1">
+          <mxGeometry y="52" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalApplicationController-methods" value="+ GetApplication(Guid): Task&lt;ApplicationResponse&gt;&#xa;+ GetApplications(GetDriverApprovalApplication): Task&lt;Pagination&lt;ApplicationResponse&gt;&gt;&#xa;+ GetActionsCanDo(Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ CreateApplication(Guid): Task&lt;ApplicationResponse&gt;&#xa;+ UpdateApplication(Guid): Task&lt;ApplicationResponse&gt;&#xa;+ SubmitApplication(Guid): Task&lt;ActionResult&gt;&#xa;+ DeleteApplication(Guid): Task&lt;ActionResult&gt;&#xa;+ RejectApplication(Guid, RejectApplicationRequest): Task&lt;ActionResult&gt;&#xa;+ ApproveApplication(Guid, ApproveApplicationRequest): Task&lt;ActionResult&gt;&#xa;+ RequestMoreInfo(Guid, RequestMoreInfoRequest): Task&lt;ActionResult&gt;&#xa;+ RequestCancellation(Guid, CancelApplicationRequest): Task&lt;ActionResult&gt;&#xa;+ CancelApplication(Guid, CancelApplicationRequest): Task&lt;ActionResult&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="DriverApprovalApplicationController" vertex="1">
+          <mxGeometry y="60" width="400" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="handler-layer" value="Handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="500" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IApplicationHandler" value="&lt;&lt;interface&gt;&gt;&#xa;IApplicationHandler" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="500" y="100" width="400" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="IApplicationHandler-methods" value="+ GetApplicationsBySchool(Guid, GetDriverApprovalApplication): Task&#xa;+ GetApplicationsByDriver(Guid, GetDriverApprovalApplication): Task&#xa;+ GetApplication(Guid): Task&lt;ApplicationResponse&gt;&#xa;+ CreateApplication(Guid, Guid): Task&lt;ApplicationResponse&gt;&#xa;+ UpdateApplication(Guid, Guid): Task&lt;ApplicationResponse&gt;&#xa;+ SubmitApplication(Guid, Guid): Task&#xa;+ ApproveApplication(Guid, Guid): Task&#xa;+ RejectApplication(Guid, Guid, string): Task&#xa;+ RequireAdditionalDetails(Guid, Guid, string): Task&#xa;+ RequestCancellationByReviewer(Guid, Guid, string): Task&#xa;+ RequestCancellationByDriver(Guid, Guid, string): Task&#xa;+ CancelApplication(Guid, Guid): Task&#xa;+ DeleteApplicationByDriver(Guid, Guid): Task&#xa;+ GetActionCanDoByReviewer(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetActionCanDoByDriver(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ IsDriverOwnerOfApplication(Guid, Guid): Task&#xa;+ IsSchoolOwnerOfApplication(Guid, Guid): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IApplicationHandler" vertex="1">
+          <mxGeometry y="40" width="400" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationHandler" value="ApplicationHandler" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="500" y="460" width="400" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationHandler-fields" value="- Context _context&#xa;- IApplicationService _applicationService&#xa;- IApprovalProcessor _approvalProcessor&#xa;- IMapper _mapper&#xa;- IFileUploadService _fileUploadService&#xa;- ICurrentUserProvider _currentUserProvider" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApplicationHandler" vertex="1">
+          <mxGeometry y="26" width="400" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationHandler-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ApplicationHandler" vertex="1">
+          <mxGeometry y="130" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationHandler-methods" value="+ GetApplicationsBySchool(Guid, GetDriverApprovalApplication): Task&#xa;+ GetApplicationsByDriver(Guid, GetDriverApprovalApplication): Task&#xa;+ GetApplication(Guid): Task&lt;ApplicationResponse&gt;&#xa;+ CreateApplication(Guid, Guid): Task&lt;ApplicationResponse&gt;&#xa;+ UpdateApplication(Guid, Guid): Task&lt;ApplicationResponse&gt;&#xa;+ SubmitApplication(Guid, Guid): Task&#xa;+ ApproveApplication(Guid, Guid): Task&#xa;+ RejectApplication(Guid, Guid, string): Task&#xa;+ RequireAdditionalDetails(Guid, Guid, string): Task&#xa;+ RequestCancellationByReviewer(Guid, Guid, string): Task&#xa;+ RequestCancellationByDriver(Guid, Guid, string): Task&#xa;+ CancelApplication(Guid, Guid): Task&#xa;+ DeleteApplicationByDriver(Guid, Guid): Task&#xa;+ GetActionCanDoByReviewer(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetActionCanDoByDriver(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ IsDriverOwnerOfApplication(Guid, Guid): Task&#xa;+ IsSchoolOwnerOfApplication(Guid, Guid): Task&#xa;- MapToResponse(DriverApprovalRequest): Task&lt;ApplicationResponse&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApplicationHandler" vertex="1">
+          <mxGeometry y="138" width="400" height="282" as="geometry" />
+        </mxCell>
+        <mxCell id="service-layer" value="Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="950" y="50" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IApplicationService" value="&lt;&lt;interface&gt;&gt;&#xa;IApplicationService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="950" y="100" width="400" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="IApplicationService-methods" value="+ GetApplicationsBySchool(Guid, RequestStatus?): Task&#xa;+ GetApplicationsByDriver(Guid, RequestStatus?): Task&#xa;+ GetApplication(Guid): Task&lt;DriverApprovalRequest&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IApplicationService" vertex="1">
+          <mxGeometry y="40" width="400" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationService" value="ApplicationService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="950" y="260" width="400" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationService-fields" value="- Context _context" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApplicationService" vertex="1">
+          <mxGeometry y="26" width="400" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ApplicationService" vertex="1">
+          <mxGeometry y="52" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ApplicationService-methods" value="+ GetApplicationsBySchool(Guid, RequestStatus?): Task&#xa;+ GetApplicationsByDriver(Guid, RequestStatus?): Task&#xa;+ GetApplication(Guid): Task&lt;DriverApprovalRequest&gt;&#xa;+ GetApplicationNotificationMessage(DriverApprovalRequest): string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApplicationService" vertex="1">
+          <mxGeometry y="60" width="400" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="processor-layer" value="Processors" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="950" y="460" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IApprovalProcessor" value="&lt;&lt;interface&gt;&gt;&#xa;IApprovalProcessor" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="950" y="510" width="400" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="IApprovalProcessor-methods" value="+ CreateApplication(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;+ UpdateApplication(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;+ SubmitApplication(Guid, Guid): Task&#xa;+ ApproveApplication(Guid, Guid): Task&#xa;+ RejectApplication(Guid, Guid, string): Task&#xa;+ RequireAdditionalDetails(Guid, Guid, string): Task&#xa;+ RequestCancellationByReviewer(Guid, Guid, string): Task&#xa;+ RequestCancellationByDriver(Guid, Guid, string): Task&#xa;+ CancelApplication(Guid, Guid): Task&#xa;+ DeleteApplicationByDriver(Guid, Guid): Task&#xa;+ GetActionCanDoByReviewer(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetActionCanDoByDriver(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetReviewerOfSchool(Guid): Task&lt;Guid&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IApprovalProcessor" vertex="1">
+          <mxGeometry y="40" width="400" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ApprovalProcessor" value="ApprovalProcessor" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="950" y="790" width="400" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="ApprovalProcessor-fields" value="- Context _context&#xa;- IFileUploadService _fileUploadService&#xa;- ISchoolManagement _schoolManagement" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApprovalProcessor" vertex="1">
+          <mxGeometry y="26" width="400" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="ApprovalProcessor-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ApprovalProcessor" vertex="1">
+          <mxGeometry y="90" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ApprovalProcessor-methods" value="+ CreateApplication(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;+ UpdateApplication(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;+ SubmitApplication(Guid, Guid): Task&#xa;+ ApproveApplication(Guid, Guid): Task&#xa;+ RejectApplication(Guid, Guid, string): Task&#xa;+ RequireAdditionalDetails(Guid, Guid, string): Task&#xa;+ RequestCancellationByReviewer(Guid, Guid, string): Task&#xa;+ RequestCancellationByDriver(Guid, Guid, string): Task&#xa;+ CancelApplication(Guid, Guid): Task&#xa;+ DeleteApplicationByDriver(Guid, Guid): Task&#xa;+ GetActionCanDoByReviewer(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetActionCanDoByDriver(Guid, Guid): Task&lt;List&lt;ApplicationActionDto&gt;&gt;&#xa;+ GetReviewerOfSchool(Guid): Task&lt;Guid&gt;&#xa;- GetApplicationByDriver(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;- GetApplicationByReviewer(Guid, Guid): Task&lt;DriverApprovalRequest&gt;&#xa;- ValidateDriverInfo(Driver): void&#xa;- CanCreateApplication(Driver): Task&#xa;- GetActionCanDo(DriverApprovalRequest, bool): List&lt;ApplicationActionDto&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ApprovalProcessor" vertex="1">
+          <mxGeometry y="98" width="400" height="282" as="geometry" />
+        </mxCell>
+        <mxCell id="model-layer" value="Models" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="50" width="350" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalRequest" value="DriverApprovalRequest" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="100" width="350" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverApprovalRequest-fields" value="+ Guid Id&#xa;+ Guid SchoolId&#xa;+ DateTime RequestedDate&#xa;+ string MotivationLetter&#xa;+ Guid DriverId&#xa;+ RequestStatus RequestStatus&#xa;+ Guid? ApprovedBy&#xa;+ string VehicleType&#xa;+ string LicenseNumber&#xa;+ int SeatingCapacity&#xa;+ DateTime? LastCheckDrivingLicense&#xa;+ List&lt;DriverInformationImage&gt; DriverInformationImages&#xa;+ List&lt;FileMetadata&gt; VehicleImages&#xa;+ Driver? Driver&#xa;+ HashSet&lt;DriverRequestStatusHistory&gt; DriverRequestStatusHistories&#xa;+ School? School" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="DriverApprovalRequest" vertex="1">
+          <mxGeometry y="26" width="350" height="354" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverRequestStatusHistory" value="DriverRequestStatusHistory" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="520" width="350" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverRequestStatusHistory-fields" value="+ Guid Id&#xa;+ Guid RequestId&#xa;+ RequestStatus? FromStatus&#xa;+ RequestStatus ToStatus&#xa;+ Guid ChangedBy&#xa;+ DateTime ChangedAt&#xa;+ string Note&#xa;+ DriverApprovalRequest Request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="DriverRequestStatusHistory" vertex="1">
+          <mxGeometry y="26" width="350" height="154" as="geometry" />
+        </mxCell>
+        <mxCell id="Context" value="Context" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="740" width="350" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DriverInformationImage" value="DriverInformationImage" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="840" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FileMetadata" value="FileMetadata" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1600" y="840" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="controller-uses-handler" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="DriverApprovalApplicationController" target="IApplicationHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="260" as="sourcePoint" />
+            <mxPoint x="500" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="controller-uses-handler-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="controller-uses-handler" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ApplicationHandler" target="IApplicationHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="700" y="460" as="sourcePoint" />
+            <mxPoint x="700" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-uses-service" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ApplicationHandler" target="IApplicationService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="580" as="sourcePoint" />
+            <mxPoint x="950" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-uses-service-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-uses-service" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-uses-processor" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ApplicationHandler" target="IApprovalProcessor" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="670" as="sourcePoint" />
+            <mxPoint x="950" y="630" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="handler-uses-processor-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="handler-uses-processor" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ApplicationService" target="IApplicationService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1150" y="260" as="sourcePoint" />
+            <mxPoint x="1150" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="processor-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ApprovalProcessor" target="IApprovalProcessor" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1150" y="790" as="sourcePoint" />
+            <mxPoint x="1150" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="processor-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="processor-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="processor-uses-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ApprovalProcessor" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1350" y="980" as="sourcePoint" />
+            <mxPoint x="1400" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="processor-uses-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="processor-uses-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-uses-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ApplicationService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1350" y="340" as="sourcePoint" />
+            <mxPoint x="1400" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="service-uses-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="service-uses-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-history" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="DriverApprovalRequest" target="DriverRequestStatusHistory" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1575" y="480" as="sourcePoint" />
+            <mxPoint x="1575" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-history-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="request-contains-history" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-images" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="DriverApprovalRequest" target="DriverInformationImage" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1490" y="480" as="sourcePoint" />
+            <mxPoint x="1490" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-images-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="request-contains-images" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-files" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="DriverApprovalRequest" target="FileMetadata" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1675" y="480" as="sourcePoint" />
+            <mxPoint x="1675" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="request-contains-files-label" value="contains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="request-contains-files" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
