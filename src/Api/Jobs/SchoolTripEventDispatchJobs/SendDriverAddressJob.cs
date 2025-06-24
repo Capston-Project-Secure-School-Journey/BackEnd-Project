@@ -22,16 +22,10 @@ public class SendDriverAddressNotificationJob(
     {
         try
         {
-            var shuttleScheduleId = Guid.Parse(args[0].ToString()!);
-
-            if (shuttleScheduleId == Guid.Empty)
-                throw new InvalidDataException("Invalid Shuttle Schedule Id");
+            if (args[0] is not ShuttleSchedule shuttleSchedule)
+                throw new InvalidDataException("Invalid Shuttle Schedule");
 
             var scope = serviceProvider.CreateScope();
-            var shuttleScheduleManagementService =
-                scope.ServiceProvider.GetRequiredService<IShuttleScheduleManagementService>();
-
-            var shuttleSchedule = await shuttleScheduleManagementService.GetShuttleSchedule(shuttleScheduleId);
 
             var notifications = new List<CreateNotificationDto>();
             var notificationIds = new List<Guid>();
@@ -42,7 +36,7 @@ public class SendDriverAddressNotificationJob(
                              st.PickupLat,
                              st.PickupLng) < NotificationTriggerDistance))
             {
-                var cacheKey = $"{CacheKey}_{shuttleScheduleId}_{student.StudentId}";
+                var cacheKey = $"{CacheKey}_{shuttleSchedule.Id}_{student.StudentId}";
                 if (!cache.TryGetValue(cacheKey, out _))
                 {
                     notifications.AddRange(GetNotificationDto(shuttleSchedule, student));
@@ -50,7 +44,7 @@ public class SendDriverAddressNotificationJob(
                         TimeSpan.FromHours(3));
                 }
             }
-
+            
             if (notifications.Count == 0)
                 return;
 

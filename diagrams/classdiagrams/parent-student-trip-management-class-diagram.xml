@@ -1,0 +1,369 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" version="27.1.5">
+  <diagram name="Parent Student Trip Management System" id="parent-student-trip-management-diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Controllers Layer -->
+        <mxCell id="controller-layer" value="Controllers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="50" width="600" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ParentSchoolTripController -->
+        <mxCell id="ParentSchoolTripController" value="ParentSchoolTripController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripController-fields" value="- IParentSchoolTripHandler _handler" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripController" vertex="1">
+          <mxGeometry y="26" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripController-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ParentSchoolTripController" vertex="1">
+          <mxGeometry y="52" width="280" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripController-methods" value="+ GetShuttleSchedulesByStudent(Guid, DateOnly): Task&lt;ActionResult&gt;&#xa;+ HasInProgressShuttle(): Task&lt;ActionResult&gt;&#xa;+ GetCurrentShuttleSchedule(): Task&lt;ActionResult&gt;&#xa;+ HasUpcomingShuttle(): Task&lt;ActionResult&gt;&#xa;+ GetUpcomingShuttleSchedule(): Task&lt;ActionResult&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripController" vertex="1">
+          <mxGeometry y="60" width="280" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- JourneyNoteController -->
+        <mxCell id="JourneyNoteController" value="JourneyNoteController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="370" y="100" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteController-fields" value="- IJourneyNoteHandler _handler" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteController" vertex="1">
+          <mxGeometry y="26" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteController-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="JourneyNoteController" vertex="1">
+          <mxGeometry y="52" width="280" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteController-methods" value="+ AddJourneyNote(CreateJourneyNoteDto): Task&lt;ActionResult&gt;&#xa;+ UpdateJourneyNote(UpdateJourneyNoteDto): Task&lt;ActionResult&gt;&#xa;+ DeleteJourneyNote(Guid): Task&lt;ActionResult&gt;&#xa;+ GetAllJourneyNotes(Guid): Task&lt;ActionResult&gt;&#xa;+ GetAllJourneyNotesByParent(Guid, Guid): Task&lt;ActionResult&gt;&#xa;+ ReadJourneyNote(Guid): Task&lt;ActionResult&gt;&#xa;+ ReadAllJourneyNote(Guid): Task&lt;ActionResult&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteController" vertex="1">
+          <mxGeometry y="60" width="280" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Handlers Layer -->
+        <mxCell id="handler-layer" value="Handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="360" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- IParentSchoolTripHandler Interface -->
+        <mxCell id="IParentSchoolTripHandler" value="&lt;&lt;interface&gt;&gt;&#xa;IParentSchoolTripHandler" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="50" y="410" width="300" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="IParentSchoolTripHandler-methods" value="+ GetShuttleSchedulesByStudent(Guid, Guid, DateOnly): Task&lt;List&lt;ShuttleScheduleResponse&gt;&gt;&#xa;+ HasInProgressShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetCurrentShuttleSchedule(Guid): Task&lt;ShuttleScheduleResponse&gt;&#xa;+ HasUpcomingShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetUpcomingShuttleSchedule(Guid): Task&lt;ShuttleScheduleResponse&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IParentSchoolTripHandler" vertex="1">
+          <mxGeometry y="40" width="300" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- IJourneyNoteHandler Interface -->
+        <mxCell id="IJourneyNoteHandler" value="&lt;&lt;interface&gt;&gt;&#xa;IJourneyNoteHandler" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="380" y="410" width="300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="IJourneyNoteHandler-methods" value="+ AddJourneyNote(CreateJourneyNoteDto): Task&lt;JourneyNoteResponse&gt;&#xa;+ UpdateJourneyNote(UpdateJourneyNoteDto): Task&lt;JourneyNoteResponse&gt;&#xa;+ DeleteJourneyNote(Guid): Task&#xa;+ GetAllJourneyNotes(Guid): Task&lt;List&lt;JourneyNoteResponse&gt;&gt;&#xa;+ GetAllJourneyNotesByParent(Guid, Guid): Task&lt;List&lt;JourneyNoteResponse&gt;&gt;&#xa;+ ReadJourneyNote(Guid): Task&#xa;+ ReadAllJourneyNote(Guid): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IJourneyNoteHandler" vertex="1">
+          <mxGeometry y="40" width="300" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- ParentSchoolTripHandler Implementation -->
+        <mxCell id="ParentSchoolTripHandler" value="ParentSchoolTripHandler&#xa;(Implementation)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="50" y="650" width="300" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripHandler-fields" value="- IParentSchoolTripService _parentSchoolTripService&#xa;- IMapper _mapper" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripHandler" vertex="1">
+          <mxGeometry y="40" width="300" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripHandler-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ParentSchoolTripHandler" vertex="1">
+          <mxGeometry y="84" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripHandler-methods" value="+ GetShuttleSchedulesByStudent(Guid, Guid, DateOnly): Task&lt;List&lt;ShuttleScheduleResponse&gt;&gt;&#xa;+ HasInProgressShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetCurrentShuttleSchedule(Guid): Task&lt;ShuttleScheduleResponse&gt;&#xa;+ HasUpcomingShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetUpcomingShuttleSchedule(Guid): Task&lt;ShuttleScheduleResponse&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripHandler" vertex="1">
+          <mxGeometry y="92" width="300" height="148" as="geometry" />
+        </mxCell>
+
+        <!-- JourneyNoteHandler Implementation -->
+        <mxCell id="JourneyNoteHandler" value="JourneyNoteHandler&#xa;(Implementation)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="380" y="650" width="300" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteHandler-fields" value="- IJourneyNoteService _journeyNoteService&#xa;- IMapper _mapper" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteHandler" vertex="1">
+          <mxGeometry y="40" width="300" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteHandler-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="JourneyNoteHandler" vertex="1">
+          <mxGeometry y="84" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteHandler-methods" value="+ AddJourneyNote(CreateJourneyNoteDto): Task&lt;JourneyNoteResponse&gt;&#xa;+ UpdateJourneyNote(UpdateJourneyNoteDto): Task&lt;JourneyNoteResponse&gt;&#xa;+ DeleteJourneyNote(Guid): Task&#xa;+ GetAllJourneyNotes(Guid): Task&lt;List&lt;JourneyNoteResponse&gt;&gt;&#xa;+ GetAllJourneyNotesByParent(Guid, Guid): Task&lt;List&lt;JourneyNoteResponse&gt;&gt;&#xa;+ ReadJourneyNote(Guid): Task&#xa;+ ReadAllJourneyNote(Guid): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteHandler" vertex="1">
+          <mxGeometry y="92" width="300" height="168" as="geometry" />
+        </mxCell>
+
+        <!-- Services Layer -->
+        <mxCell id="service-layer" value="Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="720" y="50" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- IParentSchoolTripService Interface -->
+        <mxCell id="IParentSchoolTripService" value="&lt;&lt;interface&gt;&gt;&#xa;IParentSchoolTripService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="720" y="100" width="300" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="IParentSchoolTripService-methods" value="+ GetShuttleSchedulesByStudent(Guid, DateOnly): Task&lt;List&lt;ShuttleSchedule&gt;&gt;&#xa;+ HasInProgressShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetCurrentShuttleSchedule(Guid): Task&lt;ShuttleSchedule&gt;&#xa;+ HasUpcomingShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetUpcomingShuttleSchedule(Guid): Task&lt;ShuttleSchedule&gt;&#xa;+ IsManageByStudent(Guid, Guid): Task&lt;bool&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IParentSchoolTripService" vertex="1">
+          <mxGeometry y="40" width="300" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- IJourneyNoteService Interface -->
+        <mxCell id="IJourneyNoteService" value="&lt;&lt;interface&gt;&gt;&#xa;IJourneyNoteService" style="swimlane;fontStyle=3;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="100" width="300" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="IJourneyNoteService-methods" value="+ AddJourneyNote(CreateJourneyNoteDto): Task&lt;JourneyNote&gt;&#xa;+ UpdateJourneyNote(UpdateJourneyNoteDto): Task&lt;JourneyNote&gt;&#xa;+ DeleteJourneyNote(Guid): Task&#xa;+ GetAllJourneyNotes(Guid): Task&lt;List&lt;JourneyNote&gt;&gt;&#xa;+ GetAllJourneyNotesByParent(Guid, Guid): Task&lt;List&lt;JourneyNote&gt;&gt;&#xa;+ ReadJourneyNote(Guid): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IJourneyNoteService" vertex="1">
+          <mxGeometry y="40" width="300" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- ParentSchoolTripService Implementation -->
+        <mxCell id="ParentSchoolTripService" value="ParentSchoolTripService&#xa;(Implementation)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="720" y="360" width="300" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripService-fields" value="- Context _context&#xa;- IMapper _mapper&#xa;- IUserService _userService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripService" vertex="1">
+          <mxGeometry y="40" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="ParentSchoolTripService" vertex="1">
+          <mxGeometry y="100" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentSchoolTripService-methods" value="+ GetShuttleSchedulesByStudent(Guid, DateOnly): Task&lt;List&lt;ShuttleSchedule&gt;&gt;&#xa;+ HasInProgressShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetCurrentShuttleSchedule(Guid): Task&lt;ShuttleSchedule&gt;&#xa;+ HasUpcomingShuttle(Guid): Task&lt;bool&gt;&#xa;+ GetUpcomingShuttleSchedule(Guid): Task&lt;ShuttleSchedule&gt;&#xa;+ IsManageByStudent(Guid, Guid): Task&lt;bool&gt;&#xa;- ConvertShuttleScheduleResponse2ParentResponse(ShuttleSchedule, Guid): ShuttleScheduleResponse" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentSchoolTripService" vertex="1">
+          <mxGeometry y="108" width="300" height="192" as="geometry" />
+        </mxCell>
+
+        <!-- JourneyNoteService Implementation -->
+        <mxCell id="JourneyNoteService" value="JourneyNoteService&#xa;(Implementation)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="360" width="300" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteService-fields" value="- Context _context&#xa;- IShuttleScheduleManagementService _shuttleScheduleManagementService&#xa;- IParentSchoolTripService _parentSchoolTripService&#xa;- IDriverSchoolTripService _driverSchoolTripService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteService" vertex="1">
+          <mxGeometry y="40" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteService-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="JourneyNoteService" vertex="1">
+          <mxGeometry y="120" width="300" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNoteService-methods" value="+ AddJourneyNote(CreateJourneyNoteDto): Task&lt;JourneyNote&gt;&#xa;+ UpdateJourneyNote(UpdateJourneyNoteDto): Task&lt;JourneyNote&gt;&#xa;+ GetAllJourneyNotes(Guid): Task&lt;List&lt;JourneyNote&gt;&gt;&#xa;+ GetAllJourneyNotesByParent(Guid, Guid): Task&lt;List&lt;JourneyNote&gt;&gt;&#xa;+ ReadJourneyNote(Guid): Task&#xa;+ DeleteJourneyNote(Guid): Task&#xa;- UpdateStudentTripInfoWhenChangeNote(Journey, JourneyNote): Task&#xa;- UpdateStudentTripInfoWhenDeleteNote(Journey, JourneyNote): Task" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNoteService" vertex="1">
+          <mxGeometry y="128" width="300" height="212" as="geometry" />
+        </mxCell>
+
+        <!-- Domain Layer -->
+        <mxCell id="domain-layer" value="Domain Entities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="50" width="500" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Context -->
+        <mxCell id="Context" value="Context" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="100" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-fields" value="+ DbSet&lt;ShuttleSchedule&gt; ShuttleSchedules&#xa;+ DbSet&lt;JourneyNote&gt; JourneyNotes&#xa;+ DbSet&lt;Student&gt; Students&#xa;+ DbSet&lt;Parent&gt; Parents" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="26" width="220" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-separator" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="94" width="220" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="Context-methods" value="+ SaveChangesAsync(): Task&#xa;+ Entry&lt;T&gt;(T): EntityEntry&lt;T&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="Context" vertex="1">
+          <mxGeometry y="102" width="220" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- ShuttleSchedule Entity -->
+        <mxCell id="ShuttleSchedule" value="ShuttleSchedule" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="280" width="220" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ShuttleSchedule-fields" value="+ Guid Id&#xa;+ string SchoolName&#xa;+ ShuttleScheduleType Type&#xa;+ SessionType SessionType&#xa;+ DateOnly Date&#xa;+ string DriverName&#xa;+ string DriverPhoneNumber&#xa;+ JourneyStatus JourneyStatus&#xa;+ TimeSpan PickupStartTime&#xa;+ TimeSpan PickupEndTime&#xa;+ TimeSpan? StartJourneyTime&#xa;+ TimeSpan? EndJourneyTime&#xa;+ int NumberOfStudents&#xa;+ List&lt;StudentOnBus&gt; Students&#xa;+ double CurrentLat&#xa;+ double CurrentLng&#xa;+ bool IsAllNotesRead" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ShuttleSchedule" vertex="1">
+          <mxGeometry y="26" width="220" height="274" as="geometry" />
+        </mxCell>
+
+        <!-- StudentOnBus Entity -->
+        <mxCell id="StudentOnBus" value="StudentOnBus" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1660" y="280" width="200" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="StudentOnBus-fields" value="+ Guid StudentId&#xa;+ List&lt;ParentInfo&gt; Parents&#xa;+ string PickupAddress&#xa;+ double PickupLat&#xa;+ double PickupLng&#xa;+ string ClassName&#xa;+ string FullName&#xa;+ bool IsPickedUp&#xa;+ DateTimeOffset? PickedUpTime&#xa;+ bool IsDroppedOff&#xa;+ DateTimeOffset? DroppedOffTime&#xa;+ bool SkipPickup&#xa;+ string IsSkipUpReason" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="StudentOnBus" vertex="1">
+          <mxGeometry y="26" width="200" height="214" as="geometry" />
+        </mxCell>
+
+        <!-- ParentInfo Entity -->
+        <mxCell id="ParentInfo" value="ParentInfo" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1660" y="550" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ParentInfo-fields" value="+ Guid ParentId&#xa;+ string FullName&#xa;+ string PhoneNumber&#xa;+ Relationship Relationship" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ParentInfo" vertex="1">
+          <mxGeometry y="26" width="200" height="94" as="geometry" />
+        </mxCell>
+
+        <!-- JourneyNote Entity -->
+        <mxCell id="JourneyNote" value="JourneyNote" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="610" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="JourneyNote-fields" value="+ Guid Id&#xa;+ string Description&#xa;+ Guid JourneyId&#xa;+ Guid ParentId&#xa;+ Guid StudentId&#xa;+ DateTime RequestedDate&#xa;+ JourneyNoteType Type&#xa;+ bool IsReadByDriver" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="JourneyNote" vertex="1">
+          <mxGeometry y="26" width="200" height="134" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <!-- Controller to Handler -->
+        <mxCell id="controller-to-parent-handler" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ParentSchoolTripController" target="IParentSchoolTripHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="190" y="300" as="sourcePoint" />
+            <mxPoint x="200" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="controller-to-parent-handler-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="controller-to-parent-handler" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="controller-to-journey-handler" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="JourneyNoteController" target="IJourneyNoteHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="510" y="320" as="sourcePoint" />
+            <mxPoint x="530" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="controller-to-journey-handler-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="controller-to-journey-handler" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Handler implements Interface -->
+        <mxCell id="parent-handler-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ParentSchoolTripHandler" target="IParentSchoolTripHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="200" y="650" as="sourcePoint" />
+            <mxPoint x="200" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="parent-handler-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="parent-handler-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="journey-handler-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="JourneyNoteHandler" target="IJourneyNoteHandler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="650" as="sourcePoint" />
+            <mxPoint x="530" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="journey-handler-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="journey-handler-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Handler to Service -->
+        <mxCell id="parent-handler-to-service" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ParentSchoolTripHandler" target="IParentSchoolTripService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="770" as="sourcePoint" />
+            <mxPoint x="720" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="parent-handler-to-service-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="parent-handler-to-service" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="journey-handler-to-service" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="JourneyNoteHandler" target="IJourneyNoteService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="770" as="sourcePoint" />
+            <mxPoint x="1050" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="journey-handler-to-service-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="journey-handler-to-service" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Service implements Interface -->
+        <mxCell id="parent-service-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="ParentSchoolTripService" target="IParentSchoolTripService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="360" as="sourcePoint" />
+            <mxPoint x="870" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="parent-service-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="parent-service-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="journey-service-implements" value="" style="endArrow=block;dashed=1;html=1;rounded=0;" parent="1" source="JourneyNoteService" target="IJourneyNoteService" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1200" y="360" as="sourcePoint" />
+            <mxPoint x="1200" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="journey-service-implements-label" value="implements" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="journey-service-implements" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Service to Context -->
+        <mxCell id="parent-service-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ParentSchoolTripService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1020" y="520" as="sourcePoint" />
+            <mxPoint x="1400" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="parent-service-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="parent-service-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="journey-service-to-context" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="JourneyNoteService" target="Context" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1350" y="520" as="sourcePoint" />
+            <mxPoint x="1400" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="journey-service-to-context-label" value="uses" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="journey-service-to-context" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Service to Entities -->
+        <mxCell id="parent-service-to-shuttle" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="ParentSchoolTripService" target="ShuttleSchedule" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1020" y="400" as="sourcePoint" />
+            <mxPoint x="1400" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="parent-service-to-shuttle-label" value="manages" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="parent-service-to-shuttle" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="journey-service-to-journey-note" value="" style="endArrow=open;html=1;rounded=0;" parent="1" source="JourneyNoteService" target="JourneyNote" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1200" y="700" as="sourcePoint" />
+            <mxPoint x="1400" y="690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="journey-service-to-journey-note-label" value="manages" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="journey-service-to-journey-note" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Entity Relationships -->
+        <mxCell id="shuttle-contains-student" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="ShuttleSchedule" target="StudentOnBus" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1620" y="400" as="sourcePoint" />
+            <mxPoint x="1660" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="shuttle-contains-student-label" value="1:*\ncontains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="shuttle-contains-student" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="student-contains-parent" value="" style="endArrow=diamond;html=1;rounded=0;endFill=0;" parent="1" source="StudentOnBus" target="ParentInfo" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1760" y="520" as="sourcePoint" />
+            <mxPoint x="1760" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="student-contains-parent-label" value="1:*\ncontains" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="student-contains-parent" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
