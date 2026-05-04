@@ -26,6 +26,15 @@ public class TimeMeasuringMiddleware
             timeSpent);
     }
 
-    private static string SanitizeForLog(string? value) =>
-        value?.Replace("\r", "\\r").Replace("\n", "\\n") ?? string.Empty;
+    private static string SanitizeForLog(string? value)
+    {
+        if (value is null) return string.Empty;
+        var chars = new char[value.Length];
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+            chars[i] = char.IsControl(c) || c == '\u2028' || c == '\u2029' ? '_' : c;
+        }
+        return new string(chars);
+    }
 }
