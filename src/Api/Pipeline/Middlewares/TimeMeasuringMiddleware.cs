@@ -18,9 +18,23 @@ public class TimeMeasuringMiddleware
         await _next(httpContext);
         stopWatch.Stop();
         var timeSpent = stopWatch.ElapsedMilliseconds;
+        var method = SanitizeForLog(httpContext.Request.Method);
+        var path = SanitizeForLog(httpContext.Request.Path.Value);
         Log.Information("Request: {Method} {Path},Time Spent: {TimeSpent} ms",
-            httpContext.Request.Method,
-            httpContext.Request.Path,
+            method,
+            path,
             timeSpent);
+    }
+
+    private static string SanitizeForLog(string? value)
+    {
+        if (value is null) return string.Empty;
+        var chars = new char[value.Length];
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+            chars[i] = char.IsControl(c) || c == '\u2028' || c == '\u2029' ? '_' : c;
+        }
+        return new string(chars);
     }
 }
